@@ -25,7 +25,7 @@ public class DBApp {
 		try {
 			File csv = new File("./resources/metadata.csv");
 			if (csv.createNewFile()) {
-				System.out.println("The CSV file was1 created!!");
+				System.out.println("The CSV file was created!!");
 			} else {
 				System.out.println("Already exists");
 			}
