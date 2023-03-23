@@ -15,8 +15,6 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 //TODO LAW el clustering key mawgood
-//github test
-//test test test
 public class DBApp {
 
 	Vector<Table> allTable = new Vector<Table>();
@@ -26,7 +24,7 @@ public class DBApp {
 		try {
 			File csv = new File("./resources/metadata.csv");
 			if (csv.createNewFile()) {
-				System.out.println("The CSV file was111 created!!");
+				System.out.println("The CSV file was created!!");
 			} else {
 				System.out.println("Already exists");
 			}
