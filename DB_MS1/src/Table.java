@@ -1,16 +1,17 @@
+import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Vector;
 
-public class Table extends Vector {
+public class Table extends Vector implements Serializable {
 
 	private String TableName;
 	private String ClusteringKey;
 	private Hashtable<String, String> ColNameType;
 	private Hashtable<String, String> ColNameMin;
 	private Hashtable<String, String> ColNameMax;
-	private int currentMaxId=0;
-	private Vector<PageInfo>  PageInfo;
-	private Vector <Page> Pages;
+	private int currentMaxId=-1;
+	private Vector<PageInfo>  PageInfo=new Vector<PageInfo>();
+	//private Vector <Page> Pages;
 	
 	public Table(String tableName, String clusteringKey, Hashtable<String, String> colNameType,
 			Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) {
@@ -77,11 +78,11 @@ public class Table extends Vector {
 		PageInfo = pageInfo;
 	}
 
-	public Vector<Page> getPages() {
-		return Pages;
-	}
-
-	public void setPages(Vector<Page> pages) {
-		Pages = pages;
-	}
+//	public Vector<Page> getPages() {
+//		return Pages;
+//	}
+//
+//	public void setPages(Vector<Page> pages) {
+//		Pages = pages;
+//	}
 }

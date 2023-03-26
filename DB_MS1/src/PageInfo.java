@@ -1,16 +1,18 @@
-public class PageInfo {
+import java.io.Serializable;
+
+public class PageInfo implements Serializable{
 	private String PageName;
 	private int id;
 	private Object max;
 	private Object min;
-	private int count;
+	//private int count;
 
 	public PageInfo(String name, int id, Object max, Object min) {
 		this.PageName = name;
 		this.id = id;
 		this.max = max;
 		this.min = min;
-		this.count = 0;
+		//this.count = 0;
 	}
 
 	public String getPageName() {
@@ -45,12 +47,12 @@ public class PageInfo {
 		this.min = min;
 	}
 
-	public int getCount() {
-		return count;
-	}
-
-	public void setCount(int count) {
-		this.count = count;
-	}
+//	public int getCount() {
+//		return count;
+//	}
+//
+//	public void setCount(int count) {
+//		this.count = count;
+//	}
 
 }
