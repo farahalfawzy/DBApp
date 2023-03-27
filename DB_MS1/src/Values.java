@@ -7,13 +7,13 @@ public class Values {
 	public static void main(String[] args) throws DBAppException, IOException, ParseException, ClassNotFoundException {
 		String strTableName = "Student";
 		DBApp dbApp = new DBApp();
-//		creating(strTableName, dbApp);
+		creating(strTableName, dbApp);
 		
-//		inserting(dbApp);
+		inserting(dbApp);
 //		
 		Hashtable rec = new Hashtable();
 		rec.put("name", new String("paula"));
-		deleting(strTableName,dbApp, rec);
+		//deleting(strTableName,dbApp, rec);
 	}
 
 
@@ -31,28 +31,27 @@ public class Values {
 		rec.put("name", new String("farah"));
 				
 		dbApp.getPages("Student");
-		dbApp.inserttIntoTable("Student", rec);
+		dbApp.insertIntoTable("Student", rec);
 		dbApp.getPages("Student");
 		rec.clear();
 		rec.put("id", new Integer(2));
 		rec.put("name", new String("malak"));
-		dbApp.inserttIntoTable("Student", rec);
+		dbApp.insertIntoTable("Student", rec);
 
 		rec.clear();
 
 		rec.put("id", new Integer(6));
 		rec.put("name", new String("paula"));
-		dbApp.inserttIntoTable("Student", rec);
+		dbApp.insertIntoTable("Student", rec);
 
 		rec.put("id", new Integer(3));
 		rec.put("name", new String("seif"));
-		dbApp.inserttIntoTable("Student", rec);
+		dbApp.insertIntoTable("Student", rec);
 
 		rec.clear();
 
-		rec.put("id", new Integer(1));
 		rec.put("name", new String("tony"));
-		dbApp.inserttIntoTable("Student", rec);
+		dbApp.insertIntoTable("Student", rec);
 		
 		dbApp.getPages("Student");
 	}

@@ -79,7 +79,7 @@ public class DBApp {
 
 	}
 
-	public void inserttIntoTable(String strTableName, Hashtable<String, Object> htblColNameValue)
+	public void insertIntoTable(String strTableName, Hashtable<String, Object> htblColNameValue)
 			throws DBAppException, IOException, ParseException {
 		if (tableExits(strTableName)) {
 			try {
@@ -120,67 +120,70 @@ public class DBApp {
 							Vector pageInfoVector = t.getPageInfo();
 							String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 							Page page = deserializePage(pagename);
-							if (page.size() < maxnoOfRows) {
-								Tuple tuple = new Tuple(clustKey, htblColNameValue);
-								page.add(tuple);
-								Collections.sort(page);
-								((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
-								((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
-								serializePage(page, t.getTableName() + "" + pageind);
-								serializeTable(t, t.getTableName());
-								return;
-							} else {// law fel nos
-								Tuple tuple = new Tuple(clustKey, htblColNameValue);
-								page.add(tuple);
-								Collections.sort(page);
-								Tuple newtup = (Tuple) page.remove(page.size() - 1);
-								((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
-								((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
-								serializePage(page, t.getTableName() + "" + pageind);
-								int ind = pageind + 1;
-								while (true) {
-									if (ind > t.getCurrentMaxId()) {// new page
-																	// fel a5er
-										Page newPage = new Page();
-										PageInfo pi = new PageInfo(t.getTableName() + "" + ind, ind,
-												newtup.Clusteringkey, newtup.Clusteringkey);
+							Tuple tuple = new Tuple(clustKey, htblColNameValue);
+							if (page.contains2(tuple)) {
+								throw new DBAppException("Clustering Key already exists");
+							} else {
 
-										pageInfoVector.add(pi);
-										newPage.add(newtup);
-										Collections.sort(newPage);
+								if (page.size() < maxnoOfRows) {
+									page.add(tuple);
+									Collections.sort(page);
+									((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
+									((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
+									serializePage(page, t.getTableName() + "" + pageind);
+									serializeTable(t, t.getTableName());
+									return;
+								} else {// law fel nos
+									page.add(tuple);
+									Collections.sort(page);
+									Tuple newtup = (Tuple) page.remove(page.size() - 1);
+									((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
+									((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
+									serializePage(page, t.getTableName() + "" + pageind);
+									int ind = pageind + 1;
+									while (true) {
+										if (ind > t.getCurrentMaxId()) {// new page
+																		// fel a5er
+											Page newPage = new Page();
+											PageInfo pi = new PageInfo(t.getTableName() + "" + ind, ind,
+													newtup.Clusteringkey, newtup.Clusteringkey);
 
-										serializePage(newPage, t.getTableName() + "" + ind);
-										t.setCurrentMaxId(t.getCurrentMaxId() + 1);
-										break;
-									} else {// lesa fel nos
-										try {
-											Page nextpage = deserializePage(
-													((PageInfo) (pageInfoVector.get(ind))).getPageName());
+											pageInfoVector.add(pi);
+											newPage.add(newtup);
+											Collections.sort(newPage);
 
-											if (nextpage.size() < maxnoOfRows) {
-												nextpage.add(newtup);
-												Collections.sort(nextpage);
-												((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(page));
-												((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(page));
-												serializePage(nextpage, t.getTableName() + "" + ind);
-												break;
+											serializePage(newPage, t.getTableName() + "" + ind);
+											t.setCurrentMaxId(t.getCurrentMaxId() + 1);
+											break;
+										} else {// lesa fel nos
+											try {
+												Page nextpage = deserializePage(
+														((PageInfo) (pageInfoVector.get(ind))).getPageName());
 
-											} else {
-												nextpage.add(newtup);
-												Collections.sort(nextpage);
-												newtup = (Tuple) nextpage.remove(nextpage.size() - 1);
-												((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(nextpage));
-												((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(nextpage));
-												serializePage(nextpage, t.getTableName() + "" + ind);
-												ind = ind + 1;
+												if (nextpage.size() < maxnoOfRows) {
+													nextpage.add(newtup);
+													Collections.sort(nextpage);
+													((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(page));
+													((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(page));
+													serializePage(nextpage, t.getTableName() + "" + ind);
+													break;
+
+												} else {
+													nextpage.add(newtup);
+													Collections.sort(nextpage);
+													newtup = (Tuple) nextpage.remove(nextpage.size() - 1);
+													((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(nextpage));
+													((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(nextpage));
+													serializePage(nextpage, t.getTableName() + "" + ind);
+													ind = ind + 1;
+												}
+											} catch (ClassNotFoundException e) {
+
 											}
-										} catch (ClassNotFoundException e) {
-
 										}
 									}
 								}
 							}
-
 						} catch (ClassNotFoundException e) {
 
 						}
@@ -244,10 +247,10 @@ public class DBApp {
 						} else {
 							// 3lshan 3ayezo ycheck en kol elbuckets full 3ala tool plus ana elmfrood 2shoof
 							// eny 23od 2zbt fy ba2y elpages eltanya bardo
-							checkCurrBucketFull(pageind, beforeRemove, pageInfoVector, htblColNameValue, page, t);
+//							checkCurrBucketFull(pageind, beforeRemove, pageInfoVector, htblColNameValue, page, t);
 
 							//
-							Object max =  getMaxInPage(page);
+							Object max = getMaxInPage(page);
 							Object min = getMinInPage(page);
 							((PageInfo) pageInfoVector.get(pageind)).setMax(max);
 							((PageInfo) pageInfoVector.get(pageind)).setMin(min);
@@ -271,29 +274,29 @@ public class DBApp {
 		}
 	}
 
-	private void checkCurrBucketFull(int pageind, int beforeRemove, Vector pageInfoVector, Hashtable htblColNameValue,
-			Page page, Table t) {
-		// TODO Auto-generated method stub
-		try {
-			int nextPageIndex = pageind + 1;
-			int totalRemoved = beforeRemove - page.size();
-			String pagename = ((PageInfo) (pageInfoVector.get(nextPageIndex))).getPageName(); // lw mfeesh bucket f ely
-																								// b3do y5rog
-			Page nextPage = deserializePage(pagename);
-			for (int i = 0; i < totalRemoved && i < nextPage.size(); i++) {
-				if (!nextPage.get(i).equals(htblColNameValue)) {
-					page.add(nextPage.get(i));
-					nextPage.remove(i);			//mbt3mlsh remove sa7 el line dah
-				}
-			}
-			Object max =  getMaxInPage(nextPage);
-			Object min = getMinInPage(nextPage);
-			((PageInfo) pageInfoVector.get(nextPageIndex)).setMax(max);
-			((PageInfo) pageInfoVector.get(nextPageIndex)).setMin(min);
-			serializePage(nextPage, t.getTableName() + "" + nextPageIndex);
-		} catch (Exception e) {
-		}
-	}
+//	private void checkCurrBucketFull(int pageind, int beforeRemove, Vector pageInfoVector, Hashtable htblColNameValue,
+//			Page page, Table t) {
+//		// TODO Auto-generated method stub
+//		try {
+//			int nextPageIndex = pageind + 1;
+//			int totalRemoved = beforeRemove - page.size();
+//			String pagename = ((PageInfo) (pageInfoVector.get(nextPageIndex))).getPageName(); // lw mfeesh bucket f ely
+//																								// b3do y5rog
+//			Page nextPage = deserializePage(pagename);
+//			for (int i = 0; i < totalRemoved && i < nextPage.size(); i++) {
+//				if (!nextPage.get(i).equals(htblColNameValue)) {
+//					page.add(nextPage.get(i));
+//					nextPage.remove(i);			//mbt3mlsh remove sa7 el line dah
+//				}
+//			}
+//			Object max =  getMaxInPage(nextPage);
+//			Object min = getMinInPage(nextPage);
+//			((PageInfo) pageInfoVector.get(nextPageIndex)).setMax(max);
+//			((PageInfo) pageInfoVector.get(nextPageIndex)).setMin(min);
+//			serializePage(nextPage, t.getTableName() + "" + nextPageIndex);
+//		} catch (Exception e) {
+//		}
+//	}
 
 	private void deletingFiles(int pageind, Vector<Table> pageInfoVector, Table t) { // 3lshan lw page kolah dups yms7ha
 																						// 3ala tool
@@ -338,8 +341,8 @@ public class DBApp {
 		if (page.size() == 0)
 			deletingFiles(i, pageInfoVector, t);
 		else {
-			checkCurrBucketFull(i, beforeRemove, pageInfoVector, htblColNameValue, page, t);
-			Object max =  getMaxInPage(page);
+//			checkCurrBucketFull(i, beforeRemove, pageInfoVector, htblColNameValue, page, t);
+			Object max = getMaxInPage(page);
 			Object min = getMinInPage(page);
 			((PageInfo) pageInfoVector.get(i)).setMax(max);
 			((PageInfo) pageInfoVector.get(i)).setMin(min);
@@ -348,11 +351,22 @@ public class DBApp {
 		removeFromAllPages(pageInfoVector, myTuple, ++i, t, htblColNameValue);
 	}
 
-	private boolean isValid(Table table, Hashtable<String, Object> htblColNameValue) throws ParseException {
+	private boolean isValid(Table table, Hashtable<String, Object> htblColNameValue)
+			throws ParseException, DBAppException {
 		Hashtable<String, String> htdlColNameType = table.getColNameType();
 		Hashtable<String, String> htdlColNameMin = table.getColNameMin();
 		Hashtable<String, String> htdlColNameMax = table.getColNameMax();
 		boolean flag = true;
+		boolean flag2=false;
+		for (String key : htblColNameValue.keySet()) {
+			if (key.equals(table.getClusteringKey())) {
+				flag2=true;
+				break;
+			}
+		}
+		if(!flag2) {
+			throw new DBAppException("Clustering Key already existsss");
+		}
 		for (String key : htblColNameValue.keySet()) {
 			String ogNameType = htdlColNameType.get(key);
 			Object compareNameType = htblColNameValue.get(key);
@@ -623,7 +637,7 @@ public class DBApp {
 
 		}
 	}
-
+//public static Tuple 
 	public static void main(String[] args) throws IOException, ClassNotFoundException, DBAppException, ParseException {
 
 	}
