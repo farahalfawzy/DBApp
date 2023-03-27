@@ -53,7 +53,6 @@ public class Tuple implements Comparable, Serializable {
 		return "Tuple [Clusteringkey=" + Clusteringkey + ", record=" + record + "]";
 	}
 
-
 	@Override
 	public int hashCode() {
 		return Objects.hash(Clusteringkey, record);
@@ -68,7 +67,24 @@ public class Tuple implements Comparable, Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Tuple other = (Tuple) obj;
-		return Objects.equals(Clusteringkey, other.Clusteringkey) && Objects.equals(record, other.record);
+		if (other.getRecord().size() < this.getRecord().size()) {
+			for (String key : other.getRecord().keySet()) {
+				Object otherValue = other.getRecord().get(key);
+				Object thisValue = this.getRecord().get(key);
+				if (!(otherValue.equals(thisValue)))
+					return false;
+			}
+			return true;
+		}
+		else {
+			for (String key : this.getRecord().keySet()) {
+				Object otherValue = other.getRecord().get(key);
+				Object thisValue = this.getRecord().get(key);
+				if (!(otherValue.equals(thisValue)))
+					return false;
+			}
+			return true;
+		}
 	}
-	
+
 }

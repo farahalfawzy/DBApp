@@ -25,13 +25,25 @@ public class test {
 //		t2.put("Gender", "F");
 		Tuple myTuple3 = new Tuple("Name", t2);
 		
+		Hashtable t3 = new Hashtable<>();
+		t3.put("Name", "Paula");
+		t3.put("Age", "20");
+		Tuple myTuple4 = new Tuple("Name", t3);
+		
+		boolean flag;
+//		flag = myTuple2.equals(myTuple3);
 		Vector<Tuple> myArray = new Vector<Tuple>();
 
 		myArray.add(myTuple1);
 		myArray.add(myTuple2);
 		
-		boolean flag = myArray.contains(myTuple3);
-		System.out.println(flag);
+		flag = myArray.contains(myTuple3);
+		
+		
+		Page page = new Page();
+		page.add(myTuple1);
+		page.add(myTuple2);
+		System.out.println(page.contains(myTuple4));
 
 
 	}

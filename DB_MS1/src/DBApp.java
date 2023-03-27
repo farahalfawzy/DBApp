@@ -234,7 +234,7 @@ public class DBApp {
 					Vector pageInfoVector = t.getPageInfo();
 					String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 					Page page = deserializePage(pagename);
-					
+
 					if (page.contains(myTuple)) {
 						System.out.println("was here1");
 						int beforeRemove = page.size();
@@ -242,12 +242,13 @@ public class DBApp {
 						if (page.size() == 0) {
 							deletingFiles(pageind, pageInfoVector, t);
 						} else {
-							//3lshan 3ayezo ycheck en kol elbuckets full 3ala tool
-							checkCurrBucketFull(pageind,beforeRemove,pageInfoVector, htblColNameValue, pageInfoVector, t);
-							
+							// 3lshan 3ayezo ycheck en kol elbuckets full 3ala tool plus ana elmfrood 2shoof
+							// eny 23od 2zbt fy ba2y elpages eltanya bardo
+							checkCurrBucketFull(pageind, beforeRemove, pageInfoVector, htblColNameValue, page, t);
 
-							Tuple max = (Tuple) getMaxInPage(page);
-							Tuple min = (Tuple) getMinInPage(page);
+							//
+							Object max =  getMaxInPage(page);
+							Object min = getMinInPage(page);
 							((PageInfo) pageInfoVector.get(pageind)).setMax(max);
 							((PageInfo) pageInfoVector.get(pageind)).setMin(min);
 
@@ -270,21 +271,23 @@ public class DBApp {
 		}
 	}
 
-	private void checkCurrBucketFull(int pageind, int beforeRemove, Vector pageInfoVector, Hashtable htblColNameValue, Vector page, Table t) {
+	private void checkCurrBucketFull(int pageind, int beforeRemove, Vector pageInfoVector, Hashtable htblColNameValue,
+			Page page, Table t) {
 		// TODO Auto-generated method stub
 		try {
 			int nextPageIndex = pageind + 1;
 			int totalRemoved = beforeRemove - page.size();
-			String pagename = ((PageInfo) (pageInfoVector.get(nextPageIndex))).getPageName();	//lw mfeesh bucket f ely b3do y5rog
+			String pagename = ((PageInfo) (pageInfoVector.get(nextPageIndex))).getPageName(); // lw mfeesh bucket f ely
+																								// b3do y5rog
 			Page nextPage = deserializePage(pagename);
 			for (int i = 0; i < totalRemoved && i < nextPage.size(); i++) {
 				if (!nextPage.get(i).equals(htblColNameValue)) {
-					page.add(i);
-					nextPage.remove(i);
+					page.add(nextPage.get(i));
+					nextPage.remove(i);			//mbt3mlsh remove sa7 el line dah
 				}
 			}
-			Tuple max = (Tuple) getMaxInPage(nextPage);
-			Tuple min = (Tuple) getMinInPage(nextPage);
+			Object max =  getMaxInPage(nextPage);
+			Object min = getMinInPage(nextPage);
 			((PageInfo) pageInfoVector.get(nextPageIndex)).setMax(max);
 			((PageInfo) pageInfoVector.get(nextPageIndex)).setMin(min);
 			serializePage(nextPage, t.getTableName() + "" + nextPageIndex);
@@ -335,9 +338,9 @@ public class DBApp {
 		if (page.size() == 0)
 			deletingFiles(i, pageInfoVector, t);
 		else {
-			checkCurrBucketFull(i,beforeRemove,pageInfoVector, htblColNameValue, pageInfoVector, t);
-			Tuple max = (Tuple) getMaxInPage(page);
-			Tuple min = (Tuple) getMinInPage(page);
+			checkCurrBucketFull(i, beforeRemove, pageInfoVector, htblColNameValue, page, t);
+			Object max =  getMaxInPage(page);
+			Object min = getMinInPage(page);
 			((PageInfo) pageInfoVector.get(i)).setMax(max);
 			((PageInfo) pageInfoVector.get(i)).setMin(min);
 			serializePage(page, pagename);
@@ -622,62 +625,6 @@ public class DBApp {
 	}
 
 	public static void main(String[] args) throws IOException, ClassNotFoundException, DBAppException, ParseException {
-		String strTableName = "Student";
-		DBApp dbApp = new DBApp();
 
-//		Hashtable htblColNameType = new Hashtable();
-//		htblColNameType.put("id", "java.lang.Integer");
-//		htblColNameType.put("name", "java.lang.String");
-//
-//		Hashtable htblColNameMin = new Hashtable();
-//		htblColNameMin.put("id", "0");
-//		htblColNameMin.put("name", "a");
-//
-//		Hashtable htblColNameMax = new Hashtable<>();
-//		htblColNameMax.put("id", "10000");
-//		htblColNameMax.put("name", "zzzzzzzzz");
-//		dbApp.init();
-//		dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
-////		
-		Hashtable rec = new Hashtable();
-		rec.put("id", new Integer(5));
-		rec.put("name", new String("farah"));
-		dbApp.deleteFromTable(strTableName, rec);
-		dbApp.getPages(strTableName);
-//		
-////		
-//		dbApp.getPages("Student");
-//		dbApp.inserttIntoTable("Student", rec);
-//		dbApp.getPages("Student");
-//		rec.clear();
-//		rec.put("id", new Integer(2));
-//		rec.put("name", new String("malak"));
-//		dbApp.inserttIntoTable("Student", rec);
-////		dbApp.getPages("Student");
-//		
-////
-//		rec.clear();
-////
-//		rec.put("id", new Integer(6));
-//		rec.put("name", new String("paula"));
-//		dbApp.inserttIntoTable("Student", rec);
-////		dbApp.getPages("Student");
-//		rec.clear();
-////
-//		rec.put("id", new Integer(3));
-//		rec.put("name", new String("seif"));
-//		dbApp.inserttIntoTable("Student", rec);
-////		dbApp.getPages("Student");
-////
-//		rec.clear();
-////
-//		rec.put("id", new Integer(1));
-//		rec.put("name", new String("tony"));
-//		dbApp.inserttIntoTable("Student", rec);
-////		dbApp.getPages("Student");
-//
-//		rec.clear();
-////
-//		 dbApp.deserializeTable(strTableName);
 	}
 }
