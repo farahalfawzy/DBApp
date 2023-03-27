@@ -9,11 +9,13 @@ public class Values {
 		DBApp dbApp = new DBApp();
 		creating(strTableName, dbApp);
 		
-		inserting(dbApp);
+//		inserting(dbApp);
 //		
 		Hashtable rec = new Hashtable();
 		rec.put("name", new String("paula"));
-		//deleting(strTableName,dbApp, rec);
+		deleting(strTableName,dbApp, rec);
+		
+//		dbApp.getPages("Student");
 	}
 
 
@@ -30,9 +32,9 @@ public class Values {
 		rec.put("id", new Integer(5));
 		rec.put("name", new String("farah"));
 				
-		dbApp.getPages("Student");
+//		dbApp.getPages("Student");
 		dbApp.insertIntoTable("Student", rec);
-		dbApp.getPages("Student");
+//		dbApp.getPages("Student");
 		rec.clear();
 		rec.put("id", new Integer(2));
 		rec.put("name", new String("malak"));
@@ -50,8 +52,8 @@ public class Values {
 
 		rec.clear();
 
-		rec.put("name", new String("tony"));
-		dbApp.insertIntoTable("Student", rec);
+//		rec.put("name", new String("tony"));
+//		dbApp.insertIntoTable("Student", rec);
 		
 		dbApp.getPages("Student");
 	}

@@ -7,44 +7,26 @@ import java.util.Vector;
 public class test {
 	public static void main(String[] args) throws IOException {
 
-		Hashtable t = new Hashtable();
-		t.put("Name", "Seif");
-		t.put("Age", "20");
-		t.put("Gender", "M");
-		Tuple myTuple1 = new Tuple("Name", t);
+//		File mySerial = new File("./resources/" + "page" + "" + 1+".txt");
+//		if (mySerial.delete())
+//			System.out.println("File deleted successfully");
+//		try {
+//			File oldFile;
+//			File newFile;
+//			for (int i = 1; i < 4; i++) {
+//				int temp = i;
+//				oldFile = new File("./resources/" + "page" + "" + ++temp+".txt");
+//				newFile = new File("./resources/" + "page" + "" + i+".txt");
+//				if (oldFile.renameTo(newFile)) {
+//					System.out.println("File renamed successfully");
+//				} else {
+//					System.out.println("Failed to rename file");
+//				}
+//			}
+//		} catch (Exception e) {// msh 3ayez e3ml 7aga
+//		}
 
-		Hashtable t1 = new Hashtable();
-		t1.put("Name", "Merna");
-		t1.put("Age", "16");
-		t1.put("Gender", "F");
-		Tuple myTuple2 = new Tuple("Name", t1);
-
-		Hashtable t2 = new Hashtable();
-		t2.put("Age", "16");
-		t2.put("Name", "Merna");
-//		t2.put("Gender", "F");
-		Tuple myTuple3 = new Tuple("Name", t2);
-		
-		Hashtable t3 = new Hashtable<>();
-		t3.put("Name", "Paula");
-		t3.put("Age", "20");
-		Tuple myTuple4 = new Tuple("Name", t3);
-		
-		boolean flag;
-//		flag = myTuple2.equals(myTuple3);
-		Vector<Tuple> myArray = new Vector<Tuple>();
-
-		myArray.add(myTuple1);
-		myArray.add(myTuple2);
-		
-		flag = myArray.contains(myTuple3);
 		
 		
-		Page page = new Page();
-		page.add(myTuple1);
-		page.add(myTuple2);
-		System.out.println(page.contains(myTuple4));
-
-
 	}
 }

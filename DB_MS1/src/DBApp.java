@@ -20,7 +20,7 @@ import java.util.Vector;
 public class DBApp {
 
 	Vector<Table> allTable = new Vector<Table>();
-	static int maxnoOfRows = 2;
+	static int maxnoOfRows = 1;
 
 	public void init() {
 		try {
@@ -240,16 +240,11 @@ public class DBApp {
 
 					if (page.contains(myTuple)) {
 						System.out.println("was here1");
-						int beforeRemove = page.size();
 						page.remove(myTuple);
 						if (page.size() == 0) {
 							deletingFiles(pageind, pageInfoVector, t);
 						} else {
-							// 3lshan 3ayezo ycheck en kol elbuckets full 3ala tool plus ana elmfrood 2shoof
-							// eny 23od 2zbt fy ba2y elpages eltanya bardo
-//							checkCurrBucketFull(pageind, beforeRemove, pageInfoVector, htblColNameValue, page, t);
 
-							//
 							Object max = getMaxInPage(page);
 							Object min = getMinInPage(page);
 							((PageInfo) pageInfoVector.get(pageind)).setMax(max);
@@ -274,50 +269,29 @@ public class DBApp {
 		}
 	}
 
-//	private void checkCurrBucketFull(int pageind, int beforeRemove, Vector pageInfoVector, Hashtable htblColNameValue,
-//			Page page, Table t) {
-//		// TODO Auto-generated method stub
-//		try {
-//			int nextPageIndex = pageind + 1;
-//			int totalRemoved = beforeRemove - page.size();
-//			String pagename = ((PageInfo) (pageInfoVector.get(nextPageIndex))).getPageName(); // lw mfeesh bucket f ely
-//																								// b3do y5rog
-//			Page nextPage = deserializePage(pagename);
-//			for (int i = 0; i < totalRemoved && i < nextPage.size(); i++) {
-//				if (!nextPage.get(i).equals(htblColNameValue)) {
-//					page.add(nextPage.get(i));
-//					nextPage.remove(i);			//mbt3mlsh remove sa7 el line dah
-//				}
-//			}
-//			Object max =  getMaxInPage(nextPage);
-//			Object min = getMinInPage(nextPage);
-//			((PageInfo) pageInfoVector.get(nextPageIndex)).setMax(max);
-//			((PageInfo) pageInfoVector.get(nextPageIndex)).setMin(min);
-//			serializePage(nextPage, t.getTableName() + "" + nextPageIndex);
-//		} catch (Exception e) {
-//		}
-//	}
-
-	private void deletingFiles(int pageind, Vector<Table> pageInfoVector, Table t) { // 3lshan lw page kolah dups yms7ha
-																						// 3ala tool
+	private void deletingFiles(int pageind, Vector pageInfoVector, Table t) { // 3lshan lw page kolah dups yms7ha
+																				// 3ala tool
 		// TODO Auto-generated method stub
-		File mySerial = new File("./resources/" + t.getTableName() + "" + pageind);
+		File mySerial = new File("./resources/" + t.getTableName() + "" + pageind + ".ser");
 		if (mySerial.delete())
 			System.out.println("File deleted successfully");
 		try {
 			File oldFile;
 			File newFile;
+			pageInfoVector.remove(pageind);
 			for (int i = pageind; i < pageInfoVector.size(); i++) {
-				int temp = i;
-				oldFile = new File("./resources/" + t.getTableName() + "" + ++temp);
-				newFile = new File("./resources/" + t.getTableName() + "" + i);
+				int temp = i+1;
+				oldFile = new File("./resources/" + t.getTableName() + "" + temp + ".ser");
+				newFile = new File("./resources/" + t.getTableName() + "" + i + ".ser");
+				((PageInfo) pageInfoVector.get(i)).setPageName(t.getTableName() + "" + i);
 				if (oldFile.renameTo(newFile)) {
 					System.out.println("File renamed successfully");
 				} else {
 					System.out.println("Failed to rename file");
 				}
 			}
-			pageInfoVector.remove(pageind);
+			
+
 		} catch (Exception e) {// msh 3ayez e3ml 7aga
 		}
 	}
@@ -330,25 +304,18 @@ public class DBApp {
 			return;
 		String pagename = ((PageInfo) (pageInfoVector.get(i))).getPageName();
 		Page page = deserializePage(pagename);
-		if (page.size() < maxnoOfRows) {
-			page.remove(myTuple);
-			if (page.size() == 0)
-				deletingFiles(i, pageInfoVector, t);
-			return;
-		}
-		int beforeRemove = page.size();
 		page.remove(myTuple);
-		if (page.size() == 0)
+		if (page.size() == 0) {
 			deletingFiles(i, pageInfoVector, t);
-		else {
-//			checkCurrBucketFull(i, beforeRemove, pageInfoVector, htblColNameValue, page, t);
+			removeFromAllPages(pageInfoVector, myTuple, i, t, htblColNameValue);
+		} else {
 			Object max = getMaxInPage(page);
 			Object min = getMinInPage(page);
 			((PageInfo) pageInfoVector.get(i)).setMax(max);
 			((PageInfo) pageInfoVector.get(i)).setMin(min);
 			serializePage(page, pagename);
+			removeFromAllPages(pageInfoVector, myTuple, ++i, t, htblColNameValue);
 		}
-		removeFromAllPages(pageInfoVector, myTuple, ++i, t, htblColNameValue);
 	}
 
 	private boolean isValid(Table table, Hashtable<String, Object> htblColNameValue)
@@ -357,16 +324,16 @@ public class DBApp {
 		Hashtable<String, String> htdlColNameMin = table.getColNameMin();
 		Hashtable<String, String> htdlColNameMax = table.getColNameMax();
 		boolean flag = true;
-		boolean flag2=false;
+		boolean flag2 = false;
 		for (String key : htblColNameValue.keySet()) {
 			if (key.equals(table.getClusteringKey())) {
-				flag2=true;
+				flag2 = true;
 				break;
 			}
 		}
-		if(!flag2) {
-			throw new DBAppException("Clustering Key already existsss");
-		}
+//		if(!flag2) {
+//			throw new DBAppException("Clustering Key already existsss");
+//		}
 		for (String key : htblColNameValue.keySet()) {
 			String ogNameType = htdlColNameType.get(key);
 			Object compareNameType = htblColNameValue.get(key);
@@ -637,6 +604,7 @@ public class DBApp {
 
 		}
 	}
+
 //public static Tuple 
 	public static void main(String[] args) throws IOException, ClassNotFoundException, DBAppException, ParseException {
 
