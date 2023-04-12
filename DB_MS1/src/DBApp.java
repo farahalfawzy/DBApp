@@ -45,7 +45,7 @@ public class DBApp {
 		if (!tableExits(strTableName)) {
 			FileWriter writer;
 			try {
-				writer = new FileWriter(filePath);
+				writer = new FileWriter(filePath,true);
 				// header
 				for (String key : htblColNameType.keySet()) {
 					strColName = key;
