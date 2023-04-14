@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -26,7 +27,7 @@ public class test {
 //		} catch (Exception e) {// msh 3ayez e3ml 7aga
 //		}
 
-		
-		
+		Date myDate = new Date(Long.MAX_VALUE);
+		System.out.println(myDate);
 	}
 }

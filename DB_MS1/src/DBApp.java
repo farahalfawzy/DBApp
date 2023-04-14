@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -13,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 
@@ -20,8 +22,19 @@ import java.util.Vector;
 public class DBApp {
 
 	Vector<Table> allTable = new Vector<Table>();
-	static int maxnoOfRows = 1;
+	static int maxnoOfRows = getMaxRows();
 
+	private static int getMaxRows(){
+		Properties prop = new Properties();
+		String fileName = "./resources/DBApp.config";
+		try (FileInputStream fis = new FileInputStream(fileName)) {
+		    prop.load(fis);
+		    return Integer.parseInt(prop.getProperty("MaximumRowsCountinTablePage"));
+		} catch (Exception ex) {
+			return -1;
+		}
+	}
+	
 	public void init() {
 		try {
 			File csv = new File("./resources/metadata.csv");
@@ -112,6 +125,7 @@ public class DBApp {
 							pageind = binarySearchDouble(t, (Double) clustKey);
 						}
 						if (clustKey instanceof java.util.Date) {
+							System.out.println("was here date");
 							pageind = binarySearchDate(t, (Date) clustKey);
 						}
 						System.out.println("llc   " + pageind);
