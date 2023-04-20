@@ -23,6 +23,7 @@ public class DBApp {
 
 	Vector<Table> allTable = new Vector<Table>();
 	static int maxnoOfRows = getMaxRows();
+	boolean isDeletingMethod=false;
 
 	private static int getMaxRows() {
 		Properties prop = new Properties();
@@ -223,6 +224,7 @@ public class DBApp {
 
 	public void deleteFromTable(String strTableName, Hashtable<String, Object> htblColNameValue)
 			throws DBAppException, ClassNotFoundException, ParseException {
+		this.isDeletingMethod=true;
 		if (tableExits(strTableName)) {
 			Table t = deserializeTable(strTableName);
 //			if(t.getPageInfo().size()==0)
@@ -274,11 +276,13 @@ public class DBApp {
 				}
 				serializeTable(t, strTableName);
 			} else {
+				this.isDeletingMethod=false;
 				throw new DBAppException("Reenter your values!");
 			}
 		} else
 
 		{
+			this.isDeletingMethod=false;
 			throw new DBAppException("Table doesn't exist");
 		}
 	}
@@ -474,9 +478,9 @@ public class DBApp {
 					break;
 				}
 			}
-//			if (!ClustKeyfound) {
-//				throw new DBAppException("You have to insert Clustering Key");
-//			}			seif
+			if (!ClustKeyfound && !isDeletingMethod) {			//ana 3mlt deh 3lshan fel delete lw ana msh m3aya elcluster key e3ml delete 3ady bardo
+				throw new DBAppException("You have to insert Clustering Key");
+			}
 			boolean flag = true;
 
 			for (String key : htblColNameValue.keySet()) {
