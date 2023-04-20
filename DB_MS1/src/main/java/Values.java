@@ -1,3 +1,5 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -8,16 +10,38 @@ import java.util.Hashtable;
 public class Values {
 
 	public static void main(String[] args) throws DBAppException, IOException, ParseException, ClassNotFoundException {
-		String strTableName = "Student";
-		DBApp dbApp = new DBApp();
-		creating(strTableName, dbApp);
-		
-		inserting(dbApp);
+//		String strTableName = "Student";
+//		DBApp dbApp = new DBApp();
+//		creating(strTableName, dbApp);
+//		
+//		inserting(dbApp);
 //		
 //		Hashtable rec = new Hashtable();
-//		rec.put("name", new String("paula"));
+//		rec.put("name", new String("malak"));
 //		deleting(strTableName,dbApp, rec);
-		dbApp.getPages("Student");
+//		dbApp.getPages("Student");
+		
+		final DBApp dbApp = new DBApp();
+        dbApp.init();
+
+        BufferedReader pcsTable = new BufferedReader(new FileReader("src/main/resources/pcs_table.csv"));
+        String record;
+        Hashtable<String, Object> row = new Hashtable<>();
+        int c = 0;
+        int finalLine = 1;
+        while ((record = pcsTable.readLine()) != null && c <= finalLine) {
+            if(c == finalLine) {
+                String[] fields = record.split(",");
+
+                row.put("pc_id", Integer.parseInt(fields[0].trim()));
+                row.put("student_id", fields[1].trim());
+            }
+            c++;
+        }
+
+
+        String table = "pcs";
+        dbApp.deleteFromTable(table, row);
 	}
 
 

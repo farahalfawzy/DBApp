@@ -26,7 +26,7 @@ public class DBApp {
 
 	private static int getMaxRows() {
 		Properties prop = new Properties();
-		String fileName = "./resources/DBApp.config";
+		String fileName = "src/main/resources/DBApp.config";
 		try (FileInputStream fis = new FileInputStream(fileName)) {
 			prop.load(fis);
 			return Integer.parseInt(prop.getProperty("MaximumRowsCountinTablePage"));
@@ -37,7 +37,7 @@ public class DBApp {
 
 	public void init() {
 		try {
-			File csv = new File("./resources/metadata.csv");
+			File csv = new File("src/main/resources/metadata.csv");
 			if (csv.createNewFile()) {
 				System.out.println("The CSV file was created!!");
 			} else {
@@ -52,7 +52,7 @@ public class DBApp {
 	public void createTable(String strTableName, String strClusteringKeyColumn,
 			Hashtable<String, String> htblColNameType, Hashtable<String, String> htblColNameMin,
 			Hashtable<String, String> htblColNameMax) throws DBAppException {
-		String filePath = "./resources/metadata.csv";
+		String filePath = "src/main/resources/metadata.csv";
 		String strColName = "";
 
 		if (!tableExits(strTableName)) {
@@ -225,6 +225,8 @@ public class DBApp {
 			throws DBAppException, ClassNotFoundException, ParseException {
 		if (tableExits(strTableName)) {
 			Table t = deserializeTable(strTableName);
+//			if(t.getPageInfo().size()==0)
+//				throw new DBAppException("No more buckets to delete");
 			if (isValid(strTableName, htblColNameValue)) {
 				String myCluster = t.getClusteringKey();
 				int pageind = -1;
@@ -290,7 +292,7 @@ public class DBApp {
 																				// 3ala
 																				// tool
 		// TODO Auto-generated method stub
-		File mySerial = new File("./resources/" + t.getTableName() + "" + pageind + ".ser");
+		File mySerial = new File("src/main/resources/Data/" + t.getTableName() + "" + pageind + ".ser");
 		if (mySerial.delete())
 			System.out.println("File deleted successfully");
 		try {
@@ -299,8 +301,8 @@ public class DBApp {
 			pageInfoVector.remove(pageind);
 			for (int i = pageind; i < pageInfoVector.size(); i++) {
 				int temp = i + 1;
-				oldFile = new File("./resources/" + t.getTableName() + "" + temp + ".ser");
-				newFile = new File("./resources/" + t.getTableName() + "" + i + ".ser");
+				oldFile = new File("src/main/resources/Data/" + t.getTableName() + "" + temp + ".ser");
+				newFile = new File("src/main/resources/Data/" + t.getTableName() + "" + i + ".ser");
 				((PageInfo) pageInfoVector.get(i)).setPageName(t.getTableName() + "" + i);
 				if (oldFile.renameTo(newFile)) {
 					System.out.println("File renamed successfully");
@@ -423,7 +425,7 @@ public class DBApp {
 	//
 	private boolean tableExits(String strTableName) throws DBAppException {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader("./resources/metadata.csv"));
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 			String line = br.readLine();
 			while (line != null) {
 				String[] x = line.split(",");
@@ -444,7 +446,7 @@ public class DBApp {
 	private boolean isValid(String strTableName, Hashtable<String, Object> htblColNameValue)
 			throws DBAppException, ParseException {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader("./resources/metadata.csv"));
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 			String line = br.readLine();
 			Hashtable<String, String[]> tableInfo = new Hashtable<String, String[]>();
 			String ClustKey = "";
@@ -472,9 +474,9 @@ public class DBApp {
 					break;
 				}
 			}
-			if (!ClustKeyfound) {
-				throw new DBAppException("You have to insert Clustering Key");
-			}
+//			if (!ClustKeyfound) {
+//				throw new DBAppException("You have to insert Clustering Key");
+//			}			seif
 			boolean flag = true;
 
 			for (String key : htblColNameValue.keySet()) {
@@ -566,7 +568,7 @@ public class DBApp {
 
 	public static void serializePage(Page p, String name) {
 		try {
-			FileOutputStream fileOut = new FileOutputStream("./resources/" + name + ".ser", false);
+			FileOutputStream fileOut = new FileOutputStream("src/main/resources/Data/" + name + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(p);
 			out.close();
@@ -579,7 +581,7 @@ public class DBApp {
 
 	public static Page deserializePage(String name) throws ClassNotFoundException {
 		try {
-			FileInputStream fileIn = new FileInputStream("./resources/" + name + ".ser");
+			FileInputStream fileIn = new FileInputStream("src/main/resources/Data/" + name + ".ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			Page p = (Page) in.readObject();
 			in.close();
@@ -593,7 +595,7 @@ public class DBApp {
 
 	public static void serializeTable(Table t, String name) {
 		try {
-			FileOutputStream fileOut = new FileOutputStream("./resources/" + name + ".ser", false);
+			FileOutputStream fileOut = new FileOutputStream("src/main/resources/Data/" + name + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(t);
 			out.close();
@@ -607,7 +609,7 @@ public class DBApp {
 
 	public static Table deserializeTable(String name) throws ClassNotFoundException {
 		try {
-			FileInputStream fileIn = new FileInputStream("./resources/" + name + ".ser");
+			FileInputStream fileIn = new FileInputStream("src/main/resources/Data/" + name + ".ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			Table table = (Table) in.readObject();
 			in.close();
