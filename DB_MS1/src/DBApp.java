@@ -29,8 +29,7 @@ public class DBApp {
 		String fileName = "./resources/DBApp.config";
 		try (FileInputStream fis = new FileInputStream(fileName)) {
 			prop.load(fis);
-			return Integer.parseInt(prop
-					.getProperty("MaximumRowsCountinTablePage"));
+			return Integer.parseInt(prop.getProperty("MaximumRowsCountinTablePage"));
 		} catch (Exception ex) {
 			return -1;
 		}
@@ -51,8 +50,7 @@ public class DBApp {
 	}
 
 	public void createTable(String strTableName, String strClusteringKeyColumn,
-			Hashtable<String, String> htblColNameType,
-			Hashtable<String, String> htblColNameMin,
+			Hashtable<String, String> htblColNameType, Hashtable<String, String> htblColNameMin,
 			Hashtable<String, String> htblColNameMax) throws DBAppException {
 		String filePath = "./resources/metadata.csv";
 		String strColName = "";
@@ -79,8 +77,8 @@ public class DBApp {
 					writer.append("\n");
 				}
 				writer.close();
-				Table myTable = new Table(strTableName, strClusteringKeyColumn,
-						htblColNameType, htblColNameMin, htblColNameMax);
+				Table myTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType, htblColNameMin,
+						htblColNameMax);
 				allTable.add(myTable);
 				System.out.println("Table created successfully!");
 				serializeTable(myTable, strTableName);
@@ -94,9 +92,8 @@ public class DBApp {
 
 	}
 
-	public void insertIntoTable(String strTableName,
-			Hashtable<String, Object> htblColNameValue) throws DBAppException,
-			IOException, ParseException, ClassNotFoundException {
+	public void insertIntoTable(String strTableName, Hashtable<String, Object> htblColNameValue)
+			throws DBAppException, IOException, ParseException, ClassNotFoundException {
 		if (tableExits(strTableName)) {
 
 			// law mafesh Page
@@ -109,8 +106,7 @@ public class DBApp {
 
 					page.add(tuple);
 					String PageName = t.getTableName() + "0";
-					PageInfo pageinfo = new PageInfo(PageName, 0, clustKey,
-							clustKey);
+					PageInfo pageinfo = new PageInfo(PageName, 0, clustKey, clustKey);
 					t.getPageInfo().add(pageinfo);
 					t.setCurrentMaxId(t.getCurrentMaxId() + 1);
 					serializePage(page, PageName);
@@ -136,88 +132,63 @@ public class DBApp {
 
 					try {
 						Vector pageInfoVector = t.getPageInfo();
-						String pagename = ((PageInfo) (pageInfoVector
-								.get(pageind))).getPageName();
+						String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 						Page page = deserializePage(pagename);
 						Tuple tuple = new Tuple(clustKey, htblColNameValue);
 						if (page.contains2(tuple)) {
-							throw new DBAppException(
-									"Clustering Key already exists");
+							throw new DBAppException("Clustering Key already exists");
 						} else {
 
 							if (page.size() < maxnoOfRows) {
 								page.add(tuple);
 								Collections.sort(page);
-								((PageInfo) pageInfoVector.get(pageind))
-										.setMax(getMaxInPage(page));
-								((PageInfo) pageInfoVector.get(pageind))
-										.setMin(getMinInPage(page));
-								serializePage(page, t.getTableName() + ""
-										+ pageind);
+								((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
+								((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
+								serializePage(page, t.getTableName() + "" + pageind);
 								serializeTable(t, t.getTableName());
 								return;
 							} else {// law fel nos
 								page.add(tuple);
 								Collections.sort(page);
-								Tuple newtup = (Tuple) page
-										.remove(page.size() - 1);
-								((PageInfo) pageInfoVector.get(pageind))
-										.setMax(getMaxInPage(page));
-								((PageInfo) pageInfoVector.get(pageind))
-										.setMin(getMinInPage(page));
-								serializePage(page, t.getTableName() + ""
-										+ pageind);
+								Tuple newtup = (Tuple) page.remove(page.size() - 1);
+								((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
+								((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
+								serializePage(page, t.getTableName() + "" + pageind);
 								int ind = pageind + 1;
 								while (true) {
 									if (ind > t.getCurrentMaxId()) {// new page
 																	// fel a5er
 										Page newPage = new Page();
-										PageInfo pi = new PageInfo(
-												t.getTableName() + "" + ind,
-												ind, newtup.Clusteringkey,
-												newtup.Clusteringkey);
+										PageInfo pi = new PageInfo(t.getTableName() + "" + ind, ind,
+												newtup.Clusteringkey, newtup.Clusteringkey);
 
 										pageInfoVector.add(pi);
 										newPage.add(newtup);
 										Collections.sort(newPage);
 
-										serializePage(newPage, t.getTableName()
-												+ "" + ind);
+										serializePage(newPage, t.getTableName() + "" + ind);
 										t.setCurrentMaxId(t.getCurrentMaxId() + 1);
 										break;
 									} else {// lesa fel nos
 										try {
-											Page nextpage = deserializePage(((PageInfo) (pageInfoVector
-													.get(ind))).getPageName());
+											Page nextpage = deserializePage(
+													((PageInfo) (pageInfoVector.get(ind))).getPageName());
 
 											if (nextpage.size() < maxnoOfRows) {
 												nextpage.add(newtup);
 												Collections.sort(nextpage);
-												((PageInfo) pageInfoVector
-														.get(ind))
-														.setMax(getMaxInPage(page));
-												((PageInfo) pageInfoVector
-														.get(ind))
-														.setMin(getMinInPage(page));
-												serializePage(nextpage,
-														t.getTableName() + ""
-																+ ind);
+												((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(page));
+												((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(page));
+												serializePage(nextpage, t.getTableName() + "" + ind);
 												break;
 
 											} else {
 												nextpage.add(newtup);
 												Collections.sort(nextpage);
-												newtup = (Tuple) nextpage
-														.remove(nextpage.size() - 1);
-												((PageInfo) pageInfoVector
-														.get(ind))
-														.setMax(getMaxInPage(nextpage));
-												((PageInfo) pageInfoVector
-														.get(ind))
-														.setMin(getMinInPage(nextpage));
-												serializePage(nextpage,
-														t.getTableName() + ""
-																+ ind);
+												newtup = (Tuple) nextpage.remove(nextpage.size() - 1);
+												((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(nextpage));
+												((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(nextpage));
+												serializePage(nextpage, t.getTableName() + "" + ind);
 												ind = ind + 1;
 											}
 										} catch (ClassNotFoundException e) {
@@ -240,7 +211,6 @@ public class DBApp {
 				throw new DBAppException("Invalid Data");
 			}
 
-
 		} else {
 			throw new DBAppException("Table not found");
 		}
@@ -251,16 +221,14 @@ public class DBApp {
 
 	}
 
-	public void deleteFromTable(String strTableName,
-			Hashtable<String, Object> htblColNameValue) throws DBAppException,
-			ClassNotFoundException, ParseException {
+	public void deleteFromTable(String strTableName, Hashtable<String, Object> htblColNameValue)
+			throws DBAppException, ClassNotFoundException, ParseException {
 		if (tableExits(strTableName)) {
 			Table t = deserializeTable(strTableName);
 			if (isValid(strTableName, htblColNameValue)) {
 				String myCluster = t.getClusteringKey();
 				int pageind = -1;
-				Tuple myTuple = new Tuple(t.getClusteringKey(),
-						htblColNameValue);
+				Tuple myTuple = new Tuple(t.getClusteringKey(), htblColNameValue);
 				if (htblColNameValue.containsKey(myCluster)) {
 					System.out.println("was here");
 					Object myClusterType = htblColNameValue.get(myCluster);
@@ -277,32 +245,30 @@ public class DBApp {
 						pageind = binarySearchDate(t, (Date) myClusterType);
 					}
 					Vector pageInfoVector = t.getPageInfo();
-					String pagename = ((PageInfo) (pageInfoVector.get(pageind)))
-							.getPageName();
-					Page page = deserializePage(pagename);
+					if (pageInfoVector.size() != 0) {
+						String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
+						Page page = deserializePage(pagename);
 
-					if (page.contains(myTuple)) {
-						System.out.println("was here1");
-						page.remove(myTuple);
-						if (page.size() == 0) {
-							deletingFiles(pageind, pageInfoVector, t);
-						} else {
+						if (page.contains(myTuple)) {
+							System.out.println("was here1");
+							page.remove(myTuple);
+							if (page.size() == 0) {
+								deletingFiles(pageind, pageInfoVector, t);
+							} else {
 
-							Object max = getMaxInPage(page);
-							Object min = getMinInPage(page);
-							((PageInfo) pageInfoVector.get(pageind))
-									.setMax(max);
-							((PageInfo) pageInfoVector.get(pageind))
-									.setMin(min);
+								Object max = getMaxInPage(page);
+								Object min = getMinInPage(page);
+								((PageInfo) pageInfoVector.get(pageind)).setMax(max);
+								((PageInfo) pageInfoVector.get(pageind)).setMin(min);
 
-							serializePage(page, t.getTableName() + "" + pageind);
+								serializePage(page, t.getTableName() + "" + pageind);
+							}
 						}
-					}
 
+					}
 				} else {
 					Vector pageInfoVector = t.getPageInfo();
-					removeFromAllPages(pageInfoVector, myTuple, 0, t,
-							htblColNameValue);
+					removeFromAllPages(pageInfoVector, myTuple, 0, t, htblColNameValue);
 				}
 				serializeTable(t, strTableName);
 			} else {
@@ -324,8 +290,7 @@ public class DBApp {
 																				// 3ala
 																				// tool
 		// TODO Auto-generated method stub
-		File mySerial = new File("./resources/" + t.getTableName() + ""
-				+ pageind + ".ser");
+		File mySerial = new File("./resources/" + t.getTableName() + "" + pageind + ".ser");
 		if (mySerial.delete())
 			System.out.println("File deleted successfully");
 		try {
@@ -334,12 +299,9 @@ public class DBApp {
 			pageInfoVector.remove(pageind);
 			for (int i = pageind; i < pageInfoVector.size(); i++) {
 				int temp = i + 1;
-				oldFile = new File("./resources/" + t.getTableName() + ""
-						+ temp + ".ser");
-				newFile = new File("./resources/" + t.getTableName() + "" + i
-						+ ".ser");
-				((PageInfo) pageInfoVector.get(i)).setPageName(t.getTableName()
-						+ "" + i);
+				oldFile = new File("./resources/" + t.getTableName() + "" + temp + ".ser");
+				newFile = new File("./resources/" + t.getTableName() + "" + i + ".ser");
+				((PageInfo) pageInfoVector.get(i)).setPageName(t.getTableName() + "" + i);
 				if (oldFile.renameTo(newFile)) {
 					System.out.println("File renamed successfully");
 				} else {
@@ -353,8 +315,7 @@ public class DBApp {
 
 	// 3ayez awel lma 2ms7 row mn page 2geeb mn elmin mn elpage eltanya w 27otha
 	// fel page ely ana wa2ef feeha
-	private void removeFromAllPages(Vector pageInfoVector, Tuple myTuple,
-			int i, Table t, Hashtable htblColNameValue)
+	private void removeFromAllPages(Vector pageInfoVector, Tuple myTuple, int i, Table t, Hashtable htblColNameValue)
 			throws ClassNotFoundException {
 		// TODO Auto-generated method stub
 		if (pageInfoVector.size() == i)
@@ -371,8 +332,7 @@ public class DBApp {
 			((PageInfo) pageInfoVector.get(i)).setMax(max);
 			((PageInfo) pageInfoVector.get(i)).setMin(min);
 			serializePage(page, pagename);
-			removeFromAllPages(pageInfoVector, myTuple, ++i, t,
-					htblColNameValue);
+			removeFromAllPages(pageInfoVector, myTuple, ++i, t, htblColNameValue);
 		}
 	}
 
@@ -463,8 +423,7 @@ public class DBApp {
 	//
 	private boolean tableExits(String strTableName) throws DBAppException {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(
-					"./resources/metadata.csv"));
+			BufferedReader br = new BufferedReader(new FileReader("./resources/metadata.csv"));
 			String line = br.readLine();
 			while (line != null) {
 				String[] x = line.split(",");
@@ -482,12 +441,10 @@ public class DBApp {
 		return false;
 	}
 
-	private boolean isValid(String strTableName,
-			Hashtable<String, Object> htblColNameValue) throws DBAppException,
-			ParseException {
+	private boolean isValid(String strTableName, Hashtable<String, Object> htblColNameValue)
+			throws DBAppException, ParseException {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(
-					"./resources/metadata.csv"));
+			BufferedReader br = new BufferedReader(new FileReader("./resources/metadata.csv"));
 			String line = br.readLine();
 			Hashtable<String, String[]> tableInfo = new Hashtable<String, String[]>();
 			String ClustKey = "";
@@ -530,10 +487,8 @@ public class DBApp {
 				switch (ogNameType) {
 				case "java.lang.Integer": {
 					if (compareNameType instanceof java.lang.Integer
-							&& Integer.parseInt(tableInfo.get(key)[1]) <= (int) htblColNameValue
-									.get(key)
-							&& Integer.parseInt(tableInfo.get(key)[2]) >= (int) htblColNameValue
-									.get(key)) {
+							&& Integer.parseInt(tableInfo.get(key)[1]) <= (int) htblColNameValue.get(key)
+							&& Integer.parseInt(tableInfo.get(key)[2]) >= (int) htblColNameValue.get(key)) {
 						flag = true;
 						continue;
 					} else {
@@ -544,26 +499,23 @@ public class DBApp {
 				case "java.lang.String": {
 
 					if (compareNameType instanceof java.lang.String
-							&& tableInfo.get(key)[1].compareTo(htblColNameValue
-									.get(key).toString()) <= 0
-							&& tableInfo.get(key)[2].compareTo(htblColNameValue
-									.get(key).toString()) >= 0) {
+							&& tableInfo.get(key)[1].compareTo(htblColNameValue.get(key).toString()) <= 0
+							&& tableInfo.get(key)[2].compareTo(htblColNameValue.get(key).toString()) >= 0) {
 						flag = true;
 
 						continue;
 
-					} else{
+					} else {
 						System.out.println("string");
 
 						return false;
-					}}
+					}
+				}
 				case "java.lang.Double": {
 
 					if (compareNameType instanceof java.lang.Double
-							&& Double.parseDouble(tableInfo.get(key)[1]) <= (double) htblColNameValue
-									.get(key)
-							&& Double.parseDouble(tableInfo.get(key)[2]) >= (double) htblColNameValue
-									.get(key)) {
+							&& Double.parseDouble(tableInfo.get(key)[1]) <= (double) htblColNameValue.get(key)
+							&& Double.parseDouble(tableInfo.get(key)[2]) >= (double) htblColNameValue.get(key)) {
 						flag = true;
 
 						continue;
@@ -579,15 +531,13 @@ public class DBApp {
 					System.out.println("here date" + compareNameType);
 
 					if (compareNameType instanceof java.util.Date) {
-						//String currDate1 = htblColNameValue.get(key).toString();
-						//Date currDate = new SimpleDateFormat("YYYY-MM-DD")
-						//		.parse(currDate1);
-						Date currDate=(Date)compareNameType;
-						Date minDate = new SimpleDateFormat("YYYY-MM-DD")
-								.parse(tableInfo.get(key)[1]);
-						Date maxDate = new SimpleDateFormat("YYYY-MM-DD")
-								.parse(tableInfo.get(key)[2]);
-					//	System.out.println("here date" + currDate);
+						// String currDate1 = htblColNameValue.get(key).toString();
+						// Date currDate = new SimpleDateFormat("YYYY-MM-DD")
+						// .parse(currDate1);
+						Date currDate = (Date) compareNameType;
+						Date minDate = new SimpleDateFormat("YYYY-MM-DD").parse(tableInfo.get(key)[1]);
+						Date maxDate = new SimpleDateFormat("YYYY-MM-DD").parse(tableInfo.get(key)[2]);
+						// System.out.println("here date" + currDate);
 
 						if (currDate.after(minDate) && currDate.before(maxDate)) {
 							flag = true;
@@ -616,8 +566,7 @@ public class DBApp {
 
 	public static void serializePage(Page p, String name) {
 		try {
-			FileOutputStream fileOut = new FileOutputStream("./resources/"
-					+ name + ".ser", false);
+			FileOutputStream fileOut = new FileOutputStream("./resources/" + name + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(p);
 			out.close();
@@ -628,11 +577,9 @@ public class DBApp {
 		}
 	}
 
-	public static Page deserializePage(String name)
-			throws ClassNotFoundException {
+	public static Page deserializePage(String name) throws ClassNotFoundException {
 		try {
-			FileInputStream fileIn = new FileInputStream("./resources/" + name
-					+ ".ser");
+			FileInputStream fileIn = new FileInputStream("./resources/" + name + ".ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			Page p = (Page) in.readObject();
 			in.close();
@@ -646,8 +593,7 @@ public class DBApp {
 
 	public static void serializeTable(Table t, String name) {
 		try {
-			FileOutputStream fileOut = new FileOutputStream("./resources/"
-					+ name + ".ser", false);
+			FileOutputStream fileOut = new FileOutputStream("./resources/" + name + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(t);
 			out.close();
@@ -659,11 +605,9 @@ public class DBApp {
 
 	}
 
-	public static Table deserializeTable(String name)
-			throws ClassNotFoundException {
+	public static Table deserializeTable(String name) throws ClassNotFoundException {
 		try {
-			FileInputStream fileIn = new FileInputStream("./resources/" + name
-					+ ".ser");
+			FileInputStream fileIn = new FileInputStream("./resources/" + name + ".ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			Table table = (Table) in.readObject();
 			in.close();
@@ -686,14 +630,12 @@ public class DBApp {
 			mid = (high + low) / 2;
 			System.out.println(mid);
 			PageInfo pi = (PageInfo) (pageInfoVector.get(mid));
-			// System.out.println("PIIII  " + pi.getMax() + " " + pi.getMin() +
+			// System.out.println("PIIII " + pi.getMax() + " " + pi.getMin() +
 			// " " + pi.getPageName() + " " + pi.getId());
-			if (ClustKey < ((Integer) ((PageInfo) (pageInfoVector.get(mid)))
-					.getMin())) {
+			if (ClustKey < ((Integer) ((PageInfo) (pageInfoVector.get(mid))).getMin())) {
 				high = mid - 1;
 			} else {
-				if (ClustKey > ((Integer) ((PageInfo) (pageInfoVector.get(mid)))
-						.getMax())) {
+				if (ClustKey > ((Integer) ((PageInfo) (pageInfoVector.get(mid))).getMax())) {
 					low = mid + 1;
 				} else {
 					break;
@@ -704,8 +646,7 @@ public class DBApp {
 
 	}
 
-	private static int binarySearchDate(Table t, Date ClustKey)
-			throws ParseException {
+	private static int binarySearchDate(Table t, Date ClustKey) throws ParseException {
 		Vector pageInfoVector = t.getPageInfo();
 		int low = 0;
 		int high = pageInfoVector.size() - 1;
@@ -713,11 +654,9 @@ public class DBApp {
 		while (low <= high) {
 
 			Date minDate = new SimpleDateFormat("YYYY-MM-DD")
-					.parse((((PageInfo) (pageInfoVector.get(mid))).getMin())
-							.toString());
+					.parse((((PageInfo) (pageInfoVector.get(mid))).getMin()).toString());
 			Date maxDate = new SimpleDateFormat("YYYY-MM-DD")
-					.parse((((PageInfo) (pageInfoVector.get(mid))).getMax())
-							.toString());
+					.parse((((PageInfo) (pageInfoVector.get(mid))).getMax()).toString());
 			mid = (high + low) / 2;
 			if (ClustKey.before(minDate)) {
 				high = mid - 1;
@@ -741,12 +680,10 @@ public class DBApp {
 		while (low <= high) {
 
 			mid = (high + low) / 2;
-			if (ClustKey.compareTo((((PageInfo) (pageInfoVector.get(mid)))
-					.getMin()).toString()) < 0) {
+			if (ClustKey.compareTo((((PageInfo) (pageInfoVector.get(mid))).getMin()).toString()) < 0) {
 				high = mid - 1;
 			} else {
-				if (ClustKey.compareTo((((PageInfo) (pageInfoVector.get(mid)))
-						.getMin()).toString()) > 0) {
+				if (ClustKey.compareTo((((PageInfo) (pageInfoVector.get(mid))).getMin()).toString()) > 0) {
 					low = mid + 1;
 				} else {
 					break;
@@ -765,12 +702,10 @@ public class DBApp {
 		while (low <= high) {
 
 			mid = (high + low) / 2;
-			if (ClustKey < ((Double) ((PageInfo) (pageInfoVector.get(mid)))
-					.getMin())) {
+			if (ClustKey < ((Double) ((PageInfo) (pageInfoVector.get(mid))).getMin())) {
 				high = mid - 1;
 			} else {
-				if (ClustKey > ((Double) ((PageInfo) (pageInfoVector.get(mid)))
-						.getMax())) {
+				if (ClustKey > ((Double) ((PageInfo) (pageInfoVector.get(mid))).getMax())) {
 					low = mid + 1;
 				} else {
 					break;
@@ -805,15 +740,13 @@ public class DBApp {
 		try {
 			Table t = deserializeTable(tableName);
 			for (int i = 0; i < t.getPageInfo().size(); i++) {
-				String pagename = ((PageInfo) ((t.getPageInfo()).get(i)))
-						.getPageName();
+				String pagename = ((PageInfo) ((t.getPageInfo()).get(i))).getPageName();
 				Page p = deserializePage(pagename);
 				System.out.println(i + " " + pagename);
 				for (int j = 0; j < p.size(); j++) {
 					Tuple tup = (Tuple) p.get(j);
 					for (String key : tup.record.keySet()) {
-						System.out.println("Col : " + key + "\t\t Value : "
-								+ tup.record.get(key).toString());
+						System.out.println("Col : " + key + "\t\t Value : " + tup.record.get(key).toString());
 					}
 
 				}
@@ -826,8 +759,7 @@ public class DBApp {
 	}
 
 	// public static Tuple
-	public static void main(String[] args) throws IOException,
-			ClassNotFoundException, DBAppException, ParseException {
+	public static void main(String[] args) throws IOException, ClassNotFoundException, DBAppException, ParseException {
 
 	}
 }
