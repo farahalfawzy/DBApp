@@ -25,6 +25,15 @@ public class Page extends Vector<Tuple> implements Serializable {
 		}
 		return false;
 	}
+	public boolean containsKey(	Object clustKey) {
+		for(int i=0;i<this.size();i++) {
+			Tuple curTuple=(Tuple) this.get(i);
+			if(curTuple.Clusteringkey.equals(clustKey)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	@Override
 	public boolean remove(Object o) {
 		boolean flag = false;
