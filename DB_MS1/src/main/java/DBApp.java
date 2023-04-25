@@ -28,6 +28,7 @@ public class DBApp {
 	private static int getMaxRows() {
 		Properties prop = new Properties();
 		String fileName = "src/main/resources/DBApp.config";
+		System.out.println("here");
 		try (FileInputStream fis = new FileInputStream(fileName)) {
 			prop.load(fis);
 			return Integer.parseInt(prop.getProperty("MaximumRowsCountinTablePage"));
@@ -36,7 +37,7 @@ public class DBApp {
 		}
 	}
 
-	public void init() {
+	public void init() {   //throw
 		try {
 			File csv = new File("src/main/resources/metadata.csv");
 			if (csv.createNewFile()) {
@@ -85,10 +86,10 @@ public class DBApp {
 				serializeTable(myTable, strTableName);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+			//	e.printStackTrace();
 			}
 		} else {
-			throw new DBAppException("Already exists!");
+			throw new DBAppException("Tabble Already exists!");
 		}
 
 	}
@@ -129,7 +130,6 @@ public class DBApp {
 						System.out.println("was here date");
 						pageind = binarySearchDate(t, (Date) clustKey);
 					}
-					System.out.println("llc   " + pageind);
 
 					try {
 						Vector pageInfoVector = t.getPageInfo();
@@ -205,7 +205,6 @@ public class DBApp {
 				}
 
 				// check if page is full
-				// insert ya farah <3//shokrannn
 				serializeTable(t, t.getTableName());
 
 			} else {
@@ -287,14 +286,8 @@ public class DBApp {
 		}
 	}
 
-	private void deletingFiles(int pageind, Vector pageInfoVector, Table t) { // 3lshan
-																				// lw
-																				// page
-																				// kolah
-																				// dups
-																				// yms7ha
-																				// 3ala
-																				// tool
+	private void deletingFiles(int pageind, Vector pageInfoVector, Table t) { // 3lshan lw page kolah dups yms7ha 3ala tool
+																			
 		// TODO Auto-generated method stub
 		File mySerial = new File("src/main/resources/Data/" + t.getTableName() + "" + pageind + ".ser");
 		if (mySerial.delete())
@@ -342,91 +335,6 @@ public class DBApp {
 		}
 	}
 
-	// private boolean isValid(Table table, Hashtable<String, Object>
-	// htblColNameValue)
-	// throws ParseException, DBAppException {
-	// Hashtable<String, String> htdlColNameType = table.getColNameType();
-	// Hashtable<String, String> htdlColNameMin = table.getColNameMin();
-	// Hashtable<String, String> htdlColNameMax = table.getColNameMax();
-	// boolean flag = true;
-	// boolean flag2 = false;
-	// for (String key : htblColNameValue.keySet()) {
-	// if (key.equals(table.getClusteringKey())) {
-	// flag2 = true;
-	// break;
-	// }
-	// }
-	// // if(!flag2) {
-	// // throw new DBAppException("Clustering Key already existsss");
-	// // }
-	// for (String key : htblColNameValue.keySet()) {
-	// String ogNameType = htdlColNameType.get(key);
-	// Object compareNameType = htblColNameValue.get(key);
-	// switch (ogNameType) {
-	// case "java.lang.Integer": {
-	// if (compareNameType instanceof java.lang.Integer
-	// && Integer.parseInt(htdlColNameMin.get(key)) < (int)
-	// htblColNameValue.get(key)
-	// && Integer.parseInt(htdlColNameMax.get(key)) > (int)
-	// htblColNameValue.get(key)) {
-	// flag = true;
-	// continue;
-	// } else
-	// return false;
-	// }
-	// case "java.lang.String": {
-	//
-	// if (compareNameType instanceof java.lang.String
-	// &&
-	// htdlColNameMin.get(key).compareTo(htblColNameValue.get(key).toString())
-	// <= 0
-	// &&
-	// htdlColNameMax.get(key).compareTo(htblColNameValue.get(key).toString())
-	// >= 0) {
-	// flag = true;
-	// continue;
-	//
-	// } else
-	// return false;
-	// }
-	// case "java.lang.Double": {
-	//
-	// if (compareNameType instanceof java.lang.Double
-	// && Double.parseDouble(htdlColNameMin.get(key)) < (double)
-	// htblColNameValue.get(key)
-	// && Double.parseDouble(htdlColNameMax.get(key)) > (double)
-	// htblColNameValue.get(key)) {
-	// flag = true;
-	// continue;
-	// }
-	//
-	// else
-	// return false;
-	// }
-	// case "java.util.Date": {
-	// System.out.println("here date" + compareNameType);
-	//
-	// if (compareNameType instanceof java.util.Date) {
-	// String currDate1 = htblColNameValue.get(key).toString();
-	// Date currDate = new SimpleDateFormat("YYYY-MM-DD").parse(currDate1);
-	// Date minDate = new
-	// SimpleDateFormat("YYYY-MM-DD").parse(htdlColNameMin.get(key));
-	// Date maxDate = new
-	// SimpleDateFormat("YYYY-MM-DD").parse(htdlColNameMax.get(key));
-	// if (currDate.after(minDate) && currDate.before(maxDate)) {
-	// flag = true;
-	// } else {
-	// return false;
-	// }
-	// } else
-	// return false;
-	// continue;
-	// }
-	// }
-	// }
-	// return true;
-	// }
-	//
 	private boolean tableExits(String strTableName) throws DBAppException {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
@@ -764,7 +672,6 @@ public class DBApp {
 		}
 	}
 
-	// public static Tuple
 	public static void main(String[] args) throws IOException, ClassNotFoundException, DBAppException, ParseException {
 
 	}

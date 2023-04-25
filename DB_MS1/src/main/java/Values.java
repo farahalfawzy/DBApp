@@ -10,43 +10,54 @@ import java.util.Hashtable;
 public class Values {
 
 	public static void main(String[] args) throws DBAppException, IOException, ParseException, ClassNotFoundException {
-//		String strTableName = "Student";
-//		DBApp dbApp = new DBApp();
-//		creating(strTableName, dbApp);
-//		
-//		inserting(dbApp);
-//		
-//		Hashtable rec = new Hashtable();
-//		rec.put("name", new String("malak"));
-//		deleting(strTableName,dbApp, rec);
-//		dbApp.getPages("Student");
+		String strTableName = "Student";
+		DBApp dbApp = new DBApp();
+		dbApp.init();;
 		
-		final DBApp dbApp = new DBApp();
-        dbApp.init();
+		creating(strTableName, dbApp);
+		
+		inserting(dbApp);
+		
+		Hashtable rec = new Hashtable();
+		rec.put("name", new String("malak"));
+		deleting(strTableName,dbApp, rec);
+		dbApp.getPages("Student");
+		rec.clear();
+//		rec.put("id", new Integer(2));
+//		rec.put("name", new String("malak"));
+//		dbApp.insertIntoTable("Student", rec);
 
-        BufferedReader pcsTable = new BufferedReader(new FileReader("src/main/resources/pcs_table.csv"));
-        String record;
-        Hashtable<String, Object> row = new Hashtable<>();
-        int c = 0;
-        int finalLine = 1;
-        while ((record = pcsTable.readLine()) != null && c <= finalLine) {
-            if(c == finalLine) {
-                String[] fields = record.split(",");
-
-                row.put("pc_id", Integer.parseInt(fields[0].trim()));
-                row.put("student_id", fields[1].trim());
-            }
-            c++;
-        }
-
-
-        String table = "pcs";
-        dbApp.deleteFromTable(table, row);
+		
+//		
+		dbApp.getPages("Student");
+	
+//		final DBApp dbApp = new DBApp();
+//        dbApp.init();
+//
+//        BufferedReader pcsTable = new BufferedReader(new FileReader("src/main/resources/pcs_table.csv"));
+//        String record;
+//        Hashtable<String, Object> row = new Hashtable<>();
+//        int c = 0;
+//        int finalLine = 1;
+//        while ((record = pcsTable.readLine()) != null && c <= finalLine) {
+//            if(c == finalLine) {
+//                String[] fields = record.split(",");
+//
+//                row.put("pc_id", Integer.parseInt(fields[0].trim()));
+//                row.put("student_id", fields[1].trim());
+//            }
+//            c++;
+//        }
+//
+//
+//        String table = "pcs";
+//        dbApp.deleteFromTable(table, row);
 	}
 
 
 	private static void deleting(String strTableName, DBApp dbApp,Hashtable rec) throws ClassNotFoundException, DBAppException, ParseException {
 		// TODO Auto-generated method stub
+		
 		dbApp.deleteFromTable(strTableName,rec);
 		dbApp.getPages("Student");
 	}
@@ -56,7 +67,7 @@ public class Values {
 		// TODO Auto-generated method stub
 		Hashtable rec = new Hashtable();
 		rec.put("id", new Integer(5));
-		rec.put("name", new String("farah"));
+		rec.put("name", new String("malak"));
 				
 		dbApp.getPages("Student");
 		dbApp.insertIntoTable("Student", rec);
@@ -69,28 +80,28 @@ public class Values {
 		rec.clear();
 
 		rec.put("id", new Integer(6));
-		rec.put("name", new String("paula"));
+		rec.put("name", new String("malak"));
 		dbApp.insertIntoTable("Student", rec);
 
 		rec.put("id", new Integer(3));
-		rec.put("name", new String("seif"));
+		rec.put("name", new String("malak"));
 		dbApp.insertIntoTable("Student", rec);
 
 		rec.clear();
 
-		rec.put("name", new String("tony"));
+		rec.put("name", new String("malak"));
 		rec.put("id", new Integer(12));
 		dbApp.insertIntoTable("Student", rec);
 		
 		rec.clear();
 		
 		rec.put("id", new Integer(1));
-		rec.put("name", new String("Lolat"));
+		rec.put("name", new String("malak"));
 		rec.put("Date of Birth", new Date(2002,9,26));
 			dbApp.insertIntoTable("Student", rec);
 			
 //			
-//			dbApp.getPages("Student");
+			dbApp.getPages("Student");
 		
 
 
@@ -99,7 +110,7 @@ public class Values {
 	}
 
 
-	private static void creating(String strTableName,DBApp dbApp) {
+	private static void creating(String strTableName,DBApp dbApp) throws DBAppException {
 		
 //		Calendar calendar = Calendar.getInstance();
 //		calendar.set(Calendar.YEAR, 1974);
@@ -130,13 +141,12 @@ public class Values {
 		htblColNameMax.put("name", "zzzzzzzzz");
 		htblColNameMax.put("Date of Birth", "20222-12-31");
 		
-		dbApp.init();
-		try {
-			dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
-		} catch (DBAppException e) {
+		//dbApp.init();
+		
+		dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
+		
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	
 	}
 
 }
