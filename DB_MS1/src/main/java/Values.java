@@ -11,17 +11,15 @@ import org.junit.jupiter.api.Assertions;
 
 public class Values {
 
-	public static void main(String[] args) throws DBAppException, IOException, ParseException, ClassNotFoundException {
+	public static void main(String[] args) throws DBAppException {
 		String strTableName = "Student";
 		DBApp dbApp = new DBApp();
-		dbApp.init();
-		
-		creating(strTableName, dbApp);
-
-		//inserting(dbApp);
+//		dbApp.init();		
+//		creating(strTableName, dbApp);
+//		inserting(dbApp);
 		
 		
-//		updating(strTableName, dbApp);
+		updating(strTableName, dbApp);
 		Hashtable rec = new Hashtable();
 		rec.put("id", new Integer(60));
 		//deleting(strTableName,dbApp,rec);
@@ -42,7 +40,7 @@ public class Values {
 		Hashtable rec = new Hashtable();
 		rec.put("id", new Integer(0));
 		rec.put("name", new String("kkk"));
-		rec.put("gpa", 0.9);
+		rec.put("gpa", 0.95);
 		rec.put("Date of Birth", new Date(2015-1900,9-1,17));
 	
 		dbApp.getPages("Student");
@@ -50,7 +48,7 @@ public class Values {
 		rec.clear();
 		rec.put("id", new Integer(2));
 		rec.put("name", new String("jjjjj"));
-		rec.put("gpa", 0.9);
+		rec.put("gpa", 0.19);
 		rec.put("Date of Birth", new Date(2013-1900,9-1,17));
 		dbApp.insertIntoTable("Student", rec);
 //		dbApp.getPages("Student");
@@ -59,7 +57,7 @@ public class Values {
 
 		rec.put("id", new Integer(15));
 		rec.put("name", new String("paula"));
-		rec.put("gpa", 0.9);
+		rec.put("gpa", 2.9);
 		rec.put("Date of Birth", new Date(2005-1900,9-1,26));
 
 		dbApp.insertIntoTable("Student", rec);
@@ -67,7 +65,7 @@ public class Values {
 
 		rec.put("id", new Integer(3));
 		rec.put("name", new String("malak"));
-		rec.put("gpa", 0.9);
+		rec.put("gpa", 3.9);
 		rec.put("Date of Birth", new Date(2013-1900,11-1,26));
 
 		dbApp.insertIntoTable("Student", rec);
@@ -76,7 +74,7 @@ public class Values {
 
 		rec.put("name", new String("nameee"));
 		rec.put("id", new Integer(7));
-		rec.put("gpa", 1.9);
+		rec.put("gpa", 1.97);
 		rec.put("Date of Birth", new Date(2013-1900,10-1,26));
 
 		dbApp.insertIntoTable("Student", rec);
@@ -85,7 +83,7 @@ public class Values {
 		
 		rec.put("name", new String("nameee"));
 		rec.put("id", new Integer(8));
-		rec.put("gpa", 1.9);
+		rec.put("gpa", 1.29);
 		rec.put("Date of Birth", new Date(2022-1900,10-1,28));
 
 		dbApp.insertIntoTable("Student", rec);
@@ -93,7 +91,7 @@ public class Values {
 		rec.clear();
 		rec.put("name", new String("nameee"));
 		rec.put("id", new Integer(1));
-		rec.put("gpa", 1.9);
+		rec.put("gpa", 1.99);
 		rec.put("Date of Birth", new Date(2019-1900,10-1,26));
 
 		dbApp.insertIntoTable("Student", rec);
@@ -101,7 +99,7 @@ public class Values {
 		rec.clear();
 		rec.put("name", new String("nameee"));
 		rec.put("id", new Integer(60));
-		rec.put("gpa", 1.9);
+		rec.put("gpa", 1.26);
 		rec.put("Date of Birth", new Date(2012-1900,10-1,26));
 
 		dbApp.insertIntoTable("Student", rec);
@@ -149,17 +147,17 @@ public class Values {
 
 		//dbApp.init();
 		
-		dbApp.createTable(strTableName, "Date of Birth", htblColNameType, htblColNameMin, htblColNameMax);
+		dbApp.createTable(strTableName, "gpa", htblColNameType, htblColNameMin, htblColNameMax);
 
 	
 	}
-	public static void updating (String strTableName,DBApp dbApp) throws ClassNotFoundException, DBAppException, IOException, ParseException {
+	public static void updating (String strTableName,DBApp dbApp) throws DBAppException {
 		Hashtable rec = new Hashtable();
 
 //		rec.put("id", new Integer(12));
 		
 		rec.put("name", "lalala");
-		dbApp.updateTable("Student","0.9", rec);
+		dbApp.updateTable("Student","3.9", rec);
 		dbApp.getPages("Student");
 	}
 

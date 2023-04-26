@@ -100,6 +100,7 @@ public class DBApp {
 	}
 
 	public void insertIntoTable(String strTableName, Hashtable<String, Object> htblColNameValue) throws DBAppException {
+		this.isDeletingMethod=false;
 		if (tableExits(strTableName)) {
 
 			if (isValid(strTableName, htblColNameValue)) {
@@ -280,6 +281,7 @@ public class DBApp {
 					Date date = new SimpleDateFormat("yyyy-MM-dd").parse(strClusteringKeyValue);
 					pageind = binarySearchDate(t, date);
 					ClustObj = date;
+					System.out.println(date);
 					break;
 				}
 				Vector pageInfoVector = t.getPageInfo();
@@ -317,14 +319,17 @@ public class DBApp {
 		} catch (DBAppException e) {
 			isDeletingMethod = false;
 			throw new DBAppException(e.toString());
-		} catch (Exception e) { // throw
-
+		}catch(ParseException e) {
+			throw new DBAppException("enter valid clustring key value");
+		}
+		catch(java.lang.NumberFormatException e) {
+			throw new DBAppException("enter valid clustring key value");
 		}
 
 	}
 
 	public void deleteFromTable(String strTableName, Hashtable<String, Object> htblColNameValue)
-			throws DBAppException, ClassNotFoundException, ParseException {
+			throws DBAppException{
 		this.isDeletingMethod = true;
 		if (tableExits(strTableName)) {
 			Table t = deserializeTable(strTableName);
@@ -419,8 +424,7 @@ public class DBApp {
 
 	// 3ayez awel lma 2ms7 row mn page 2geeb mn elmin mn elpage eltanya w 27otha
 	// fel page ely ana wa2ef feeha
-	private void removeFromAllPages(Vector pageInfoVector, Tuple myTuple, int i, Table t, Hashtable htblColNameValue)
-			throws ClassNotFoundException {
+	private void removeFromAllPages(Vector pageInfoVector, Tuple myTuple, int i, Table t, Hashtable htblColNameValue){
 		// TODO Auto-generated method stub
 		if (pageInfoVector.size() == i)
 			return;
