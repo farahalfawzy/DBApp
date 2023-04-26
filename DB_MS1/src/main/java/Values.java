@@ -14,11 +14,11 @@ public class Values {
 	public static void main(String[] args) throws DBAppException, IOException, ParseException, ClassNotFoundException {
 		String strTableName = "Student";
 		DBApp dbApp = new DBApp();
-		dbApp.init();
-		
-		creating(strTableName, dbApp);
+//		dbApp.init();
 //		
-//		inserting(dbApp);
+//		creating(strTableName, dbApp);
+//		
+		inserting(dbApp);
 		
 		
 //		updating(strTableName, dbApp);
@@ -26,7 +26,7 @@ public class Values {
 		
 		
 //		Hashtable rec = new Hashtable();
-//		rec.put("name", "fafa");
+//		rec.put("name", "paula");
 //		deleting(strTableName,dbApp,rec);
 
 	}
@@ -43,50 +43,50 @@ public class Values {
 	private static void inserting(DBApp dbApp) throws DBAppException, IOException, ParseException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		Hashtable rec = new Hashtable();
-		rec.put("id", new Integer(5));
-		rec.put("name", new String("paula"));
-		rec.put("gpa", 0.9);
-		rec.put("Date of Birth", new Date(2015-1900,9-1,17));
+		rec.put("id", new Integer(0));
+//		rec.put("name", new String("paula"));
+//		rec.put("gpa", 0.9);
+//		rec.put("Date of Birth", new Date(2015-1900,9-1,17));
 	
-		dbApp.getPages("Student");
+//		dbApp.getPages("Student");
 		dbApp.insertIntoTable("Student", rec);
-		rec.clear();
-		rec.put("id", new Integer(2));
-		rec.put("name", new String("farah"));
-		rec.put("gpa", 0.9);
-		rec.put("Date of Birth", new Date(2013-1900,9-1,17));
-
-
-		dbApp.insertIntoTable("Student", rec);
-		dbApp.getPages("Student");
-
-		rec.clear();
-
-		rec.put("id", new Integer(6));
-		rec.put("name", new String("tony"));
-		rec.put("gpa", 0.9);
-		rec.put("Date of Birth", new Date(2005-1900,9-1,26));
-
-		dbApp.insertIntoTable("Student", rec);
-		rec.clear();
-
-		rec.put("id", new Integer(3));
-		rec.put("name", new String("seif"));
-		rec.put("gpa", 0.9);
-		rec.put("Date of Birth", new Date(2013-1900,11-1,26));
-
-		dbApp.insertIntoTable("Student", rec);
-
-		rec.clear();
-
-		rec.put("name", new String("malak"));
-		rec.put("id", new Integer(12));
-		rec.put("gpa", 1.9);
-		rec.put("Date of Birth", new Date(2013-1900,10-1,26));
-
-		dbApp.insertIntoTable("Student", rec);
-		
-		rec.clear();
+//		rec.clear();
+//		rec.put("id", new Integer(2));
+//		rec.put("name", new String("paula"));
+//		rec.put("gpa", 0.9);
+//		rec.put("Date of Birth", new Date(2013-1900,9-1,17));
+//
+//
+//		dbApp.insertIntoTable("Student", rec);
+////		dbApp.getPages("Student");
+//
+//		rec.clear();
+//
+//		rec.put("id", new Integer(6));
+//		rec.put("name", new String("paula"));
+//		rec.put("gpa", 0.9);
+//		rec.put("Date of Birth", new Date(2005-1900,9-1,26));
+//
+//		dbApp.insertIntoTable("Student", rec);
+//		rec.clear();
+//
+//		rec.put("id", new Integer(3));
+//		rec.put("name", new String("paula"));
+//		rec.put("gpa", 0.9);
+//		rec.put("Date of Birth", new Date(2013-1900,11-1,26));
+//
+//		dbApp.insertIntoTable("Student", rec);
+//
+//		rec.clear();
+//
+//		rec.put("name", new String("paula"));
+//		rec.put("id", new Integer(7));
+//		rec.put("gpa", 1.9);
+//		rec.put("Date of Birth", new Date(2013-1900,10-1,26));
+//
+//		dbApp.insertIntoTable("Student", rec);
+//		
+//		rec.clear();
 		dbApp.getPages("Student");
 
 //		rec.put("id", new Integer(1));

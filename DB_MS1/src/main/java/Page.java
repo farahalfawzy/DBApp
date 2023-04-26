@@ -40,6 +40,7 @@ public class Page extends Vector<Tuple> implements Serializable {
 		for(int i=0;i<this.size();i++) {
 			if(this.get(i).equals(o)) {
 				this.remove(i);
+				i--;
 				flag=true;
 			}
 		}

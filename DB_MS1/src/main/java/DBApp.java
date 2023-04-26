@@ -213,6 +213,8 @@ public class DBApp {
 	public void updateTable(String strTableName, String strClusteringKeyValue,
 			Hashtable<String, Object> htblColNameValue) throws DBAppException {
 		try {
+			if(!tableExits(strTableName))
+				throw new DBAppException("Table does not exist");
 			isDeletingMethod = true;
 			if (isValid(strTableName, htblColNameValue)) {
 
@@ -551,7 +553,7 @@ public class DBApp {
 		}
 	}
 
-	public static void serializePage(Page p, String name) {
+	private static void serializePage(Page p, String name) {
 		try {
 			FileOutputStream fileOut = new FileOutputStream("src/main/resources/Data/" + name + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -564,7 +566,7 @@ public class DBApp {
 		}
 	}
 
-	public static Page deserializePage(String name) {
+	private static Page deserializePage(String name) {
 		try {
 			FileInputStream fileIn = new FileInputStream("src/main/resources/Data/" + name + ".ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
@@ -581,7 +583,7 @@ public class DBApp {
 		return null;
 	}
 
-	public static void serializeTable(Table t, String name) {
+	private static void serializeTable(Table t, String name) {
 		try {
 			FileOutputStream fileOut = new FileOutputStream("src/main/resources/Data/" + name + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -595,7 +597,7 @@ public class DBApp {
 
 	}
 
-	public static Table deserializeTable(String name) {
+	private static Table deserializeTable(String name) {
 		try {
 			FileInputStream fileIn = new FileInputStream("src/main/resources/Data/" + name + ".ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
@@ -704,7 +706,7 @@ public class DBApp {
 
 	}
 
-	public static Object getMinInPage(Page page) {
+	private static Object getMinInPage(Page page) {
 		Tuple min = ((Tuple) page.get(0));
 		for (int i = 0; i < page.size(); i++) {
 			if (((Tuple) page.get(i)).compareTo(min) < 0) {
@@ -714,7 +716,7 @@ public class DBApp {
 		return min.Clusteringkey;
 	}
 
-	public static Object getMaxInPage(Page page) {
+	private static Object getMaxInPage(Page page) {
 		Tuple max = ((Tuple) page.get(0));
 		for (int i = 0; i < page.size(); i++) {
 			if (((Tuple) page.get(i)).compareTo(max) > 0) {
@@ -724,7 +726,7 @@ public class DBApp {
 		return max.Clusteringkey;
 	}
 
-	public static void getPages(String tableName) { // only for testing
+	private static void getPages(String tableName) { // only for testing
 		
 			Table t = deserializeTable(tableName);
 			System.out.println("No. of pages " + (t.getCurrentMaxId() + 1));
@@ -748,7 +750,7 @@ public class DBApp {
 		
 	}
 
-	public static String getClusteringKeyType(String strTableName) {
+	private static String getClusteringKeyType(String strTableName) {
 		BufferedReader br;
 		try {
 			br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
