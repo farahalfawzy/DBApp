@@ -19,7 +19,7 @@ public class Page extends Vector<Tuple> implements Serializable {
 		for(int i=0;i<this.size();i++) {
 			Tuple curTuple=(Tuple) this.get(i);
 			if(curTuple.Clusteringkey.equals(t.Clusteringkey)) {
-				System.out.println("tuple alreadyy");
+			//	System.out.println("tuple alreadyy");
 				return true;
 			}
 		}

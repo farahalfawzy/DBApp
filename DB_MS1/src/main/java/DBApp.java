@@ -64,6 +64,8 @@ public class DBApp {
 			try {
 				writer = new FileWriter(filePath, true);
 				// header
+				writer.append("Table Name, Column Name, Column Type, ClusteringKey, IndexName,IndexType, min, max");
+				writer.append("\n");
 				for (String key : htblColNameType.keySet()) {
 					strColName = key;
 					String type = htblColNameType.get(key);
@@ -76,6 +78,8 @@ public class DBApp {
 						writer.append("True,");
 					else
 						writer.append("False,");
+					writer.append(null+",");
+					writer.append(null+",");
 					writer.append(min + ",");
 					writer.append(max + ",");
 					writer.append("\n");
@@ -95,8 +99,7 @@ public class DBApp {
 
 	}
 
-	public void insertIntoTable(String strTableName, Hashtable<String, Object> htblColNameValue)
-			throws DBAppException {
+	public void insertIntoTable(String strTableName, Hashtable<String, Object> htblColNameValue) throws DBAppException {
 		if (tableExits(strTableName)) {
 
 			if (isValid(strTableName, htblColNameValue)) {
@@ -111,24 +114,41 @@ public class DBApp {
 					PageInfo pageinfo = new PageInfo(PageName, 0, clustKey, clustKey);
 					t.getPageInfo().add(pageinfo);
 					t.setCurrentMaxId(t.getCurrentMaxId() + 1);
-					serializePage(page, PageName);
+					serializePage(t, page, PageName);
 					serializeTable(t, t.getTableName());
 					return;
 				} else {
 					int pageind = 0;
+					boolean isSmallerThanmin = false;
+					Vector pageInfoVector = t.getPageInfo();
+
 					if (clustKey instanceof java.lang.Integer) {
 						pageind = binarySearchInt(t, (Integer) clustKey);
+						if ((Integer) clustKey < (Integer) ((PageInfo) (pageInfoVector.get(pageind))).getMin()) {
+							isSmallerThanmin = true;
+						}
 					}
 					if (clustKey instanceof java.lang.String) {
 						pageind = binarySearchString(t, (String) clustKey);
+						if (((String) clustKey)
+								.compareTo((String) (((PageInfo) (pageInfoVector.get(pageind))).getMin())) < 0) {
+							isSmallerThanmin = true;
+
+						}
 					}
 					if (clustKey instanceof java.lang.Double) {
 						pageind = binarySearchDouble(t, (Double) clustKey);
+						if ((Double) clustKey < ((Double) ((PageInfo) (pageInfoVector.get(pageind))).getMin())) {
+							isSmallerThanmin = true;
+						}
 					}
 					if (clustKey instanceof java.util.Date) {
 						pageind = binarySearchDate(t, (Date) clustKey);
+						if (((Date) clustKey).before(((Date) ((PageInfo) (pageInfoVector.get(pageind))).getMin()))) {
+							isSmallerThanmin = true;
+
+						}
 					}
-					Vector pageInfoVector = t.getPageInfo();
 
 					String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 					Page page = deserializePage(pagename);
@@ -136,13 +156,29 @@ public class DBApp {
 					if (page.contains2(tuple)) {
 						throw new DBAppException("Clustering Key already exists");
 					} else {
+						if (isSmallerThanmin) {
+							if(pageind-1>-1) {
+								if(((PageInfo) (pageInfoVector.get(pageind-1))).getCount()<maxnoOfRows) {
+									serializePage(t, page, t.getTableName() + "" + pageind);
+									 pagename = ((PageInfo) (pageInfoVector.get(pageind-1))).getPageName();
+									 page = deserializePage(pagename);
+									 page.add(tuple);
+									 Collections.sort(page);
+									((PageInfo) pageInfoVector.get(pageind-1)).setMax(getMaxInPage(page));
+									((PageInfo) pageInfoVector.get(pageind-1)).setMin(getMinInPage(page));
+									serializePage(t, page, t.getTableName() + "" + (pageind-1));
+									serializeTable(t, t.getTableName());
+									return;
+								}
+							}
 
+						}
 						if (page.size() < maxnoOfRows) {
 							page.add(tuple);
 							Collections.sort(page);
 							((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
 							((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
-							serializePage(page, t.getTableName() + "" + pageind);
+							serializePage(t, page, t.getTableName() + "" + pageind);
 							serializeTable(t, t.getTableName());
 							return;
 						} else {// law fel nos
@@ -151,7 +187,7 @@ public class DBApp {
 							Tuple newtup = (Tuple) page.remove(page.size() - 1);
 							((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
 							((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
-							serializePage(page, t.getTableName() + "" + pageind);
+							serializePage(t, page, t.getTableName() + "" + pageind);
 							int ind = pageind + 1;
 							while (true) {
 
@@ -160,37 +196,36 @@ public class DBApp {
 									Page newPage = new Page();
 									PageInfo pi = new PageInfo(t.getTableName() + "" + ind, ind, newtup.Clusteringkey,
 											newtup.Clusteringkey);
-
 									pageInfoVector.add(pi);
 									newPage.add(newtup);
 									Collections.sort(newPage);
 
-									serializePage(newPage, t.getTableName() + "" + ind);
+									serializePage(t, newPage, t.getTableName() + "" + ind);
 									t.setCurrentMaxId(t.getCurrentMaxId() + 1);
 									break;
 								} else {// lesa fel nos
-									
-										Page nextpage = deserializePage(
-												((PageInfo) (pageInfoVector.get(ind))).getPageName());
 
-										if (nextpage.size() < maxnoOfRows) {
-											nextpage.add(newtup);
-											Collections.sort(nextpage);
-											((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(page));
-											((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(page));
-											serializePage(nextpage, t.getTableName() + "" + ind);
-											break;
+									Page nextpage = deserializePage(
+											((PageInfo) (pageInfoVector.get(ind))).getPageName());
 
-										} else {
-											nextpage.add(newtup);
-											Collections.sort(nextpage);
-											newtup = (Tuple) nextpage.remove(nextpage.size() - 1);
-											((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(nextpage));
-											((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(nextpage));
-											serializePage(nextpage, t.getTableName() + "" + ind);
-											ind = ind + 1;
-										}
-									
+									if (nextpage.size() < maxnoOfRows) {
+										nextpage.add(newtup);
+										Collections.sort(nextpage);
+										((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(page));
+										((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(page));
+										serializePage(t, nextpage, t.getTableName() + "" + ind);
+										break;
+
+									} else {
+										nextpage.add(newtup);
+										Collections.sort(nextpage);
+										newtup = (Tuple) nextpage.remove(nextpage.size() - 1);
+										((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(nextpage));
+										((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(nextpage));
+										serializePage(t, nextpage, t.getTableName() + "" + ind);
+										ind = ind + 1;
+									}
+
 								}
 							}
 						}
@@ -213,7 +248,7 @@ public class DBApp {
 	public void updateTable(String strTableName, String strClusteringKeyValue,
 			Hashtable<String, Object> htblColNameValue) throws DBAppException {
 		try {
-			if(!tableExits(strTableName))
+			if (!tableExits(strTableName))
 				throw new DBAppException("Table does not exist");
 			isDeletingMethod = true;
 			if (isValid(strTableName, htblColNameValue)) {
@@ -262,23 +297,25 @@ public class DBApp {
 						}
 					}
 					isDeletingMethod = false;
-					serializePage(page, strTableName + "" + pageind);
+					serializePage(t, page, strTableName + "" + pageind);
 
 					serializeTable(t, strTableName);
 				}
 
 				else {
-
+					isDeletingMethod = false;
 					throw new DBAppException("clustering key doesnt exist");
 
 				}
 
 			} else {
+				isDeletingMethod = false;
 				throw new DBAppException("invalid values");
 
 			}
 
 		} catch (DBAppException e) {
+			isDeletingMethod = false;
 			throw new DBAppException(e.toString());
 		} catch (Exception e) { // throw
 
@@ -330,7 +367,7 @@ public class DBApp {
 								((PageInfo) pageInfoVector.get(pageind)).setMax(max);
 								((PageInfo) pageInfoVector.get(pageind)).setMin(min);
 
-								serializePage(page, t.getTableName() + "" + pageind);
+								serializePage(t, page, t.getTableName() + "" + pageind);
 							}
 						}
 
@@ -398,7 +435,7 @@ public class DBApp {
 			Object min = getMinInPage(page);
 			((PageInfo) pageInfoVector.get(i)).setMax(max);
 			((PageInfo) pageInfoVector.get(i)).setMin(min);
-			serializePage(page, pagename);
+			serializePage(t, page, pagename);
 			removeFromAllPages(pageInfoVector, myTuple, ++i, t, htblColNameValue);
 		}
 	}
@@ -434,7 +471,7 @@ public class DBApp {
 			while (line != null) {
 				String[] x = line.split(",");
 				if (x[0].equals(strTableName)) {
-					String[] array = { x[2], x[4], x[5] };// {type,min,max}
+					String[] array = { x[2], x[6], x[7] };// {type,min,max}
 					tableInfo.put(x[1], array);
 					if (x[3].equals("True")) {
 						ClustKey = x[1];
@@ -553,13 +590,17 @@ public class DBApp {
 		}
 	}
 
-	private static void serializePage(Page p, String name) {
+	private static void serializePage(Table t, Page p, String name) {
 		try {
 			FileOutputStream fileOut = new FileOutputStream("src/main/resources/Data/" + name + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(p);
 			out.close();
 			fileOut.close();
+			int ind = Integer.parseInt(name.charAt(name.length() - 1) + "");
+			Vector<PageInfo> piVector = t.getPageInfo();
+			PageInfo pi = piVector.get(ind);
+			pi.setCount(p.size());
 			// System.out.println("Page is serialized successfully");
 		} catch (IOException i) {
 			i.printStackTrace();
@@ -635,11 +676,12 @@ public class DBApp {
 				}
 			}
 		}
+		//System.out.println(mid);
 		return mid;
 
 	}
 
-	private static int binarySearchDate(Table t, Date ClustKey)  {
+	private static int binarySearchDate(Table t, Date ClustKey) {
 		Vector pageInfoVector = t.getPageInfo();
 		int low = 0;
 		int high = pageInfoVector.size() - 1;
@@ -726,28 +768,28 @@ public class DBApp {
 		return max.Clusteringkey;
 	}
 
-	private static void getPages(String tableName) { // only for testing
-		
-			Table t = deserializeTable(tableName);
-			System.out.println("No. of pages " + (t.getCurrentMaxId() + 1));
-			for (int i = 0; i < t.getPageInfo().size(); i++) {
-				String pagename = ((PageInfo) ((t.getPageInfo()).get(i))).getPageName();
-				Page p = deserializePage(pagename);
-				Object min = ((PageInfo) ((t.getPageInfo()).get(i))).getMin();
-				Object max = ((PageInfo) ((t.getPageInfo()).get(i))).getMax();
-				System.out.println(i + " " + pagename + " " + min.toString() + " " + max.toString() + " " + p.size());
-				for (int j = 0; j < p.size(); j++) {
-					Tuple tup = (Tuple) p.get(j);
-					for (String key : tup.record.keySet()) {
-						System.out.println("Col : " + key + "\t\t Value : " + tup.record.get(key).toString());
-					}
+	public static void getPages(String tableName) { // only for testing
 
+		Table t = deserializeTable(tableName);
+		System.out.println("No. of pages " + (t.getCurrentMaxId() + 1));
+		for (int i = 0; i < t.getPageInfo().size(); i++) {
+			String pagename = ((PageInfo) ((t.getPageInfo()).get(i))).getPageName();
+			Page p = deserializePage(pagename);
+			Object min = ((PageInfo) ((t.getPageInfo()).get(i))).getMin();
+			Object max = ((PageInfo) ((t.getPageInfo()).get(i))).getMax();
+			System.out.println(i + " " + pagename + " " + min.toString() + " " + max.toString() + " " + p.size());
+			for (int j = 0; j < p.size(); j++) {
+				Tuple tup = (Tuple) p.get(j);
+				for (String key : tup.record.keySet()) {
+					System.out.println("Col : " + key + "\t\t Value : " + tup.record.get(key).toString());
 				}
-				serializePage(p, pagename);
+
 			}
-			serializeTable(t, tableName);
-			System.out.println("----------------------------");
-		
+			serializePage(t, p, pagename);
+		}
+		serializeTable(t, tableName);
+		System.out.println("----------------------------");
+
 	}
 
 	private static String getClusteringKeyType(String strTableName) {
@@ -785,10 +827,12 @@ public class DBApp {
 	private static boolean CanCreate(Hashtable<String, String> htblColNameType,
 			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax) throws DBAppException {
 		boolean flag = true;
+		if (!(htblColNameType.size() == htblColNameMin.size() && htblColNameMax.size() == htblColNameType.size()))
+			return false;
 		for (String key : htblColNameType.keySet()) {
 			String type = htblColNameType.get(key);
 			if (type.equals("java.util.Date")) {
-				System.out.println(type);
+				//System.out.println(type);
 				String min = htblColNameMin.get(key);
 				String max = htblColNameMax.get(key);
 				if (min == null || max == null)

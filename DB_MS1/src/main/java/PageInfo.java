@@ -5,7 +5,7 @@ public class PageInfo implements Serializable{
 	private int id;
 	private Object max;
 	private Object min;
-	//private int count;
+	private int count;
 
 	public PageInfo(String name, int id, Object max, Object min) {
 		this.PageName = name;
@@ -47,12 +47,12 @@ public class PageInfo implements Serializable{
 		this.min = min;
 	}
 
-//	public int getCount() {
-//		return count;
-//	}
-//
-//	public void setCount(int count) {
-//		this.count = count;
-//	}
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
+	}
 
 }

@@ -43,8 +43,8 @@ public class Tuple implements Comparable, Serializable {
 			return ((Double) this.Clusteringkey).compareTo((Double) tup.Clusteringkey);
 
 		}
-
-		return ((Date) this.Clusteringkey).compareTo((Date) tup.Clusteringkey);
+if(((Date) this.Clusteringkey).before((Date) tup.Clusteringkey)) return -1;
+		return 1;
 
 	}
 

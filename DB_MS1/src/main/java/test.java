@@ -41,6 +41,6 @@ public class test {
 //		Date Date = new SimpleDateFormat("yyyy-MM-dd").parse(str2);
 //		System.out.println(Date);
 		
-		System.out.println(Integer.parseInt("0"));
+		System.out.println(("a").compareTo("aa"));
 	}
 }
