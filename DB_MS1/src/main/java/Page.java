@@ -39,6 +39,8 @@ public class Page extends Vector<Tuple> implements Serializable {
 		}
 		if (clustKey instanceof java.lang.String) {
 			index = this.binarySearchString((String) clustKey);
+			if(((String) this.get(index).Clusteringkey).toLowerCase().equals(((String)t.Clusteringkey).toLowerCase()))
+				return true;
 		}
 		if (clustKey instanceof java.lang.Double) {
 			index = this.binarySearchDouble((Double) clustKey);
@@ -46,6 +48,7 @@ public class Page extends Vector<Tuple> implements Serializable {
 		if (clustKey instanceof java.util.Date) {
 			index = this.binarySearchDate((Date) clustKey);
 		}
+		//System.out.println(this.get(index).Clusteringkey.equals(t.Clusteringkey));
 		if(this.get(index).Clusteringkey.equals(t.Clusteringkey))
 				return true;
 		else
@@ -63,6 +66,7 @@ public class Page extends Vector<Tuple> implements Serializable {
 		if (clustValue instanceof java.lang.String) {
 			System.out.println("it is a string");
 			index = this.binarySearchString((String) clustValue);
+			
 		}
 		if (clustValue instanceof java.lang.Double) {
 			index = this.binarySearchDouble((Double) clustValue);
@@ -112,13 +116,35 @@ public class Page extends Vector<Tuple> implements Serializable {
 	}
 	
 	public boolean containsKey(	Object clustKey) {
-		for(int i=0;i<this.size();i++) {
-			Tuple curTuple=(Tuple) this.get(i);
-			if(curTuple.Clusteringkey.equals(clustKey)) {
-				return true;
-			}
+//		for(int i=0;i<this.size();i++) {
+//			Tuple curTuple=(Tuple) this.get(i);
+//			if(curTuple.Clusteringkey.equals(clustKey)) {
+//				return true;
+//			}
+//		}
+//		return false;
+		
+		int index=-1;
+		if (clustKey instanceof java.lang.Integer) {
+			index = this.binarySearchInt((Integer) clustKey);
 		}
-		return false;
+		if (clustKey instanceof java.lang.String) {
+			index = this.binarySearchString((String) clustKey);
+			if(((String)this.get(index).Clusteringkey).toLowerCase().equals(((String) clustKey).toLowerCase()))
+				return true;
+		else
+			return false;
+		}
+		if (clustKey instanceof java.lang.Double) {
+			index = this.binarySearchDouble((Double) clustKey);
+		}
+		if (clustKey instanceof java.util.Date) {
+			index = this.binarySearchDate((Date) clustKey);
+		}
+		if(this.get(index).Clusteringkey.equals(clustKey))
+				return true;
+		else
+			return false;
 	}
 	
 	private int binarySearchInt(int ClustKey) {
@@ -172,16 +198,17 @@ public class Page extends Vector<Tuple> implements Serializable {
 			mid = (high + low) / 2; // 0
 			Tuple midTuple = this.get(mid);
 			;
-			if (ClustKey.compareTo(midTuple.getClusteringkey().toString()) < 0) {
+			if (ClustKey.toLowerCase().compareTo(midTuple.getClusteringkey().toString().toLowerCase()) < 0) {
 				high = mid - 1;
 			} else {
-				if (ClustKey.compareTo(midTuple.getClusteringkey().toString()) > 0) {
+				if (ClustKey.toLowerCase().compareTo(midTuple.getClusteringkey().toString().toLowerCase()) > 0) {
 					low = mid + 1;
 				} else {
 					break;
 				}
 			}
 		}
+		//System.out.println(mid);
 		return mid;
 
 	}

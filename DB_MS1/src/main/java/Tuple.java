@@ -36,7 +36,7 @@ public class Tuple implements Comparable, Serializable {
 
 		}
 		if (this.Clusteringkey instanceof java.lang.String) {
-			return this.Clusteringkey.toString().compareTo(tup.Clusteringkey.toString());
+			return this.Clusteringkey.toString().toLowerCase().compareTo(tup.Clusteringkey.toString().toLowerCase());
 
 		}
 		if (this.Clusteringkey instanceof java.lang.Double) {
@@ -71,8 +71,13 @@ if(((Date) this.Clusteringkey).before((Date) tup.Clusteringkey)) return -1;
 			for (String key : other.getRecord().keySet()) {
 				Object otherValue = other.getRecord().get(key);
 				Object thisValue = this.getRecord().get(key);
+				if(otherValue instanceof java.lang.String && thisValue instanceof java.lang.String ) {
+					if (!(((String)otherValue).toLowerCase().equals(((String)thisValue).toLowerCase())))
+						return false;
+				}else {
 				if (!(otherValue.equals(thisValue)))
 					return false;
+				}
 			}
 			return true;
 		}
@@ -82,8 +87,13 @@ if(((Date) this.Clusteringkey).before((Date) tup.Clusteringkey)) return -1;
 				Object otherValue = other.getRecord().get(key);
 				Object thisValue = this.getRecord().get(key);
 				System.out.println(otherValue.toString() +" "+thisValue.toString());
+				if(otherValue instanceof java.lang.String && thisValue instanceof java.lang.String ) {
+					if (!(((String)otherValue).toLowerCase().equals(((String)thisValue).toLowerCase())))
+						return false;
+				}else {
 				if (!(otherValue.equals(thisValue)))
 					return false;
+				}
 			}
 			return true;
 		}

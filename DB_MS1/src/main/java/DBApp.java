@@ -61,6 +61,10 @@ public class DBApp {
 			if (!CanCreate(htblColNameType, htblColNameMin, htblColNameMax)) {
 				throw new DBAppException("Enter Valid Data to create table");
 			}
+			Set keys=htblColNameType.keySet();
+			if(!keys.contains(strClusteringKeyColumn)) {
+				throw new DBAppException("Enter Valid Data to create table");
+			}
 			try {
 				writer = new FileWriter(filePath, true);
 				// header
@@ -131,8 +135,8 @@ public class DBApp {
 					}
 					if (clustKey instanceof java.lang.String) {
 						pageind = binarySearchString(t, (String) clustKey);
-						if (((String) clustKey)
-								.compareTo((String) (((PageInfo) (pageInfoVector.get(pageind))).getMin())) < 0) {
+						if (((String) clustKey).toLowerCase()
+								.compareTo(((String) (((PageInfo) (pageInfoVector.get(pageind))).getMin())).toLowerCase()) < 0) {
 							isSmallerThanmin = true;
 
 						}
@@ -307,8 +311,8 @@ public class DBApp {
 
 				else {
 					isDeletingMethod = false;
-					throw new DBAppException("clustering key doesnt exist");
-
+					//throw new DBAppException("clustering key doesnt exist");
+return;
 				}
 
 			} else {
@@ -342,7 +346,7 @@ public class DBApp {
 				int pageind = -1;
 				Tuple myTuple = new Tuple(t.getClusteringKey(), htblColNameValue);
 				if (htblColNameValue.containsKey(myCluster)) {
-					// System.out.println("was here");
+					 System.out.println("was hereee");
 					Object myClusterType = htblColNameValue.get(myCluster);
 					if (myClusterType instanceof java.lang.Integer) {
 						pageind = binarySearchInt(t, (Integer) myClusterType);
@@ -356,6 +360,7 @@ public class DBApp {
 					if (myClusterType instanceof java.util.Date) {
 						pageind = binarySearchDate(t, (Date) myClusterType);
 					}
+					//System.out.println(pageind);
 					Vector pageInfoVector = t.getPageInfo();
 					if (pageInfoVector.size() != 0) {
 						String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
@@ -524,8 +529,8 @@ public class DBApp {
 				case "java.lang.String": {
 
 					if (compareNameType instanceof java.lang.String
-							&& tableInfo.get(key)[1].compareTo(htblColNameValue.get(key).toString()) <= 0
-							&& tableInfo.get(key)[2].compareTo(htblColNameValue.get(key).toString()) >= 0) {
+							&& tableInfo.get(key)[1].toLowerCase().compareTo(htblColNameValue.get(key).toString().toLowerCase()) <= 0
+							&& tableInfo.get(key)[2].toLowerCase().compareTo(htblColNameValue.get(key).toString().toLowerCase()) >= 0) {
 						flag = true;
 
 						continue;
@@ -693,9 +698,11 @@ public class DBApp {
 		int high = pageInfoVector.size() - 1;
 		int mid = 0;
 		while (low <= high) {
+			mid = (high + low) / 2;
 			Date minDate = ((Date) ((PageInfo) (pageInfoVector.get(mid))).getMin());
 			Date maxDate = ((Date) ((PageInfo) (pageInfoVector.get(mid))).getMax());
-			mid = (high + low) / 2;
+		
+			
 			if (ClustKey.before(minDate)) {
 				high = mid - 1;
 			} else {
@@ -718,10 +725,10 @@ public class DBApp {
 		while (low <= high) {
 
 			mid = (high + low) / 2; // 0
-			if (ClustKey.compareTo((((PageInfo) (pageInfoVector.get(mid))).getMin()).toString()) < 0) {
+			if ((ClustKey.toLowerCase()).compareTo((((PageInfo) (pageInfoVector.get(mid))).getMin()).toString().toLowerCase()) < 0) {
 				high = mid - 1;
 			} else {
-				if (ClustKey.compareTo((((PageInfo) (pageInfoVector.get(mid))).getMax()).toString()) > 0) {
+				if ((ClustKey.toLowerCase()).compareTo((((PageInfo) (pageInfoVector.get(mid))).getMax()).toString().toLowerCase()) > 0) {
 					low = mid + 1;
 				} else {
 					break;
@@ -731,7 +738,6 @@ public class DBApp {
 		return mid;
 
 	}
-
 	private static int binarySearchDouble(Table t, double ClustKey) {
 		Vector pageInfoVector = t.getPageInfo();
 		int low = 0;
@@ -767,13 +773,7 @@ public class DBApp {
 	}
 
 	private static Object getMaxInPage(Page page) {
-//		Tuple max = ((Tuple) page.get(0));
-//		for (int i = 0; i < page.size(); i++) {
-//			if (((Tuple) page.get(i)).compareTo(max) > 0) {
-//				max = (Tuple) page.get(i);
-//			}
-//		}
-//		return max.Clusteringkey;
+
 		Tuple max = page.get(page.size()-1);
 		return max.getClusteringkey();
 	}
@@ -895,7 +895,7 @@ public class DBApp {
 							String max = htblColNameMax.get(key);
 							if (min == null || max == null)
 								return false;
-							if (min.compareTo(max) > 0)
+							if (min.toLowerCase().compareTo(max.toLowerCase()) > 0)
 								throw new DBAppException("Min should be smaller than Max");
 						} else
 							return false;

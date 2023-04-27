@@ -17,12 +17,18 @@ public class Values {
 //		dbApp.init();		
 //		creating(strTableName, dbApp);
 //		inserting(dbApp);
-		
-		
-//		updating(strTableName, dbApp);
-		Hashtable rec = new Hashtable();
-		rec.put("gpa", new Double(1.26));
-		deleting(strTableName,dbApp,rec);
+//		
+//		Hashtable rec = new Hashtable();
+//		rec.put("id", new Integer(6));
+//		rec.put("name", new String("aulaa"));
+//		rec.put("gpa", 0.95);
+//		rec.put("Date of Birth", new Date(2016-1900,9-1,17));
+//		dbApp.insertIntoTable("Student", rec);
+
+		updating(strTableName, dbApp);
+//		Hashtable rec = new Hashtable();
+//		rec.put("Date of Birth", new Date(2013-1900,11-1,26));
+//		deleting(strTableName,dbApp,rec);
 //		dbApp.getPages("Student");
 	}
 
@@ -39,7 +45,7 @@ public class Values {
 		// TODO Auto-generated method stub
 		Hashtable rec = new Hashtable();
 		rec.put("id", new Integer(0));
-		rec.put("name", new String("kkk"));
+		rec.put("name", new String("Kkk"));
 		rec.put("gpa", 0.95);
 		rec.put("Date of Birth", new Date(2015-1900,9-1,17));
 	
@@ -81,7 +87,7 @@ public class Values {
 		
 		rec.clear();
 		
-		rec.put("name", new String("nameee"));
+		rec.put("name", new String("Nameee3"));
 		rec.put("id", new Integer(8));
 		rec.put("gpa", 1.29);
 		rec.put("Date of Birth", new Date(2022-1900,10-1,28));
@@ -97,7 +103,7 @@ public class Values {
 		dbApp.insertIntoTable("Student", rec);
 		
 		rec.clear();
-		rec.put("name", new String("seif"));
+		rec.put("name", new String("Seif"));
 		rec.put("id", new Integer(60));
 		rec.put("gpa", 1.26);
 		rec.put("Date of Birth", new Date(2012-1900,10-1,26));
@@ -147,17 +153,17 @@ public class Values {
 
 		//dbApp.init();
 		
-		dbApp.createTable(strTableName, "gpa", htblColNameType, htblColNameMin, htblColNameMax);
+		dbApp.createTable(strTableName, "Date of Birth", htblColNameType, htblColNameMin, htblColNameMax);
 
 	
 	}
 	public static void updating (String strTableName,DBApp dbApp) throws DBAppException {
 		Hashtable rec = new Hashtable();
 
-		rec.put("id", new Integer(69));
+		rec.put("id", new Integer(70));
 		
-		rec.put("name", "hoh");
-		dbApp.updateTable("Student","1.29", rec);
+		//rec.put("name", "kkk");
+		dbApp.updateTable("Student","2015-09-17", rec);
 		dbApp.getPages("Student");
 	}
 
