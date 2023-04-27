@@ -154,7 +154,7 @@ public class DBApp {
 					String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 					Page page = deserializePage(pagename);
 					Tuple tuple = new Tuple(clustKey, htblColNameValue);
-					if (page.contains2(tuple)) {
+					if (page.contains(tuple)) {
 						throw new DBAppException("Clustering Key already exists");
 					} else {
 						if (isSmallerThanmin) {
@@ -287,17 +287,18 @@ public class DBApp {
 				Vector pageInfoVector = t.getPageInfo();
 				String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 				Page page = deserializePage(pagename);
-				if (page.containsKey(ClustObj)) {
-					for (int i = 0; i < page.size(); i++) {
-						Tuple tuple = page.get(i);
-						if (tuple.getClusteringkey().equals(ClustObj)) {
-							for (String key : htblColNameValue.keySet()) {
-								tuple.getRecord().put(key, htblColNameValue.get(key));
-
-							}
-
-						}
-					}
+				if (page.containsKey(ClustObj)) {						//hna 3'yrt containsKey
+//					for (int i = 0; i < page.size(); i++) {
+//						Tuple tuple = page.get(i);
+//						if (tuple.getClusteringkey().equals(ClustObj)) {
+//							for (String key : htblColNameValue.keySet()) {
+//								tuple.getRecord().put(key, htblColNameValue.get(key));
+//
+//							}
+//
+//						}
+//					}
+					page.replace(ClustObj,htblColNameValue);
 					isDeletingMethod = false;
 					serializePage(t, page, strTableName + "" + pageind);
 
@@ -753,23 +754,27 @@ public class DBApp {
 	}
 
 	private static Object getMinInPage(Page page) {
+//		Tuple min = ((Tuple) page.get(0));
+//		for (int i = 0; i < page.size(); i++) {
+//			if (((Tuple) page.get(i)).compareTo(min) < 0) {
+//				min = (Tuple) page.get(i);
+//			}
+//		}
+//		return min.Clusteringkey;
 		Tuple min = ((Tuple) page.get(0));
-		for (int i = 0; i < page.size(); i++) {
-			if (((Tuple) page.get(i)).compareTo(min) < 0) {
-				min = (Tuple) page.get(i);
-			}
-		}
-		return min.Clusteringkey;
+		return min.getClusteringkey();
 	}
 
 	private static Object getMaxInPage(Page page) {
-		Tuple max = ((Tuple) page.get(0));
-		for (int i = 0; i < page.size(); i++) {
-			if (((Tuple) page.get(i)).compareTo(max) > 0) {
-				max = (Tuple) page.get(i);
-			}
-		}
-		return max.Clusteringkey;
+//		Tuple max = ((Tuple) page.get(0));
+//		for (int i = 0; i < page.size(); i++) {
+//			if (((Tuple) page.get(i)).compareTo(max) > 0) {
+//				max = (Tuple) page.get(i);
+//			}
+//		}
+//		return max.Clusteringkey;
+		Tuple max = page.get(page.size()-1);
+		return max.getClusteringkey();
 	}
 
 	public static void getPages(String tableName) { // only for testing

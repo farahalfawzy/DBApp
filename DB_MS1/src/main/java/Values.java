@@ -18,16 +18,16 @@ public class Values {
 //		creating(strTableName, dbApp);
 //		inserting(dbApp);
 		
-		
-		updating(strTableName, dbApp);
+//		
+//		updating(strTableName, dbApp);
 		Hashtable rec = new Hashtable();
-		rec.put("id", new Integer(60));
-		//deleting(strTableName,dbApp,rec);
-
+		rec.put("name", new String("seif"));
+		deleting(strTableName,dbApp,rec);
+//		dbApp.getPages("Student");
 	}
 
 
-	private static void deleting(String strTableName, DBApp dbApp,Hashtable rec) throws ClassNotFoundException, DBAppException, ParseException {
+	private static void deleting(String strTableName, DBApp dbApp,Hashtable rec) throws DBAppException{
 		// TODO Auto-generated method stub
 		
 		dbApp.deleteFromTable(strTableName,rec);
@@ -35,7 +35,7 @@ public class Values {
 	}
 
 
-	private static void inserting(DBApp dbApp) throws DBAppException, IOException, ParseException, ClassNotFoundException {
+	private static void inserting(DBApp dbApp) throws DBAppException {
 		// TODO Auto-generated method stub
 		Hashtable rec = new Hashtable();
 		rec.put("id", new Integer(0));
@@ -43,7 +43,7 @@ public class Values {
 		rec.put("gpa", 0.95);
 		rec.put("Date of Birth", new Date(2015-1900,9-1,17));
 	
-		dbApp.getPages("Student");
+//		dbApp.getPages("Student");
 		dbApp.insertIntoTable("Student", rec);
 		rec.clear();
 		rec.put("id", new Integer(2));
@@ -89,7 +89,7 @@ public class Values {
 		dbApp.insertIntoTable("Student", rec);
 		
 		rec.clear();
-		rec.put("name", new String("nameee"));
+		rec.put("name", new String("lolat"));
 		rec.put("id", new Integer(1));
 		rec.put("gpa", 1.99);
 		rec.put("Date of Birth", new Date(2019-1900,10-1,26));
@@ -97,7 +97,7 @@ public class Values {
 		dbApp.insertIntoTable("Student", rec);
 		
 		rec.clear();
-		rec.put("name", new String("nameee"));
+		rec.put("name", new String("seif"));
 		rec.put("id", new Integer(60));
 		rec.put("gpa", 1.26);
 		rec.put("Date of Birth", new Date(2012-1900,10-1,26));
