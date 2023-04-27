@@ -20,9 +20,9 @@ public class Values {
 		
 //		
 //		updating(strTableName, dbApp);
-		Hashtable rec = new Hashtable();
-		rec.put("gpa", new Double(0.19));
-		deleting(strTableName,dbApp,rec);
+//		Hashtable rec = new Hashtable();
+//		rec.put("gpa", new Double("0.95"));
+//		deleting(strTableName,dbApp,rec);
 //		dbApp.getPages("Student");
 	}
 
@@ -43,7 +43,7 @@ public class Values {
 		rec.put("gpa", 0.95);
 		rec.put("Date of Birth", new Date(2015-1900,9-1,17));
 	
-//		dbApp.getPages("Student");
+		
 		dbApp.insertIntoTable("Student", rec);
 		rec.clear();
 		rec.put("id", new Integer(2));
@@ -103,9 +103,9 @@ public class Values {
 		rec.put("Date of Birth", new Date(2012-1900,10-1,26));
 
 		dbApp.insertIntoTable("Student", rec);
-		
-		rec.clear();
-		dbApp.getPages("Student");
+//		
+//		rec.clear();
+//		dbApp.getPages("Student");
 
 //		rec.put("id", new Integer(1));
 //		rec.put("name", new String("fafa"));
@@ -154,10 +154,10 @@ public class Values {
 	public static void updating (String strTableName,DBApp dbApp) throws DBAppException {
 		Hashtable rec = new Hashtable();
 
-		rec.put("id", new Integer(12));
+		rec.put("id", new Integer(69));
 		
-//		rec.put("name", "wasa");
-		dbApp.updateTable("Student","1.26", rec);
+		rec.put("name", "hoh");
+		dbApp.updateTable("Student","1.99", rec);
 		dbApp.getPages("Student");
 	}
 

@@ -287,7 +287,7 @@ public class DBApp {
 				Vector pageInfoVector = t.getPageInfo();
 				String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 				Page page = deserializePage(pagename);
-				if (page.containsKey(ClustObj)) {						//hna 3'yrt containsKey
+				if (page.containsKey(ClustObj)) {
 //					for (int i = 0; i < page.size(); i++) {
 //						Tuple tuple = page.get(i);
 //						if (tuple.getClusteringkey().equals(ClustObj)) {
@@ -344,25 +344,31 @@ public class DBApp {
 				if (htblColNameValue.containsKey(myCluster)) {
 					// System.out.println("was here");
 					Object myClusterType = htblColNameValue.get(myCluster);
+					System.out.println("before pageind = "+pageind);
 					if (myClusterType instanceof java.lang.Integer) {
+						System.out.println("it is a integer");
 						pageind = binarySearchInt(t, (Integer) myClusterType);
 					}
 					if (myClusterType instanceof java.lang.String) {
+						System.out.println("it is a String");
 						pageind = binarySearchString(t, (String) myClusterType);
 					}
 					if (myClusterType instanceof java.lang.Double) {
+						System.out.println("it is a Double");
 						pageind = binarySearchDouble(t, (Double) myClusterType);
 					}
 					if (myClusterType instanceof java.util.Date) {
+						System.out.println("it is a Date");
 						pageind = binarySearchDate(t, (Date) myClusterType);
 					}
+					System.out.println("after pageind = "+pageind);
 					Vector pageInfoVector = t.getPageInfo();
 					if (pageInfoVector.size() != 0) {
 						String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 						Page page = deserializePage(pagename);
-
+						System.out.println("2abl elcontains");
 						if (page.contains(myTuple)) {
-							// System.out.println("was here111111");
+							System.out.println("ba3d elcontains");
 							page.removeBinary(myTuple);
 							if (page.size() == 0) {
 								deletingFiles(pageind, pageInfoVector, t);
@@ -379,6 +385,7 @@ public class DBApp {
 
 					}
 				} else {
+					System.out.println("fel else");
 					Vector pageInfoVector = t.getPageInfo();
 					removeFromAllPages(pageInfoVector, myTuple, 0, t, htblColNameValue);
 				}
