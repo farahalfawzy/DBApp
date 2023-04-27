@@ -154,7 +154,7 @@ public class DBApp {
 					String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 					Page page = deserializePage(pagename);
 					Tuple tuple = new Tuple(clustKey, htblColNameValue);
-					if (page.contains(tuple)) {
+					if (page.contains2(tuple)) {
 						throw new DBAppException("Clustering Key already exists");
 					} else {
 						if (isSmallerThanmin) {
@@ -287,7 +287,7 @@ public class DBApp {
 				Vector pageInfoVector = t.getPageInfo();
 				String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 				Page page = deserializePage(pagename);
-				if (page.containsKey(ClustObj)) {
+				if (page.containsKey(ClustObj)) {						//hna 3'yrt containsKey
 //					for (int i = 0; i < page.size(); i++) {
 //						Tuple tuple = page.get(i);
 //						if (tuple.getClusteringkey().equals(ClustObj)) {
@@ -344,31 +344,26 @@ public class DBApp {
 				if (htblColNameValue.containsKey(myCluster)) {
 					// System.out.println("was here");
 					Object myClusterType = htblColNameValue.get(myCluster);
-					System.out.println("before pageind = "+pageind);
 					if (myClusterType instanceof java.lang.Integer) {
-						System.out.println("it is a integer");
 						pageind = binarySearchInt(t, (Integer) myClusterType);
 					}
 					if (myClusterType instanceof java.lang.String) {
-						System.out.println("it is a String");
 						pageind = binarySearchString(t, (String) myClusterType);
 					}
 					if (myClusterType instanceof java.lang.Double) {
-						System.out.println("it is a Double");
 						pageind = binarySearchDouble(t, (Double) myClusterType);
 					}
 					if (myClusterType instanceof java.util.Date) {
-						System.out.println("it is a Date");
 						pageind = binarySearchDate(t, (Date) myClusterType);
 					}
-					System.out.println("after pageind = "+pageind);
 					Vector pageInfoVector = t.getPageInfo();
 					if (pageInfoVector.size() != 0) {
 						String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 						Page page = deserializePage(pagename);
-						System.out.println("2abl elcontains");
+						System.out.println("before contains");
 						if (page.contains(myTuple)) {
-							System.out.println("ba3d elcontains");
+							System.out.println("after contains");
+							// System.out.println("was here111111");
 							page.removeBinary(myTuple);
 							if (page.size() == 0) {
 								deletingFiles(pageind, pageInfoVector, t);
@@ -385,7 +380,6 @@ public class DBApp {
 
 					}
 				} else {
-					System.out.println("fel else");
 					Vector pageInfoVector = t.getPageInfo();
 					removeFromAllPages(pageInfoVector, myTuple, 0, t, htblColNameValue);
 				}
@@ -438,7 +432,7 @@ public class DBApp {
 			return;
 		String pagename = ((PageInfo) (pageInfoVector.get(i))).getPageName();
 		Page page = deserializePage(pagename);
-		page.removeNotBinary(myTuple);
+		page.removeNonBinary(myTuple);
 		if (page.size() == 0) {
 			deletingFiles(i, pageInfoVector, t);
 			removeFromAllPages(pageInfoVector, myTuple, i, t, htblColNameValue);

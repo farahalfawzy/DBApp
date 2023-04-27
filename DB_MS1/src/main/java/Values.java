@@ -18,10 +18,10 @@ public class Values {
 //		creating(strTableName, dbApp);
 //		inserting(dbApp);
 		
-//		
-//		updating(strTableName, dbApp);
+		
+		updating(strTableName, dbApp);
 //		Hashtable rec = new Hashtable();
-//		rec.put("gpa", new Double("0.95"));
+//		rec.put("gpa", new Double(1.26));
 //		deleting(strTableName,dbApp,rec);
 //		dbApp.getPages("Student");
 	}
@@ -157,7 +157,7 @@ public class Values {
 		rec.put("id", new Integer(69));
 		
 		rec.put("name", "hoh");
-		dbApp.updateTable("Student","1.99", rec);
+		dbApp.updateTable("Student","1.29", rec);
 		dbApp.getPages("Student");
 	}
 
