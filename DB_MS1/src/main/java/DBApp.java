@@ -21,7 +21,7 @@ import java.util.Vector;
 //TODO LAW el clustering key mawgood
 public class DBApp {
 
-	Vector<Table> allTable = new Vector<Table>();
+	//Vector<Table> allTable = new Vector<Table>();
 	static int maxnoOfRows = getMaxRows();
 	boolean isDeletingMethod = false;
 
@@ -87,7 +87,7 @@ public class DBApp {
 				writer.close();
 				Table myTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType, htblColNameMin,
 						htblColNameMax);
-				allTable.add(myTable);
+				//allTable.add(myTable);
 				serializeTable(myTable, strTableName);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
