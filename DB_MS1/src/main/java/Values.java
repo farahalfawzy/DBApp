@@ -19,10 +19,10 @@ public class Values {
 //		inserting(dbApp);
 		
 		
-		updating(strTableName, dbApp);
-//		Hashtable rec = new Hashtable();
-//		rec.put("gpa", new Double(1.26));
-//		deleting(strTableName,dbApp,rec);
+//		updating(strTableName, dbApp);
+		Hashtable rec = new Hashtable();
+		rec.put("gpa", new Double(1.26));
+		deleting(strTableName,dbApp,rec);
 //		dbApp.getPages("Student");
 	}
 

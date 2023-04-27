@@ -14,7 +14,7 @@ public class Page extends Vector<Tuple> implements Serializable {
 		if (clustValue instanceof java.lang.Integer) {
 			index = this.binarySearchInt((Integer) clustValue);
 		}
-		if (clustKey instanceof java.lang.String) {
+		if (clustValue instanceof java.lang.String) {
 			System.out.println("it is a string");
 			index = this.binarySearchString((String) clustValue);
 		}
@@ -55,18 +55,20 @@ public class Page extends Vector<Tuple> implements Serializable {
 	public boolean removeBinary(Object o) {
 		Tuple t = (Tuple) o;
 		Object clustKey = t.getClusteringkey();
+		Object clustValue = t.getRecord().get(clustKey);
 		int index=-1;
-		if (clustKey instanceof java.lang.Integer) {
-			index = this.binarySearchInt((Integer) clustKey);
+		if (clustValue instanceof java.lang.Integer) {
+			index = this.binarySearchInt((Integer) clustValue);
 		}
-		if (clustKey instanceof java.lang.String) {
-			index = this.binarySearchString((String) clustKey);
+		if (clustValue instanceof java.lang.String) {
+			System.out.println("it is a string");
+			index = this.binarySearchString((String) clustValue);
 		}
-		if (clustKey instanceof java.lang.Double) {
-			index = this.binarySearchDouble((Double) clustKey);
+		if (clustValue instanceof java.lang.Double) {
+			index = this.binarySearchDouble((Double) clustValue);
 		}
-		if (clustKey instanceof java.util.Date) {
-			index = this.binarySearchDate((Date) clustKey);
+		if (clustValue instanceof java.util.Date) {
+			index = this.binarySearchDate((Date) clustValue);
 		}
 		if(t.equals(this.get(index))) {
 			this.remove(index);
@@ -98,7 +100,6 @@ public class Page extends Vector<Tuple> implements Serializable {
 			index = this.binarySearchString((String) clustKey);
 		}
 		if (clustKey instanceof java.lang.Double) {
-			System.out.println("it is double in replace");
 			index = this.binarySearchDouble((Double) clustKey);
 		}
 		if (clustKey instanceof java.util.Date) {
