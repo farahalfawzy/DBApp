@@ -60,10 +60,10 @@ if(((Date) this.Clusteringkey).before((Date) tup.Clusteringkey)) return -1;
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
 		if (obj == null)
 			return false;
+		if (this == obj)
+			return true;
 		if (getClass() != obj.getClass())
 			return false;
 		Tuple other = (Tuple) obj;
@@ -78,8 +78,10 @@ if(((Date) this.Clusteringkey).before((Date) tup.Clusteringkey)) return -1;
 		}
 		else {
 			for (String key : this.getRecord().keySet()) {
+				System.out.println("Was here");
 				Object otherValue = other.getRecord().get(key);
 				Object thisValue = this.getRecord().get(key);
+				System.out.println(otherValue.toString() +" "+thisValue.toString());
 				if (!(otherValue.equals(thisValue)))
 					return false;
 			}

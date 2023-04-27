@@ -363,7 +363,7 @@ public class DBApp {
 
 						if (page.contains(myTuple)) {
 							// System.out.println("was here111111");
-							page.remove(myTuple);
+							page.removeBinary(myTuple);
 							if (page.size() == 0) {
 								deletingFiles(pageind, pageInfoVector, t);
 							} else {
@@ -431,7 +431,7 @@ public class DBApp {
 			return;
 		String pagename = ((PageInfo) (pageInfoVector.get(i))).getPageName();
 		Page page = deserializePage(pagename);
-		page.remove(myTuple);
+		page.removeNotBinary(myTuple);
 		if (page.size() == 0) {
 			deletingFiles(i, pageInfoVector, t);
 			removeFromAllPages(pageInfoVector, myTuple, i, t, htblColNameValue);

@@ -21,7 +21,7 @@ public class Values {
 //		
 //		updating(strTableName, dbApp);
 		Hashtable rec = new Hashtable();
-		rec.put("name", new String("seif"));
+		rec.put("gpa", new Double(0.19));
 		deleting(strTableName,dbApp,rec);
 //		dbApp.getPages("Student");
 	}
@@ -154,10 +154,10 @@ public class Values {
 	public static void updating (String strTableName,DBApp dbApp) throws DBAppException {
 		Hashtable rec = new Hashtable();
 
-//		rec.put("id", new Integer(12));
+		rec.put("id", new Integer(12));
 		
-		rec.put("name", "lalala");
-		dbApp.updateTable("Student","3.9", rec);
+//		rec.put("name", "wasa");
+		dbApp.updateTable("Student","1.26", rec);
 		dbApp.getPages("Student");
 	}
 

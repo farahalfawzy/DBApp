@@ -22,14 +22,13 @@ public class Page extends Vector<Tuple> implements Serializable {
 		if (clustKey instanceof java.util.Date) {
 			index = this.binarySearchDate((Date) clustKey);
 		}
-		if(t.equals(this.get(index)))
+		if(t.equals(this.get(index))) 
 			return true;
 		else
 			return false;
 	}
 	
-	@Override
-	public boolean remove(Object o) {
+	public boolean removeNotBinary(Object o) {
 		boolean flag = false;
 		for(int i=0;i<this.size();i++) {
 			if(this.get(i).equals(o)) {
@@ -39,6 +38,31 @@ public class Page extends Vector<Tuple> implements Serializable {
 			}
 		}
 		return flag;
+	}
+	
+	public boolean removeBinary(Object o) {
+		Tuple t = (Tuple) o;
+		Object clustKey = t.getClusteringkey();
+		int index=-1;
+		if (clustKey instanceof java.lang.Integer) {
+			index = this.binarySearchInt((Integer) clustKey);
+		}
+		if (clustKey instanceof java.lang.String) {
+			index = this.binarySearchString((String) clustKey);
+		}
+		if (clustKey instanceof java.lang.Double) {
+			index = this.binarySearchDouble((Double) clustKey);
+		}
+		if (clustKey instanceof java.util.Date) {
+			index = this.binarySearchDate((Date) clustKey);
+		}
+		if(this.get(index).equals(t)) {
+			this.remove(index);
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	public void replace(Object clustKey, Hashtable<String, Object> htblColNameValue) {
@@ -169,6 +193,8 @@ public class Page extends Vector<Tuple> implements Serializable {
 		}
 		return mid;
 	}
+
+	
 
 	
 	
