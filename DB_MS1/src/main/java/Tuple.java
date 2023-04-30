@@ -43,7 +43,8 @@ public class Tuple implements Comparable, Serializable {
 			return ((Double) this.Clusteringkey).compareTo((Double) tup.Clusteringkey);
 
 		}
-if(((Date) this.Clusteringkey).before((Date) tup.Clusteringkey)) return -1;
+		if (((Date) this.Clusteringkey).before((Date) tup.Clusteringkey))
+			return -1;
 		return 1;
 
 	}
@@ -72,17 +73,16 @@ if(((Date) this.Clusteringkey).before((Date) tup.Clusteringkey)) return -1;
 			for (String key : other.getRecord().keySet()) {
 				Object otherValue = other.getRecord().get(key);
 				Object thisValue = this.getRecord().get(key);
-				if(otherValue instanceof java.lang.String && thisValue instanceof java.lang.String ) {
-					if (!(((String)otherValue).toLowerCase().equals(((String)thisValue).toLowerCase())))
+				if (otherValue instanceof java.lang.String && thisValue instanceof java.lang.String) {
+					if (!(((String) otherValue).toLowerCase().equals(((String) thisValue).toLowerCase())))
 						return false;
-				}else {
-				if (!(otherValue.equals(thisValue)))
-					return false;
+				} else {
+					if (!(otherValue.equals(thisValue)))
+						return false;
 				}
 			}
 			return true;
-		}
-		else {
+		} else {
 //			for (String key : this.getRecord().keySet()) {
 //				System.out.println("deleting was herezzz other.getRecord().size() > this.getRecord().size()");
 //				Object otherValue = other.getRecord().get(key);

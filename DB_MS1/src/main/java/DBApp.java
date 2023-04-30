@@ -28,7 +28,7 @@ public class DBApp {
 
 	private static int getMaxRows() {
 		Properties prop = new Properties();
-		String fileName = "src/main/resources/DBApp.config";
+		String fileName = "resources/DBApp.config";
 		try (FileInputStream fis = new FileInputStream(fileName)) {
 			prop.load(fis);
 			return Integer.parseInt(prop.getProperty("MaximumRowsCountinTablePage"));
@@ -40,7 +40,7 @@ public class DBApp {
 
 	public void init() { // throw
 		try {
-			File csv = new File("src/main/resources/metadata.csv");
+			File csv = new File("resources/metadata.csv");
 			if (csv.createNewFile()) {
 				// System.out.println("The CSV file was created!!");
 			} else {
@@ -55,7 +55,7 @@ public class DBApp {
 	public void createTable(String strTableName, String strClusteringKeyColumn,
 			Hashtable<String, String> htblColNameType, Hashtable<String, String> htblColNameMin,
 			Hashtable<String, String> htblColNameMax) throws DBAppException {
-		String filePath = "src/main/resources/metadata.csv";
+		String filePath = "resources/metadata.csv";
 		String strColName = "";
 
 		if (!tableExits(strTableName)) {
@@ -166,6 +166,8 @@ public class DBApp {
 					Page page = deserializePage(pagename);
 					Tuple tuple = new Tuple(clustKey, htblColNameValue);
 					if (page.contains2(tuple)) {
+						page=null;
+						t=null;
 						throw new DBAppException("Clustering Key already exists");
 					} else {
 						if (isSmallerThanmin) {
@@ -239,7 +241,7 @@ public class DBApp {
 										 //page.getIndex(tuple);
 										 int newindexInPage=nextpage.getIndexInPage(newtup);
 										 nextpage.insertElementAt(newtup, newindexInPage);
-										 //System.out.println(newtup.Clusteringkey);
+										// System.out.println(newtup.Clusteringkey);
 //										nextpage.add(newtup);
 //										Collections.sort(nextpage);
 										((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(nextpage));
@@ -283,6 +285,8 @@ public class DBApp {
 
 	public void updateTable(String strTableName, String strClusteringKeyValue,
 			Hashtable<String, Object> htblColNameValue) throws DBAppException {
+		Page page=null;
+		Table t= null;
 		try {
 			if (!tableExits(strTableName))
 				throw new DBAppException("Table does not exist");
@@ -291,7 +295,12 @@ public class DBApp {
 
 				int pageind = -1;
 				String type = this.getClusteringKeyType(strTableName);
-				Table t = deserializeTable(strTableName);
+				t = deserializeTable(strTableName);
+				if(t.getPageInfo().size()==0) {
+					serializeTable(t, strTableName);
+					t=null;
+					return;
+				}
 				Object ClustObj = null;
 				switch (type) {
 				case "java.lang.Integer":
@@ -321,8 +330,8 @@ public class DBApp {
 				}
 				Vector pageInfoVector = t.getPageInfo();
 				String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
-				Page page = deserializePage(pagename);
-				if (page.containsKey(ClustObj)) {						//hna 3'yrt containsKey
+				page = deserializePage(pagename);
+				if (page.containsKey(ClustObj)) {					//hna 3'yrt containsKey
 //					for (int i = 0; i < page.size(); i++) {
 //						Tuple tuple = page.get(i);
 //						if (tuple.getClusteringkey().equals(ClustObj)) {
@@ -346,12 +355,11 @@ public class DBApp {
 					page=null;
 					t=null;
 					isUpdatingMethod = false;
-					//throw new DBAppException("clustering key doesnt exist");
-return;
+//					throw new DBAppException("clustering key doesnt exist");
+					return;
 				}
 
 			} else {
-				
 				isUpdatingMethod = false;
 				System.out.println("ana hena");
 				throw new DBAppException("invalid values");
@@ -359,13 +367,20 @@ return;
 			}
 
 		} catch (DBAppException e) {
-			
+			serializeTable(t, strTableName);
+			t=null;
 			isUpdatingMethod = false;
 			throw new DBAppException(e.toString());
 		}catch(ParseException e) {
+			serializeTable(t, strTableName);
+			t=null;
+			isUpdatingMethod = false;
 			throw new DBAppException("enter valid clustring key value");
 		}
 		catch(java.lang.NumberFormatException e) {
+			serializeTable(t, strTableName);
+			t=null;
+			isUpdatingMethod = false;
 			throw new DBAppException("enter valid clustring key value");
 		}
 
@@ -380,7 +395,11 @@ return;
 //				throw new DBAppException("No more buckets to delete");
 			if (isValid(strTableName, htblColNameValue)) {
 				String myCluster = t.getClusteringKey();
-
+				if(t.getPageInfo().size()==0) {
+					serializeTable(t, strTableName);
+					t=null;
+					return;
+				}
 				int pageind = -1;
 				Tuple myTuple = new Tuple(t.getClusteringKey(), htblColNameValue);
 				if (htblColNameValue.containsKey(myCluster)) {
@@ -447,7 +466,7 @@ return;
 																				// tool
 
 		// TODO Auto-generated method stub
-		File mySerial = new File("src/main/resources/Data/" + t.getTableName() + "" + pageind + ".ser");
+		File mySerial = new File("resources/Data/" + t.getTableName() + "" + pageind + ".ser");
 		if (mySerial.delete())
 			// System.out.println("File deleted successfully");
 			try {
@@ -457,8 +476,8 @@ return;
 				t.setCurrentMaxId(t.getCurrentMaxId() - 1);
 				for (int i = pageind; i < pageInfoVector.size(); i++) {
 					int temp = i + 1;
-					oldFile = new File("src/main/resources/Data/" + t.getTableName() + "" + temp + ".ser");
-					newFile = new File("src/main/resources/Data/" + t.getTableName() + "" + i + ".ser");
+					oldFile = new File("resources/Data/" + t.getTableName() + "" + temp + ".ser");
+					newFile = new File("resources/Data/" + t.getTableName() + "" + i + ".ser");
 					((PageInfo) pageInfoVector.get(i)).setPageName(t.getTableName() + "" + i);
 					if (oldFile.renameTo(newFile)) {
 						// System.out.println("File renamed successfully");
@@ -496,7 +515,7 @@ return;
 
 	private boolean tableExits(String strTableName) throws DBAppException {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			BufferedReader br = new BufferedReader(new FileReader("resources/metadata.csv"));
 			String line = br.readLine();
 			while (line != null) {
 				String[] x = line.split(",");
@@ -516,7 +535,7 @@ return;
 
 	private boolean isValid(String strTableName, Hashtable<String, Object> htblColNameValue) throws DBAppException {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			BufferedReader br = new BufferedReader(new FileReader("resources/metadata.csv"));
 			String line = br.readLine();
 			Hashtable<String, String[]> tableInfo = new Hashtable<String, String[]>();
 			String ClustKey = "";
@@ -668,7 +687,7 @@ return;
 
 	private static void serializePage(Table t, Page p, String name) {
 		try {
-			FileOutputStream fileOut = new FileOutputStream("src/main/resources/Data/" + name + ".ser", false);
+			FileOutputStream fileOut = new FileOutputStream("resources/Data/" + name + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(p);
 			out.close();
@@ -687,7 +706,7 @@ return;
 
 	private static Page deserializePage(String name) {
 		try {
-			FileInputStream fileIn = new FileInputStream("src/main/resources/Data/" + name + ".ser");
+			FileInputStream fileIn = new FileInputStream("resources/Data/" + name + ".ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			Page p = (Page) in.readObject();
 			in.close();
@@ -704,7 +723,7 @@ return;
 
 	private static void serializeTable(Table t, String name) {
 		try {
-			FileOutputStream fileOut = new FileOutputStream("src/main/resources/Data/" + name + ".ser", false);
+			FileOutputStream fileOut = new FileOutputStream("resources/Data/" + name + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(t);
 			out.close();
@@ -719,7 +738,7 @@ return;
 
 	private static Table deserializeTable(String name) {
 		try {
-			FileInputStream fileIn = new FileInputStream("src/main/resources/Data/" + name + ".ser");
+			FileInputStream fileIn = new FileInputStream("resources/Data/" + name + ".ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			Table table = (Table) in.readObject();
 			in.close();
@@ -864,10 +883,8 @@ return;
 
 			}
 			serializePage(t, p, pagename);
-			p=null;
 		}
 		serializeTable(t, tableName);
-		t=null;
 		System.out.println("----------------------------");
 
 	}
@@ -875,7 +892,7 @@ return;
 	private static String getClusteringKeyType(String strTableName) {
 		BufferedReader br;
 		try {
-			br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			br = new BufferedReader(new FileReader("resources/metadata.csv"));
 
 			String line = br.readLine();
 			Hashtable<String, String[]> tableInfo = new Hashtable<String, String[]>();
