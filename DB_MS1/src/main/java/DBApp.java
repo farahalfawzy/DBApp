@@ -44,10 +44,10 @@ public class DBApp {
 			if (csv.createNewFile()) {
 				// System.out.println("The CSV file was created!!");
 			} else {
-				System.out.println("Already exists");
+//				System.out.println("Already exists");
 			}
 		} catch (IOException e) {
-			System.out.println("Destination not found");
+//			System.out.println("Destination not found");
 		}
 
 	}
@@ -60,11 +60,15 @@ public class DBApp {
 
 		if (!tableExits(strTableName)) {
 			FileWriter writer;
+			htblColNameType = convertKeysToLowerCreate(htblColNameType);
+			htblColNameMin = convertKeysToLowerCreate(htblColNameMin);
+			htblColNameMax = convertKeysToLowerCreate(htblColNameMax);
+			
 			if (!CanCreate(htblColNameType, htblColNameMin, htblColNameMax)) {
 				throw new DBAppException("Enter Valid Data to create table");
 			}
 			Set keys=htblColNameType.keySet();
-			if(!keys.contains(strClusteringKeyColumn)) {
+			if(!keys.contains(strClusteringKeyColumn.toLowerCase())) {
 				throw new DBAppException("Enter Valid Data to create table");
 			}
 			try {
@@ -78,9 +82,9 @@ public class DBApp {
 					String min = htblColNameMin.get(key);
 					String max = htblColNameMax.get(key);
 					writer.append(strTableName + ",");
-					writer.append(key + ",");
+					writer.append(key.toLowerCase() + ",");
 					writer.append(type + ",");
-					if (key == strClusteringKeyColumn)
+					if (key.equals(strClusteringKeyColumn.toLowerCase()))
 						writer.append("True,");
 					else
 						writer.append("False,");
@@ -91,7 +95,7 @@ public class DBApp {
 					writer.append("\n");
 				}
 				writer.close();
-				Table myTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType, htblColNameMin,
+				Table myTable = new Table(strTableName, strClusteringKeyColumn.toLowerCase(), htblColNameType, htblColNameMin,
 						htblColNameMax);
 				//allTable.add(myTable);
 				serializeTable(myTable, strTableName);
@@ -106,12 +110,29 @@ public class DBApp {
 
 	}
 
+	private Hashtable<String, String> convertKeysToLowerCreate(Hashtable<String, String> htblColNameValue){
+		Hashtable<String, String> result = new Hashtable<String, String>();
+		for(String key : htblColNameValue.keySet()) {
+			result.put(key.toLowerCase(), htblColNameValue.get(key));
+		}
+		return result;
+	}
+	
+	private Hashtable<String, Object> convertKeysToLower(Hashtable<String, Object> htblColNameValue){
+		Hashtable<String, Object> result = new Hashtable<String, Object>();
+		for(String key : htblColNameValue.keySet()) {
+			result.put(key.toLowerCase(), htblColNameValue.get(key));
+		}
+		return result;
+	}
+	
 	public void insertIntoTable(String strTableName, Hashtable<String, Object> htblColNameValue) throws DBAppException {
 		this.isDeletingMethod=false;
 		this.isUpdatingMethod = false;
 
 		if (tableExits(strTableName)) {
-
+			htblColNameValue = convertKeysToLower(htblColNameValue);
+//			System.out.println(htblColNameValue);
 			if (isValid(strTableName, htblColNameValue)) {
 				Table t = deserializeTable(strTableName);
 				Object clustKey = htblColNameValue.get(t.getClusteringKey());
@@ -291,6 +312,7 @@ public class DBApp {
 			if (!tableExits(strTableName))
 				throw new DBAppException("Table does not exist");
 			isUpdatingMethod = true;
+			htblColNameValue = convertKeysToLower(htblColNameValue);
 			if (isValid(strTableName, htblColNameValue)) {
 
 				int pageind = -1;
@@ -325,7 +347,7 @@ public class DBApp {
 					Date date = new SimpleDateFormat("yyyy-MM-dd").parse(strClusteringKeyValue);
 					pageind = binarySearchDate(t, date);
 					ClustObj = date;
-					System.out.println(date);
+//					System.out.println(date);
 					break;
 				}
 				Vector pageInfoVector = t.getPageInfo();
@@ -361,7 +383,7 @@ public class DBApp {
 
 			} else {
 				isUpdatingMethod = false;
-				System.out.println("ana hena");
+//				System.out.println("ana hena");
 				throw new DBAppException("invalid values");
 
 			}
@@ -390,10 +412,11 @@ public class DBApp {
 			throws DBAppException{
 		this.isDeletingMethod = true;
 		if (tableExits(strTableName)) {
-			Table t = deserializeTable(strTableName);
+			htblColNameValue = convertKeysToLower(htblColNameValue);
 //			if(t.getPageInfo().size()==0)
 //				throw new DBAppException("No more buckets to delete");
 			if (isValid(strTableName, htblColNameValue)) {
+				Table t = deserializeTable(strTableName);
 				String myCluster = t.getClusteringKey();
 				if(t.getPageInfo().size()==0) {
 					serializeTable(t, strTableName);
@@ -403,7 +426,7 @@ public class DBApp {
 				int pageind = -1;
 				Tuple myTuple = new Tuple(t.getClusteringKey(), htblColNameValue);
 				if (htblColNameValue.containsKey(myCluster)) {
-					 System.out.println("was hereee");
+//					 System.out.println("was hereee");
 					Object myClusterType = htblColNameValue.get(myCluster);
 					if (myClusterType instanceof java.lang.Integer) {
 						pageind = binarySearchInt(t, (Integer) myClusterType);
@@ -422,9 +445,9 @@ public class DBApp {
 					if (pageInfoVector.size() != 0) {
 						String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 						Page page = deserializePage(pagename);
-						System.out.println("before contains");
+//						System.out.println("before contains");
 						if (page.contains(myTuple)) {
-							System.out.println("after contains");
+//							System.out.println("after contains");
 							// System.out.println("was here111111");
 							page.removeBinary(myTuple);
 							if (page.size() == 0) {
