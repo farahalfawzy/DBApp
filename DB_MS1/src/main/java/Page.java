@@ -197,7 +197,7 @@ public class Page extends Vector<Tuple> implements Serializable {
 		while (low <= high) {
 			mid = (high + low) / 2; // 0
 			Tuple midTuple = this.get(mid);
-			;
+			
 			if (ClustKey.toLowerCase().compareTo(midTuple.getClusteringkey().toString().toLowerCase()) < 0) {
 				high = mid - 1;
 			} else {
@@ -208,7 +208,7 @@ public class Page extends Vector<Tuple> implements Serializable {
 				}
 			}
 		}
-		//System.out.println(mid);
+		//System.out.println(mid+"binaryyy"+ClustKey);
 		return mid;
 
 	}
@@ -234,7 +234,32 @@ public class Page extends Vector<Tuple> implements Serializable {
 		}
 		return mid;
 	}
-
+public int getIndexInPage(Tuple tuple){
+	Object clustKey=tuple.getClusteringkey();
+	int index=0;
+	if (clustKey instanceof java.lang.Integer) {
+		index = this.binarySearchInt((Integer) clustKey);
+		if(((Integer)this.get(index).getClusteringkey())<((Integer) clustKey))
+			index++;
+	}
+	if (clustKey instanceof java.lang.String) {
+		index = this.binarySearchString((String) clustKey);
+		if(((String)this.get(index).getClusteringkey()).toLowerCase().compareTo(((String) clustKey).toLowerCase())<0)
+			index++;
+	}
+	if (clustKey instanceof java.lang.Double) {
+		index = this.binarySearchDouble((Double) clustKey);
+		if(((Double)this.get(index).getClusteringkey())<((Double) clustKey))
+			index++;
+	}
+	if (clustKey instanceof java.util.Date) {
+		index = this.binarySearchDate((Date) clustKey);
+		if(((Date)this.get(index).getClusteringkey()).before((Date) clustKey))
+			index++;
+	}
+	//System.out.println(clustKey+" "+index);
+	return index;
+}
 	
 	
 	

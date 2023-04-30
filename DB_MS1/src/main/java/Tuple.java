@@ -68,6 +68,7 @@ if(((Date) this.Clusteringkey).before((Date) tup.Clusteringkey)) return -1;
 			return false;
 		Tuple other = (Tuple) obj;
 		if (other.getRecord().size() < this.getRecord().size()) {
+			System.out.println("deleting was herezzz other.getRecord().size() < this.getRecord().size()");
 			for (String key : other.getRecord().keySet()) {
 				Object otherValue = other.getRecord().get(key);
 				Object thisValue = this.getRecord().get(key);
@@ -82,20 +83,21 @@ if(((Date) this.Clusteringkey).before((Date) tup.Clusteringkey)) return -1;
 			return true;
 		}
 		else {
-			for (String key : this.getRecord().keySet()) {
-				System.out.println("Was here");
-				Object otherValue = other.getRecord().get(key);
-				Object thisValue = this.getRecord().get(key);
-				System.out.println(otherValue.toString() +" "+thisValue.toString());
-				if(otherValue instanceof java.lang.String && thisValue instanceof java.lang.String ) {
-					if (!(((String)otherValue).toLowerCase().equals(((String)thisValue).toLowerCase())))
-						return false;
-				}else {
-				if (!(otherValue.equals(thisValue)))
-					return false;
-				}
-			}
-			return true;
+//			for (String key : this.getRecord().keySet()) {
+//				System.out.println("deleting was herezzz other.getRecord().size() > this.getRecord().size()");
+//				Object otherValue = other.getRecord().get(key);
+//				Object thisValue = this.getRecord().get(key);
+//				System.out.println(otherValue.toString() +" "+thisValue.toString());
+//				if(otherValue instanceof java.lang.String && thisValue instanceof java.lang.String ) {
+//					if (!(((String)otherValue).toLowerCase().equals(((String)thisValue).toLowerCase())))
+//						return false;
+//				}else {
+//				if (!(otherValue.equals(thisValue)))
+//					return false;
+//				}
+//			}
+//			return true;
+			return false;
 		}
 	}
 

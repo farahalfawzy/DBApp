@@ -14,8 +14,8 @@ public class Values {
 	public static void main(String[] args) throws DBAppException {
 		String strTableName = "Student";
 		DBApp dbApp = new DBApp();
-//		dbApp.init();		
-//		creating(strTableName, dbApp);
+		dbApp.init();		
+		creating(strTableName, dbApp);
 //		inserting(dbApp);
 //		
 //		Hashtable rec = new Hashtable();
@@ -25,7 +25,7 @@ public class Values {
 //		rec.put("Date of Birth", new Date(2016-1900,9-1,17));
 //		dbApp.insertIntoTable("Student", rec);
 
-		updating(strTableName, dbApp);
+//		updating(strTableName, dbApp);
 //		Hashtable rec = new Hashtable();
 //		rec.put("Date of Birth", new Date(2013-1900,11-1,26));
 //		deleting(strTableName,dbApp,rec);

@@ -24,6 +24,7 @@ public class DBApp {
 	//Vector<Table> allTable = new Vector<Table>();
 	static int maxnoOfRows = getMaxRows();
 	boolean isDeletingMethod = false;
+	boolean isUpdatingMethod = false;
 
 	private static int getMaxRows() {
 		Properties prop = new Properties();
@@ -31,6 +32,7 @@ public class DBApp {
 		try (FileInputStream fis = new FileInputStream(fileName)) {
 			prop.load(fis);
 			return Integer.parseInt(prop.getProperty("MaximumRowsCountinTablePage"));
+			//return 4;
 		} catch (Exception ex) {
 			return -1;
 		}
@@ -93,6 +95,7 @@ public class DBApp {
 						htblColNameMax);
 				//allTable.add(myTable);
 				serializeTable(myTable, strTableName);
+				myTable=null;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
@@ -105,6 +108,8 @@ public class DBApp {
 
 	public void insertIntoTable(String strTableName, Hashtable<String, Object> htblColNameValue) throws DBAppException {
 		this.isDeletingMethod=false;
+		this.isUpdatingMethod = false;
+
 		if (tableExits(strTableName)) {
 
 			if (isValid(strTableName, htblColNameValue)) {
@@ -121,6 +126,8 @@ public class DBApp {
 					t.setCurrentMaxId(t.getCurrentMaxId() + 1);
 					serializePage(t, page, PageName);
 					serializeTable(t, t.getTableName());
+					page=null;
+					t=null;
 					return;
 				} else {
 					int pageind = 0;
@@ -167,32 +174,43 @@ public class DBApp {
 									serializePage(t, page, t.getTableName() + "" + pageind);
 									 pagename = ((PageInfo) (pageInfoVector.get(pageind-1))).getPageName();
 									 page = deserializePage(pagename);
-									 page.add(tuple);
-									 Collections.sort(page);
+									 int indexInPage=page.getIndexInPage(tuple);
+									 page.insertElementAt(tuple, indexInPage);
+//									 page.add(tuple);
+//									 Collections.sort(page);
 									((PageInfo) pageInfoVector.get(pageind-1)).setMax(getMaxInPage(page));
 									((PageInfo) pageInfoVector.get(pageind-1)).setMin(getMinInPage(page));
 									serializePage(t, page, t.getTableName() + "" + (pageind-1));
 									serializeTable(t, t.getTableName());
+									page=null;
+									t=null;
 									return;
 								}
 							}
 
 						}
 						if (page.size() < maxnoOfRows) {
-							page.add(tuple);
-							Collections.sort(page);
+							int indexInPage=page.getIndexInPage(tuple);
+							 page.insertElementAt(tuple, indexInPage);
+//							page.add(tuple);
+//							Collections.sort(page);
 							((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
 							((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
 							serializePage(t, page, t.getTableName() + "" + pageind);
 							serializeTable(t, t.getTableName());
+							page=null;
+							t=null;
 							return;
 						} else {// law fel nos
-							page.add(tuple);
-							Collections.sort(page);
+							int indexInPage=page.getIndexInPage(tuple);
+							 page.insertElementAt(tuple, indexInPage);
+//							 page.add(tuple);
+//							Collections.sort(page);
 							Tuple newtup = (Tuple) page.remove(page.size() - 1);
 							((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
 							((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
 							serializePage(t, page, t.getTableName() + "" + pageind);
+							page=null;
 							int ind = pageind + 1;
 							while (true) {
 
@@ -202,11 +220,15 @@ public class DBApp {
 									PageInfo pi = new PageInfo(t.getTableName() + "" + ind, ind, newtup.Clusteringkey,
 											newtup.Clusteringkey);
 									pageInfoVector.add(pi);
+									// page.getIndex(tuple);
+									 
 									newPage.add(newtup);
-									Collections.sort(newPage);
+//									Collections.sort(newPage);
 
 									serializePage(t, newPage, t.getTableName() + "" + ind);
 									t.setCurrentMaxId(t.getCurrentMaxId() + 1);
+									newPage=null;
+
 									break;
 								} else {// lesa fel nos
 
@@ -214,20 +236,28 @@ public class DBApp {
 											((PageInfo) (pageInfoVector.get(ind))).getPageName());
 
 									if (nextpage.size() < maxnoOfRows) {
-										nextpage.add(newtup);
-										Collections.sort(nextpage);
-										((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(page));
-										((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(page));
+										 //page.getIndex(tuple);
+										 int newindexInPage=nextpage.getIndexInPage(newtup);
+										 nextpage.insertElementAt(newtup, newindexInPage);
+										 //System.out.println(newtup.Clusteringkey);
+//										nextpage.add(newtup);
+//										Collections.sort(nextpage);
+										((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(nextpage));
+										((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(nextpage));
 										serializePage(t, nextpage, t.getTableName() + "" + ind);
+										nextpage=null;
 										break;
 
 									} else {
-										nextpage.add(newtup);
-										Collections.sort(nextpage);
+										 int newindexInPage=nextpage.getIndexInPage(newtup);
+										 nextpage.insertElementAt(newtup, newindexInPage);
+//										nextpage.add(newtup);
+//										Collections.sort(nextpage);
 										newtup = (Tuple) nextpage.remove(nextpage.size() - 1);
 										((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(nextpage));
 										((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(nextpage));
 										serializePage(t, nextpage, t.getTableName() + "" + ind);
+										nextpage=null;
 										ind = ind + 1;
 									}
 
@@ -240,6 +270,7 @@ public class DBApp {
 
 				// check if page is full
 				serializeTable(t, t.getTableName());
+				t=null;
 
 			} else {
 				throw new DBAppException("Invalid Data");
@@ -255,7 +286,7 @@ public class DBApp {
 		try {
 			if (!tableExits(strTableName))
 				throw new DBAppException("Table does not exist");
-			isDeletingMethod = true;
+			isUpdatingMethod = true;
 			if (isValid(strTableName, htblColNameValue)) {
 
 				int pageind = -1;
@@ -303,26 +334,33 @@ public class DBApp {
 //						}
 //					}
 					page.replace(ClustObj,htblColNameValue);
-					isDeletingMethod = false;
+					isUpdatingMethod = false;
 					serializePage(t, page, strTableName + "" + pageind);
 
 					serializeTable(t, strTableName);
+					page=null;
+					t=null;
 				}
 
 				else {
-					isDeletingMethod = false;
+					page=null;
+					t=null;
+					isUpdatingMethod = false;
 					//throw new DBAppException("clustering key doesnt exist");
 return;
 				}
 
 			} else {
-				isDeletingMethod = false;
+				
+				isUpdatingMethod = false;
+				System.out.println("ana hena");
 				throw new DBAppException("invalid values");
 
 			}
 
 		} catch (DBAppException e) {
-			isDeletingMethod = false;
+			
+			isUpdatingMethod = false;
 			throw new DBAppException(e.toString());
 		}catch(ParseException e) {
 			throw new DBAppException("enter valid clustring key value");
@@ -360,7 +398,7 @@ return;
 					if (myClusterType instanceof java.util.Date) {
 						pageind = binarySearchDate(t, (Date) myClusterType);
 					}
-					//System.out.println(pageind);
+				//	System.out.println(pageind);
 					Vector pageInfoVector = t.getPageInfo();
 					if (pageInfoVector.size() != 0) {
 						String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
@@ -380,6 +418,7 @@ return;
 								((PageInfo) pageInfoVector.get(pageind)).setMin(min);
 
 								serializePage(t, page, t.getTableName() + "" + pageind);
+								page=null;
 							}
 						}
 
@@ -389,9 +428,12 @@ return;
 					removeFromAllPages(pageInfoVector, myTuple, 0, t, htblColNameValue);
 				}
 				serializeTable(t, strTableName);
+				t=null;
 			} else {
 				this.isDeletingMethod = false;
-				throw new DBAppException("Reenter your values!");
+//				System.out.println("ana hena");
+				return;
+//				throw new DBAppException("Reenter your values!");
 			}
 		} else
 
@@ -447,6 +489,7 @@ return;
 			((PageInfo) pageInfoVector.get(i)).setMax(max);
 			((PageInfo) pageInfoVector.get(i)).setMin(min);
 			serializePage(t, page, pagename);
+			page=null;
 			removeFromAllPages(pageInfoVector, myTuple, ++i, t, htblColNameValue);
 		}
 	}
@@ -501,7 +544,7 @@ return;
 					break;
 				}
 			}
-			if (!ClustKeyfound && !isDeletingMethod) { // ana 3mlt deh 3lshan fel delete lw ana msh m3aya elcluster key
+			if (!ClustKeyfound && !isDeletingMethod && !isUpdatingMethod) { // ana 3mlt deh 3lshan fel delete lw ana msh m3aya elcluster key
 														// e3ml delete 3ady bardo
 				throw new DBAppException("You have to insert Clustering Key");
 			}
@@ -522,8 +565,15 @@ return;
 						flag = true;
 						continue;
 					} else {
+						if(isDeletingMethod) {
+							if (!(compareNameType instanceof java.lang.Integer))
+								throw new DBAppException("Reenter your values!");
+							else
+								return false;
+								
+						}else
 						// System.out.println("int");
-						return false;
+							return false;
 					}
 				}
 				case "java.lang.String": {
@@ -534,12 +584,18 @@ return;
 						flag = true;
 
 						continue;
-
-					} else {
-						// System.out.println("string");
-
-						return false;
 					}
+						else {
+							if(isDeletingMethod) {
+
+								if (!(compareNameType instanceof java.lang.String))
+									throw new DBAppException("Reenter your values!");
+								else
+									return false;
+							}else
+							// System.out.println("int");
+								return false;
+						}
 				}
 				case "java.lang.Double": {
 
@@ -552,9 +608,15 @@ return;
 					}
 
 					else {
-						// System.out.println("double");
-
-						return false;
+						if(isDeletingMethod) {
+							if (!(compareNameType instanceof java.lang.Double))
+								throw new DBAppException("Reenter your values!");
+							else
+								return false;
+								
+						}else
+						// System.out.println("int");
+							return false;
 					}
 				}
 				case "java.util.Date": {
@@ -581,9 +643,12 @@ return;
 								return false;
 							}
 						} else {
-							// System.out.println("date2");
-
-							return false;
+							
+								if(isDeletingMethod)
+										throw new DBAppException("Reenter your values!");
+									else
+										return false;
+							
 						}
 					} catch (ParseException e) {
 						return false;
@@ -612,6 +677,8 @@ return;
 			Vector<PageInfo> piVector = t.getPageInfo();
 			PageInfo pi = piVector.get(ind);
 			pi.setCount(p.size());
+			t=null;
+			p=null;
 			// System.out.println("Page is serialized successfully");
 		} catch (IOException i) {
 			i.printStackTrace();
@@ -642,6 +709,7 @@ return;
 			out.writeObject(t);
 			out.close();
 			fileOut.close();
+			t=null;
 			// System.out.println("Table is serialized successfully");
 		} catch (IOException i) {
 			i.printStackTrace();
@@ -796,8 +864,10 @@ return;
 
 			}
 			serializePage(t, p, pagename);
+			p=null;
 		}
 		serializeTable(t, tableName);
+		t=null;
 		System.out.println("----------------------------");
 
 	}
