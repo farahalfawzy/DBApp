@@ -1,6 +1,15 @@
 /DBApp.class
 /DBAppException.class
+/Milestone1PrivateTests.class
+/Milestone1Tests.class
 /Page.class
 /PageInfo.class
 /Table.class
 /Tuple.class
+/Leaf.class
+/Node.class
+/NonLeaf.class
+/Octree.class
+/Test.class
+/Milestone2PrivateTests.class
+/Milestone2Tests.class

@@ -28,7 +28,7 @@ public class DBApp {
 
 	private static int getMaxRows() {
 		Properties prop = new Properties();
-		String fileName = "resources/DBApp.config";
+		String fileName = "src/main/resources/DBApp.config";
 		try (FileInputStream fis = new FileInputStream(fileName)) {
 			prop.load(fis);
 			return Integer.parseInt(prop.getProperty("MaximumRowsCountinTablePage"));
@@ -40,7 +40,7 @@ public class DBApp {
 
 	public void init() { // throw
 		try {
-			File csv = new File("resources/metadata.csv");
+			File csv = new File("src/main/resources/metadata.csv");
 			if (csv.createNewFile()) {
 				// System.out.println("The CSV file was created!!");
 			} else {
@@ -55,7 +55,7 @@ public class DBApp {
 	public void createTable(String strTableName, String strClusteringKeyColumn,
 			Hashtable<String, String> htblColNameType, Hashtable<String, String> htblColNameMin,
 			Hashtable<String, String> htblColNameMax) throws DBAppException {
-		String filePath = "resources/metadata.csv";
+		String filePath = "src/main/resources/metadata.csv";
 		String strColName = "";
 
 		if (!tableExits(strTableName)) {
@@ -489,7 +489,7 @@ public class DBApp {
 																				// tool
 
 		// TODO Auto-generated method stub
-		File mySerial = new File("resources/Data/" + t.getTableName() + "" + pageind + ".ser");
+		File mySerial = new File("src/main/resources/Data/" + t.getTableName() + "" + pageind + ".ser");
 		if (mySerial.delete())
 			// System.out.println("File deleted successfully");
 			try {
@@ -499,8 +499,8 @@ public class DBApp {
 				t.setCurrentMaxId(t.getCurrentMaxId() - 1);
 				for (int i = pageind; i < pageInfoVector.size(); i++) {
 					int temp = i + 1;
-					oldFile = new File("resources/Data/" + t.getTableName() + "" + temp + ".ser");
-					newFile = new File("resources/Data/" + t.getTableName() + "" + i + ".ser");
+					oldFile = new File("src/main/resources/Data/" + t.getTableName() + "" + temp + ".ser");
+					newFile = new File("src/main/resources/Data/" + t.getTableName() + "" + i + ".ser");
 					((PageInfo) pageInfoVector.get(i)).setPageName(t.getTableName() + "" + i);
 					if (oldFile.renameTo(newFile)) {
 						// System.out.println("File renamed successfully");
@@ -538,7 +538,7 @@ public class DBApp {
 
 	private boolean tableExits(String strTableName) throws DBAppException {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader("resources/metadata.csv"));
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 			String line = br.readLine();
 			while (line != null) {
 				String[] x = line.split(",");
@@ -558,7 +558,7 @@ public class DBApp {
 
 	private boolean isValid(String strTableName, Hashtable<String, Object> htblColNameValue) throws DBAppException {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader("resources/metadata.csv"));
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 			String line = br.readLine();
 			Hashtable<String, String[]> tableInfo = new Hashtable<String, String[]>();
 			String ClustKey = "";
@@ -710,7 +710,7 @@ public class DBApp {
 
 	private static void serializePage(Table t, Page p, String name) {
 		try {
-			FileOutputStream fileOut = new FileOutputStream("resources/Data/" + name + ".ser", false);
+			FileOutputStream fileOut = new FileOutputStream("src/main/resources/Data/" + name + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(p);
 			out.close();
@@ -729,7 +729,7 @@ public class DBApp {
 
 	private static Page deserializePage(String name) {
 		try {
-			FileInputStream fileIn = new FileInputStream("resources/Data/" + name + ".ser");
+			FileInputStream fileIn = new FileInputStream("src/main/resources/Data/" + name + ".ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			Page p = (Page) in.readObject();
 			in.close();
@@ -746,7 +746,7 @@ public class DBApp {
 
 	private static void serializeTable(Table t, String name) {
 		try {
-			FileOutputStream fileOut = new FileOutputStream("resources/Data/" + name + ".ser", false);
+			FileOutputStream fileOut = new FileOutputStream("src/main/resources/Data/" + name + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(t);
 			out.close();
@@ -761,7 +761,7 @@ public class DBApp {
 
 	private static Table deserializeTable(String name) {
 		try {
-			FileInputStream fileIn = new FileInputStream("resources/Data/" + name + ".ser");
+			FileInputStream fileIn = new FileInputStream("src/main/resources/Data/" + name + ".ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			Table table = (Table) in.readObject();
 			in.close();
@@ -915,7 +915,7 @@ public class DBApp {
 	private static String getClusteringKeyType(String strTableName) {
 		BufferedReader br;
 		try {
-			br = new BufferedReader(new FileReader("resources/metadata.csv"));
+			br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 
 			String line = br.readLine();
 			Hashtable<String, String[]> tableInfo = new Hashtable<String, String[]>();
