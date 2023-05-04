@@ -7,7 +7,7 @@ private String Z;
 
 
 	public Octree(String X, String Y, String Z) {
-	this.root = new Leaf();
+//	this.root = new Leaf();
 	this.X=X;
 	this.Y=Y;
 	this.Z=Z;
