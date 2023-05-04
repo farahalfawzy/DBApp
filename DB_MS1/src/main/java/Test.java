@@ -5,7 +5,7 @@ import java.util.Date;
 
 import javax.xml.crypto.Data;
 
-public class test {
+public class Test {
 	static String printMiddleString(String S, String T) {
 		int N = S.length() > T.length() ? S.length() : T.length();
 		S = S.toLowerCase();
@@ -30,10 +30,10 @@ public class test {
 
 		// Iterate from right to left
 		// and add carry to next position
-	        for (int i = N; i >= 1; i--) {
-	            a1[i - 1] += (int)a1[i] / 26;
-	            a1[i] %= 26;
-	        }
+		for (int i = N; i >= 1; i--) {
+			a1[i - 1] += (int) a1[i] / 26;
+			a1[i] %= 26;
+		}
 		System.out.println(Arrays.toString(a1));
 
 		// Reduce the number to find the middle
@@ -66,8 +66,23 @@ public class test {
 		String S = "bbc";
 		String T = "bec";
 		printMiddleString(S, T);
-	}
+		String r = "";
+		String aa = "afogk";
+		String a = "asdji";
+		for (int i = 0; i < a.length(); i++) {
+			if (a.charAt(i) == aa.charAt(i)) {
+				r = r + a.charAt(i);
 
+			} else {
+				int x = a.charAt(i);
+				int y = aa.charAt(i);
+				char c = (char) ((x + y) / 2);
+				r = r + c;
+
+			}
+		}
+
+	}
 }
 
 // TODO Auto-generated method stub
