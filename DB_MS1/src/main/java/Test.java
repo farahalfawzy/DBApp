@@ -1,48 +1,73 @@
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.xml.crypto.Data;
 
-public class Test {
+public class test {
+	static String printMiddleString(String S, String T) {
+		int N = S.length() > T.length() ? S.length() : T.length();
+		S = S.toLowerCase();
+		T = T.toLowerCase();
+		// Stores the base 26 digits after addition
+		int[] a1 = new int[N + 1];
 
-	public static void main(String[] args) throws ParseException {
-
-//		
-		String r = "";
-		String aa = "afogk";
-		String a = "asdji";
-		for (int i = 0; i < a.length(); i++) {
-			if (a.charAt(i) == aa.charAt(i)) {
-				r = r + a.charAt(i);
-
-			} else {
-				int x = a.charAt(i);
-				int y = aa.charAt(i);
-				char c = (char) ((x + y) / 2);
-				r = r + c;
-
+		for (int i = 0; i < N; i++) {
+			if (i >= S.length()) {
+				a1[i + 1] = (int) T.charAt(i) - 97;
+				continue;
 			}
-//	
-//		Date date = new SimpleDateFormat("yyyy-MM-dd").parse("2002-05-30");
-//		Date date2 = new SimpleDateFormat("yyyy-MM-dd").parse("2002-09-30");
-//     	int year1=date.getYear();
-//     	int year2=date2.getYear();
-//     	int m1=date.getMonth();
-//     	int m2=date2.getMonth();
-//     	int d1=date.getDay();
-//     	int d2=date2.getDay();
-//     	
-//     	int davg= (d1+d2)/2;
-//     	int mavg= (m1+m2)/2;
-//     	int yavg=(year1+year2)/2;
-//     	String s=yavg+"-"+0+""+mavg+"-"+davg;
-//     	Date r=new SimpleDateFormat("yyyy-MM-dd").parse(s);
-//     	System.out.println(r);
-
+			if (i >= T.length()) {
+				a1[i + 1] = (int) S.charAt(i) - 97;
+				continue;
+			}
+			a1[i + 1] = (int) S.charAt(i) - 97 + (int) T.charAt(i) - 97;
 		}
-		System.out.println(r);
+		System.out.println(Arrays.toString(a1));
+		System.out.println(Arrays.toString(S.toCharArray()));
+		System.out.println(Arrays.toString(T.toCharArray()));
+
+		// Iterate from right to left
+		// and add carry to next position
+	        for (int i = N; i >= 1; i--) {
+	            a1[i - 1] += (int)a1[i] / 26;
+	            a1[i] %= 26;
+	        }
+		System.out.println(Arrays.toString(a1));
+
+		// Reduce the number to find the middle
+		// string by dividing each position by 2
+		for (int i = 0; i <= N; i++) {
+
+			// If current value is odd,
+			// carry 26 to the next index value
+			if ((a1[i] & 1) != 0) {
+				System.out.println(a1[i]);
+
+				if (i + 1 <= N) {
+					a1[i + 1] += 26;
+				}
+			}
+
+			a1[i] = (int) a1[i] / 2;
+		}
+		String res = "";
+		for (int i = 1; i <= N; i++) {
+			res += (char) (a1[i] + 97);
+			System.out.print((char) (a1[i] + 97));
+		}
+		return res;
 	}
+
+	// Driver Code
+	public static void main(String[] args) {
+		int N = 4;
+		String S = "bbc";
+		String T = "bec";
+		printMiddleString(S, T);
+	}
+
 }
 
 // TODO Auto-generated method stub
