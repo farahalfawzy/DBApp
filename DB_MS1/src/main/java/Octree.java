@@ -3,6 +3,12 @@ import java.util.*;
 class Node {
 
 	public Vector<Hashtable<String, Object>> data;
+	public int minX;
+	public int maxX;
+	public int minY;
+	public int maxY;
+	public int minZ;
+	public int maxZ;
 	public Node left0, left1, left2, left3, right3, right2, right1, right0;
 
 	public Node(Vector<Hashtable<String, Object>> data) {
@@ -27,69 +33,22 @@ class Node {
 
 class Octree {
 	private Node root;
+	private int minX;
+	private int maxX;
+	private int minY;
+	private int maxY;
+	private int minZ;
+	private int maxZ;
 
-	public Octree() {
-		root = null;
-	}
-
-	public int getMinX(Vector<Hashtable<String, Object>> data) {
-		int min = 99999;
-		for (int i = 0; i < data.size(); i++)
-			for (String key : data.get(i).keySet()) {
-				if (min > Integer.parseInt(data.get(i).get(key).toString()))
-					min = Integer.parseInt(data.get(i).get(key).toString());
-			}
-		return min;
-	}
-
-	public int getMaxX(Vector<Hashtable<String, Object>> data) {
-		int min = -1;
-		for (int i = 0; i < data.size(); i++)
-			for (String key : data.get(i).keySet()) {
-				if (min < Integer.parseInt(data.get(i).get(key).toString()))
-					min = Integer.parseInt(data.get(i).get(key).toString());
-			}
-		return min;
-	}
-
-	public int getMinY(Vector<Hashtable<String, Object>> data) {
-		int min = 99999;
-		for (int i = 0; i < data.size(); i++)
-			for (String key : data.get(i).keySet()) {
-				if (min > Integer.parseInt(data.get(i).get(key).toString()))
-					min = Integer.parseInt(data.get(i).get(key).toString());
-			}
-		return min;
-	}
-
-	public int getMaxY(Vector<Hashtable<String, Object>> data) {
-		int min = -1;
-		for (int i = 0; i < data.size(); i++)
-			for (String key : data.get(i).keySet()) {
-				if (min < Integer.parseInt(data.get(i).get(key).toString()))
-					min = Integer.parseInt(data.get(i).get(key).toString());
-			}
-		return min;
-	}
-
-	public int getMinZ(Vector<Hashtable<String, Object>> data) {
-		int min = 99999;
-		for (int i = 0; i < data.size(); i++)
-			for (String key : data.get(i).keySet()) {
-				if (min > Integer.parseInt(data.get(i).get(key).toString()))
-					min = Integer.parseInt(data.get(i).get(key).toString());
-			}
-		return min;
-	}
-
-	public int getMaxZ(Vector<Hashtable<String, Object>> data) {
-		int min = -1;
-		for (int i = 0; i < data.size(); i++)
-			for (String key : data.get(i).keySet()) {
-				if (min < Integer.parseInt(data.get(i).get(key).toString()))
-					min = Integer.parseInt(data.get(i).get(key).toString());
-			}
-		return min;
+	public Octree(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+		super();
+		this.root = null;
+		this.minX = minX;
+		this.maxX = maxX;
+		this.minY = minY;
+		this.maxY = maxY;
+		this.minZ = minZ;
+		this.maxZ = maxZ;
 	}
 
 	public static String get3BitString(boolean higherX, boolean higherY, boolean higherZ) {
@@ -114,9 +73,9 @@ class Octree {
 		Node current = root, parent = null;
 		boolean higherX = false, higherY = false, higherZ = false;
 		while (current != null) {
-			int midX = (getMaxX(current.data) + getMinX(current.data)) / 2;
-			int midY = (getMaxY(current.data) + getMinY(current.data)) / 2;
-			int midZ = (getMaxZ(current.data) + getMinZ(current.data)) / 2;
+			int midX = (current.minX + current.maxX) / 2;
+			int midY = (current.minY + current.maxY) / 2;
+			int midZ = (current.minZ + current.maxZ) / 2;
 			if (Integer.parseInt(key.get("x").toString()) > midX) {
 				higherX = true;
 			} else {
@@ -183,9 +142,9 @@ class Octree {
 			parent.data.add(key);
 			if (true) {
 				//elmfrood 2loop 3ala kol wa7da w e3mlha insert tany fel node
-				int midX = (getMaxX(parent.data) + getMinX(parent.data)) / 2;
-				int midY = (getMaxY(parent.data) + getMinY(parent.data)) / 2;
-				int midZ = (getMaxZ(parent.data) + getMinZ(parent.data)) / 2;
+				int midX = (current.minX + current.maxX) / 2;
+				int midY = (current.minY + current.maxY) / 2;
+				int midZ = (current.minZ + current.maxZ) / 2;
 				Vector<Hashtable<String,Object>> v=(Vector<Hashtable<String, Object>>) parent.data.clone();
 //				System.out.println(v);
 				parent.data.clear();
@@ -429,7 +388,7 @@ class Octree {
 
 	public static void main(String[] args) {
 		// Create a new Octree
-		Octree octree = new Octree();
+		Octree octree = new Octree(0,100,0,100,0,100);
 
 		// Add 32 nodes to the Octree
 		for (int i = 0; i < 4; i++) {
