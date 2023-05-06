@@ -7,8 +7,7 @@ private	Vector<Hashtable> Bucket;
 	
 	
 	
-	
-	 public Leaf(Object MinX,Object MaxX,Object MinY,Object MaxY,Object MinZ,Object MaxZ) {
+	 public Leaf(int MinX,int MaxX,int MinY,int MaxY,int MinZ,int MaxZ) {
 		 super( MinX,MaxX, MinY, MaxY, MinZ, MaxZ);
 		 Bucket = new Vector<Hashtable>();
 		 
