@@ -2,16 +2,16 @@ import java.util.Vector;
 
 public abstract class Node {
 
-private	int MinX;
-private	int MaxX;
-private	int MinY;
-private	int MaxY;
-private	int MinZ;
-private	int MaxZ;
+private	Object MinX;
+private	Object MaxX;
+private	Object MinY;
+private	Object MaxY;
+private	Object MinZ;
+private	Object MaxZ;
 	
 	
 	
-  	public Node(int MinX,int MaxX,int MinY,int MaxY,int MinZ,int MaxZ) {
+  	public Node(Object MinX,Object MaxX,Object MinY,Object MaxY,Object MinZ,Object MaxZ) {
 		this.MinX=MinX;
 		this.MaxX=MaxX;
 		this.MinY=MinY;
@@ -28,73 +28,73 @@ private	int MaxZ;
 
 
 
-	public int getMinX() {
+	public Object getMinX() {
 		return MinX;
 	}
 
 
 
-	public void setMinX(int minX) {
+	public void setMinX(Object minX) {
 		MinX = minX;
 	}
 
 
 
-	public int getMaxX() {
+	public Object getMaxX() {
 		return MaxX;
 	}
 
 
 
-	public void setMaxX(int maxX) {
+	public void setMaxX(Object maxX) {
 		MaxX = maxX;
 	}
 
 
 
-	public int getMinY() {
+	public Object getMinY() {
 		return MinY;
 	}
 
 
 
-	public void setMinY(int minY) {
+	public void setMinY(Object minY) {
 		MinY = minY;
 	}
 
 
 
-	public int getMaxY() {
+	public Object getMaxY() {
 		return MaxY;
 	}
 
 
 
-	public void setMaxY(int maxY) {
+	public void setMaxY(Object maxY) {
 		MaxY = maxY;
 	}
 
 
 
-	public int getMinZ() {
+	public Object getMinZ() {
 		return MinZ;
 	}
 
 
 
-	public void setMinZ(int minZ) {
+	public void setMinZ(Object minZ) {
 		MinZ = minZ;
 	}
 
 
 
-	public int getMaxZ() {
+	public Object getMaxZ() {
 		return MaxZ;
 	}
 
 
 
-	public void setMaxZ(int maxZ) {
+	public void setMaxZ(Object maxZ) {
 		MaxZ = maxZ;
 	}
   	

@@ -1,4 +1,13 @@
+import java.io.FileInputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Hashtable;
+import java.util.Properties;
 
 public class Octree {
 	private Node root;
@@ -6,14 +15,37 @@ public class Octree {
 	private String Y;
 	private String Z;
 	private int MaxRowsinNode;
+	
+	private static int MaxRowsinNode() {
+		Properties prop = new Properties();
+		String fileName = "src/main/resources/DBApp.config";
+		try (FileInputStream fis = new FileInputStream(fileName)) {
+			prop.load(fis);
+			return Integer.parseInt(prop.getProperty("MaximumEntriesinOctreeNode"));
+			//return 4;
+		} catch (Exception ex) {
+			return -1;
+		}
+	}
 
-	public Octree(String X, String Y, String Z, int MinX, int MaxX, int MinY, int MaxY, int MinZ, int MaxZ,
-			int MaxRowsinNode) {
+	public Octree(String X, String Y, String Z, int MinX, int MaxX, int MinY, int MaxY, int MinZ, int MaxZ) {
 		this.root = new Leaf(MinX, MaxX, MinY, MaxY, MinZ, MaxZ);
 		this.X = X;
 		this.Y = Y;
 		this.Z = Z;
-		this.MaxRowsinNode = MaxRowsinNode;
+		this.MaxRowsinNode=MaxRowsinNode();
+	}
+	
+	public String getX() {
+		return X;
+	}
+
+	public String getY() {
+		return Y;
+	}
+
+	public String getZ() {
+		return Z;
 	}
 
 	public Node getRoot() {
@@ -88,28 +120,10 @@ public class Octree {
 
 				NonLeaf curNonleaf = (NonLeaf) current;
 				boolean higherX = false, higherY = false, higherZ = false;
-
-				int midX = (current.getMinX() + current.getMaxX()) / 2;
-				int midY = (current.getMinY() + current.getMaxY()) / 2;
-				int midZ = (current.getMinZ() + current.getMaxZ()) / 2;
-
-				if (Integer.parseInt(key.get("X").toString()) > midX) {
-					higherX = true;
-				} else {
-					higherX = false;
-				}
-
-				if (Integer.parseInt(key.get("Y").toString()) > midY) {
-					higherY = true;
-				} else {
-					higherY = false;
-				}
-
-				if (Integer.parseInt(key.get("Z").toString()) > midZ) {
-					higherZ = true;
-				} else {
-					higherZ = false;
-				}
+				higherX = getHigherX(current.getMinX(),current.getMaxX(),key);
+				higherY = getHigherY(current.getMinY(),current.getMaxY(),key);
+				higherZ = getHigherZ(current.getMinZ(),current.getMaxZ(),key);
+				
 				String r = get3BitString(higherX, higherY, higherZ);
 				positionOfLeaf = r;
 				switch (r) {
@@ -152,6 +166,181 @@ public class Octree {
 
 	}
 
+	private boolean getHigherZ(Object minZ, Object maxZ, Hashtable<String, Object> key) {
+		if(minZ instanceof Integer && maxZ instanceof Integer) {
+			Object midX = ((Integer.parseInt(minZ.toString())) + ((Integer.parseInt(maxZ.toString())))) / 2;
+			if (Integer.parseInt(key.get(getZ()).toString()) > Integer.parseInt(midX.toString())) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		if(minZ instanceof Double && maxZ instanceof Double) {
+			Object midX = ((Double.parseDouble(minZ.toString())) + ((Double.parseDouble(maxZ.toString())))) / 2;
+			if (Double.parseDouble(key.get(getZ()).toString()) > Double.parseDouble(midX.toString())) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		if(minZ instanceof String && maxZ instanceof String) {
+			String midX = printMiddleString(minZ.toString().toLowerCase(),maxZ.toString().toLowerCase(),minZ.toString().length());
+			if(key.get(getZ()).toString().compareTo(midX)>0)
+				return true;
+			else
+				return false;
+		}
+		if(minZ instanceof java.util.Date && maxZ instanceof java.util.Date) {
+			try {
+			Date minDate = new SimpleDateFormat("yyyy-MM-dd").parse(minZ.toString());
+			Date maxDate = new SimpleDateFormat("yyyy-MM-dd").parse(maxZ.toString());
+			Date currDate = new SimpleDateFormat("yyyy-MM-dd").parse(key.get(getZ()).toString());
+			Date midX = findMidPoint(minDate,maxDate);
+			if(currDate.after(midX))
+				return true;
+			else
+				return false;
+			}catch(ParseException e) {}
+		}
+		return false;
+	}
+
+	private boolean getHigherY(Object minY, Object maxY, Hashtable<String, Object> key) {
+		if(minY instanceof Integer && maxY instanceof Integer) {
+			Object midX = ((Integer.parseInt(minY.toString())) + ((Integer.parseInt(maxY.toString())))) / 2;
+			if (Integer.parseInt(key.get(getY()).toString()) > Integer.parseInt(midX.toString())) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		if(minY instanceof Double && maxY instanceof Double) {
+			Object midX = ((Double.parseDouble(minY.toString())) + ((Double.parseDouble(maxY.toString())))) / 2;
+			if (Double.parseDouble(key.get(getY()).toString()) > Double.parseDouble(midX.toString())) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		if(minY instanceof String && maxY instanceof String) {
+			String midX = printMiddleString(minY.toString().toLowerCase(),maxY.toString().toLowerCase(),minY.toString().length());
+			if(key.get(getY()).toString().compareTo(midX)>0)
+				return true;
+			else
+				return false;
+		}
+		if(minY instanceof java.util.Date && maxY instanceof java.util.Date) {
+			try {
+			Date minDate = new SimpleDateFormat("yyyy-MM-dd").parse(minY.toString());
+			Date maxDate = new SimpleDateFormat("yyyy-MM-dd").parse(maxY.toString());
+			Date currDate = new SimpleDateFormat("yyyy-MM-dd").parse(key.get(getY()).toString());
+			Date midX = findMidPoint(minDate,maxDate);
+			if(currDate.after(midX))
+				return true;
+			else
+				return false;
+			}catch(ParseException e) {}
+		}
+		return false;
+	}
+
+	private boolean getHigherX(Object minX, Object maxX, Hashtable<String, Object> key) {
+		if(minX instanceof Integer && maxX instanceof Integer) {
+			Object midX = ((Integer.parseInt(minX.toString())) + ((Integer.parseInt(maxX.toString())))) / 2;
+			if (Integer.parseInt(key.get(getX()).toString()) > Integer.parseInt(midX.toString())) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		if(minX instanceof Double && maxX instanceof Double) {
+			Object midX = ((Double.parseDouble(minX.toString())) + ((Double.parseDouble(maxX.toString())))) / 2;
+			if (Double.parseDouble(key.get(getX()).toString()) > Double.parseDouble(midX.toString())) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		if(minX instanceof String && maxX instanceof String) {
+			String midX = printMiddleString(minX.toString().toLowerCase(),maxX.toString().toLowerCase(),minX.toString().length());
+			if(key.get(getX()).toString().compareTo(midX)>0)
+				return true;
+			else
+				return false;
+		}
+		if(minX instanceof java.util.Date && maxX instanceof java.util.Date) {
+			try {
+			Date minDate = new SimpleDateFormat("yyyy-MM-dd").parse(minX.toString());
+			Date maxDate = new SimpleDateFormat("yyyy-MM-dd").parse(maxX.toString());
+			Date currDate = new SimpleDateFormat("yyyy-MM-dd").parse(key.get(getX()).toString());
+			Date midX = findMidPoint(minDate,maxDate);
+			if(currDate.after(midX))
+				return true;
+			else
+				return false;
+			}catch(ParseException e) {}
+		}
+		return false;
+	}
+
+	private static Date findMidPoint(Date date1, Date date2) {
+		LocalDate localDate1 = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate localDate2 = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        Period period = Period.between(localDate1, localDate2);
+        LocalDate middleLocalDate = localDate1.plus(dividePeriodByTwo(period));
+        
+        Instant instant = middleLocalDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        return Date.from(instant);
+	}
+	
+	public static Period dividePeriodByTwo(Period period) {
+	    int years = period.getYears() / 2;
+	    int months = period.getMonths() / 2;
+	    int days = period.getDays() / 2;
+	    return Period.of(years, months, days);
+	}
+	
+	static String printMiddleString(String S, String T, int N)
+    {
+        // Stores the base 26 digits after addition
+        int[] a1 = new int[N + 1];
+ 
+        for (int i = 0; i < N; i++) {
+            a1[i + 1] = (int)S.charAt(i) - 97
+                        + (int)T.charAt(i) - 97;
+        }
+ 
+        // Iterate from right to left
+        // and add carry to next position
+        for (int i = N; i >= 1; i--) {
+            a1[i - 1] += (int)a1[i] / 26;
+            a1[i] %= 26;
+        }
+ 
+        // Reduce the number to find the middle
+        // string by dividing each position by 2
+        for (int i = 0; i <= N; i++) {
+ 
+            // If current value is odd,
+            // carry 26 to the next index value
+            if ((a1[i] & 1) != 0) {
+ 
+                if (i + 1 <= N) {
+                    a1[i + 1] += 26;
+                }
+            }
+ 
+            a1[i] = (int)a1[i] / 2;
+        }
+ 
+        String r="";
+        for (int i = 1; i <= N; i++) {
+            r+=(char)(a1[i] + 97);
+        }
+        return r;
+    }
+	
 	public static String get3BitString(boolean higherX, boolean higherY, boolean higherZ) {
 		int result = 0;
 		if (higherX) {
@@ -226,30 +415,13 @@ public class Octree {
 		}
 	}
 
-	public static void insertIncorrectLeaf(Hashtable<String, Object> key, NonLeaf node) {
+	public void insertIncorrectLeaf(Hashtable<String, Object> key, NonLeaf node) {
 		boolean higherX = false, higherY = false, higherZ = false;
 		Node current = node;
-		int midX = (current.getMinX() + current.getMaxX()) / 2;
-		int midY = (current.getMinY() + current.getMaxY()) / 2;
-		int midZ = (current.getMinZ() + current.getMaxZ()) / 2;
-
-		if (Integer.parseInt(key.get("X").toString()) > midX) {
-			higherX = true;
-		} else {
-			higherX = false;
-		}
-
-		if (Integer.parseInt(key.get("Y").toString()) > midY) {
-			higherY = true;
-		} else {
-			higherY = false;
-		}
-
-		if (Integer.parseInt(key.get("Z").toString()) > midZ) {
-			higherZ = true;
-		} else {
-			higherZ = false;
-		}
+		higherX = getHigherX(current.getMinX(),current.getMaxX(),key);
+		higherY = getHigherY(current.getMinY(),current.getMaxY(),key);
+		higherZ = getHigherZ(current.getMinZ(),current.getMaxZ(),key);
+		
 		String r = get3BitString(higherX, higherY, higherZ);
 		switch (r) {
 		case "000":
@@ -287,7 +459,7 @@ public class Octree {
 	}
 
 	public static void main(String[] args) {
-		Octree tree = new Octree("X", "Y", "Z", 0, 10, 0, 20,0, 40, 3);
+		Octree tree = new Octree("X", "Y", "Z", 0, 10, 0, 20,0, 40);
 		Hashtable<String, Object> key = new Hashtable<>();
 		key.put("X", 2);
 		key.put("Y", 3);
