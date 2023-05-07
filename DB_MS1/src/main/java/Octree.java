@@ -8,7 +8,8 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Properties;
-
+import java.util.LinkedList;
+import java.util.Queue;
 public class Octree {
 	private Node root;
 	private String X;
@@ -28,7 +29,7 @@ public class Octree {
 		}
 	}
 
-	public Octree(String X, String Y, String Z, int MinX, int MaxX, int MinY, int MaxY, int MinZ, int MaxZ) {
+	public Octree(String X, String Y, String Z, Object MinX, Object MaxX, Object MinY, Object MaxY, Object MinZ, Object MaxZ) {
 		this.root = new Leaf(MinX, MaxX, MinY, MaxY, MinZ, MaxZ);
 		this.X = X;
 		this.Y = Y;
@@ -61,7 +62,6 @@ public class Octree {
 		NonLeaf Parent = null;
 		String positionOfLeaf = "";
 		while (current != null) {
-			this.displayTree2();
 
 			if (current instanceof Leaf) {
 
@@ -365,45 +365,80 @@ public class Octree {
 		int n = 0;
 		java.util.Stack<Node> localStack = new java.util.Stack<Node>();
 		java.util.Stack<Integer> localStack2 = new java.util.Stack<Integer>();
+        Queue<Node> queueNode = new LinkedList<Node>();
+        Queue<Integer> queueInfo = new LinkedList<>();
+
 
 		int level = 0;
-		localStack.push(Current);
-		localStack2.push(n);
-		localStack2.push(level);
-		while (localStack.isEmpty() == false) {
-			Current = localStack.pop();
+		queueNode.add(Current);
+		queueInfo.add(level);
+		queueInfo.add(n);
+		while (queueNode.isEmpty() == false) {
+			Current = queueNode.poll();
 			if (Current instanceof NonLeaf) {
 				NonLeaf temp = (NonLeaf) Current;
+				level=queueInfo.poll();
+				int node=queueInfo.poll();
+				
+				System.out.println("Level "+level+" Node no."+node);
+				if(level-1>=0) {
+					int parentnode=queueInfo.poll();
+					System.out.println("--NonLeaf-- Parent at level:"+(level-1)+" Node "+parentnode);
+				}
+				else {
+					System.out.println("--NonLeaf-- Root");
+				}
+				
+				System.out.println("----------------------------------------");
+
 				level++;
 
 				n = -1;
-				localStack.push(temp.left0);
-				localStack2.push(++n);
-				localStack2.push(level);
-				localStack.push(temp.left1);
-				localStack2.push(++n);
-				localStack2.push(level);
-				localStack.push(temp.left2);
-				localStack2.push(++n);
-				localStack2.push(level);
-				localStack.push(temp.left3);
-				localStack2.push(++n);
-				localStack2.push(level);
-				localStack.push(temp.right3);
-				localStack2.push(++n);
-				localStack2.push(level);
-				localStack.push(temp.right2);
-				localStack2.push(++n);
-				localStack2.push(level);
-				localStack.push(temp.right1);
-				localStack2.push(++n);
-				localStack2.push(level);
-				localStack.push(temp.right0);
-				localStack2.push(++n);
-				localStack2.push(level);
+				queueNode.add(temp.left0);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.left1);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.left2);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.left3);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.right3);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.right2);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.right1);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.right0);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
 			} else {
 				Leaf temp = (Leaf) Current;
-				System.out.println("Level " + localStack2.pop() + " NodeNo. " + localStack2.pop());
+				level=queueInfo.poll();
+				int node=queueInfo.poll();
+				
+				System.out.println("Level "+level+" Node no."+node);
+				if(level-1>=0) {
+					int parentnode=queueInfo.poll();
+					System.out.println("--Leaf-- Parent at level:"+(level-1)+" Node "+parentnode);
+				}
+				else {
+					System.out.println("--Leaf-- Root");
+				}
 				for (int i = 0; i < temp.getBucket().size(); i++) {
 					Hashtable h = temp.getBucket().get(i);
 					System.out.println(i + " " + h.toString());
@@ -476,14 +511,14 @@ public class Octree {
 		key.put("Y", 3);
 		key.put("Z", 25);
 		tree.insertTupleInIndex(key);// 001
-		tree.displayTree2();
+		//tree.displayTree2();
 		key = new Hashtable<>();
 
 		key.put("X", 2);
 		key.put("Y", 13);
 		key.put("Z", 6);
 		tree.insertTupleInIndex(key);// 010
-		tree.displayTree2();
+		//tree.displayTree2();
 		key = new Hashtable<>();
 
 		key.put("X", 7);
@@ -508,7 +543,7 @@ public class Octree {
 		key.put("Y", 11);
 		key.put("Z", 26);
 		tree.insertTupleInIndex(key);// 111
-		tree.displayTree2();
+		//tree.displayTree2();
 		key = new Hashtable<>();
 
 		key.put("X", 4);
