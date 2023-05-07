@@ -62,26 +62,34 @@ public class Test {
 
 	// Driver Code
 	public static void main(String[] args) {
-		int N = 4;
-		String S = "bbc";
-		String T = "bec";
-		printMiddleString(S, T);
-		String r = "";
-		String aa = "afogk";
-		String a = "asdji";
-		for (int i = 0; i < a.length(); i++) {
-			if (a.charAt(i) == aa.charAt(i)) {
-				r = r + a.charAt(i);
-
-			} else {
-				int x = a.charAt(i);
-				int y = aa.charAt(i);
-				char c = (char) ((x + y) / 2);
-				r = r + c;
-
+//		int N = 4;
+//		String S = "bbc";
+//		String T = "bec";
+//		printMiddleString(S, T);
+//		String r = "";
+//		String aa = "afogk";
+//		String a = "asdji";
+//		for (int i = 0; i < a.length(); i++) {
+//			if (a.charAt(i) == aa.charAt(i)) {
+//				r = r + a.charAt(i);
+//
+//			} else {
+//				int x = a.charAt(i);
+//				int y = aa.charAt(i);
+//				char c = (char) ((x + y) / 2);
+//				r = r + c;
+//
+//			}
+//		}
+		String pageName = "Student111190";
+		String res="";
+		for(int i = pageName.length()-1; i>(-1);i--) {
+			if((pageName.charAt(i)) >='0' && pageName.charAt(i) <='9') {
+				res=pageName.charAt(i)+res;
 			}
 		}
-
+		int pageind = Integer.parseInt(res);
+		System.out.println(pageind);
 	}
 }
 

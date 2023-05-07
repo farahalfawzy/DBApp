@@ -88,8 +88,10 @@ public class DBApp {
 						writer.append("True,");
 					else
 						writer.append("False,");
-					writer.append(null+",");
-					writer.append(null+",");
+					//just for testing: TODO
+					writer.append("XYZIndex"+",");
+					writer.append("Octree"+",");
+					//###############
 					writer.append(min + ",");
 					writer.append(max + ",");
 					writer.append("\n");
@@ -423,8 +425,49 @@ public class DBApp {
 					t=null;
 					return;
 				}
-				int pageind = -1;
+				//New
+				Octree myOct = deserializeOctree("XYZIndex");
 				Tuple myTuple = new Tuple(t.getClusteringKey(), htblColNameValue);
+				if(htblColNameValue.contains(myOct.getX()) && htblColNameValue.contains(myOct.getY()) &&
+						htblColNameValue.contains(myOct.getZ())) {
+					Hashtable<String,Object> key = new Hashtable<>();
+					key.put(myOct.getX(), htblColNameValue.get(myOct.getX()));
+					key.put(myOct.getY(), htblColNameValue.get(myOct.getY()));
+					key.put(myOct.getZ(), htblColNameValue.get(myOct.getZ()));
+					String pageName = myOct.getPageName(htblColNameValue);
+					Vector pageInfoVector = t.getPageInfo();
+					if (pageInfoVector.size() != 0) {
+						Page page = deserializePage(pageName);
+						if (page.contains(myTuple)) {
+							page.removeBinary(myTuple);
+							myOct.deleteTuple(key);
+							String res="";
+							for(int i = pageName.length()-1; i>(-1);i--) {
+								if((pageName.charAt(i)) >='0' && pageName.charAt(i) <='9') {
+									res=pageName.charAt(i)+res;
+								}
+							}
+							int pageind = Integer.parseInt(res);
+							if (page.size() == 0) {
+								deletingFiles(pageind, pageInfoVector, t);
+							} else {
+
+								Object max = getMaxInPage(page);
+								Object min = getMinInPage(page);
+								((PageInfo) pageInfoVector.get(pageind)).setMax(max);
+								((PageInfo) pageInfoVector.get(pageind)).setMin(min);
+
+								serializePage(t, page, t.getTableName() + "" + pageind);
+								serializeIndex(t, myOct, strTableName);
+								myOct=null;
+								page=null;
+							}
+						}
+					}
+				}
+				//End of the new part
+				
+				int pageind = -1;
 				if (htblColNameValue.containsKey(myCluster)) {
 //					 System.out.println("was hereee");
 					Object myClusterType = htblColNameValue.get(myCluster);
@@ -768,6 +811,36 @@ public class DBApp {
 			fileIn.close();
 
 			return table;
+		} catch (IOException i) {
+			i.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private static void serializeIndex(Table t, Octree p, String indexName) {
+		try {
+			FileOutputStream fileOut = new FileOutputStream("src/main/resources/Data/" + indexName + ".ser", false);
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			out.writeObject(p);
+			out.close();
+			fileOut.close();
+			// System.out.println("Page is serialized successfully");
+		} catch (IOException i) {
+			i.printStackTrace();
+		}
+	}
+	
+	private static Octree deserializeOctree(String indexName) {
+		try {
+			FileInputStream fileIn = new FileInputStream("src/main/resources/Data/" + indexName + ".ser");
+			ObjectInputStream in = new ObjectInputStream(fileIn);
+			Octree p = (Octree) in.readObject();
+			in.close();
+			fileIn.close();
+			return p;
 		} catch (IOException i) {
 			i.printStackTrace();
 		} catch (ClassNotFoundException e) {

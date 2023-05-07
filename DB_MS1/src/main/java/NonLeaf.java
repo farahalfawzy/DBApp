@@ -144,4 +144,12 @@ public class NonLeaf extends Node {
         return r;
     }
 
+	@Override
+	public String toString() {
+		return "NonLeaf [left0=" + left0 + ", left1=" + left1 + ", left2=" + left2 + ", left3=" + left3 + ", right3="
+				+ right3 + ", right2=" + right2 + ", right1=" + right1 + ", right0=" + right0 + "]";
+	}
+
+	
+	
 }
