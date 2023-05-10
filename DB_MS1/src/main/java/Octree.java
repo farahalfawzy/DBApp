@@ -81,6 +81,9 @@ public class Octree implements Serializable {
 						for (int i = 0; i < curLeaf.getBucket().size(); i++) {
 							insertIncorrectLeaf(curLeaf.getBucket().get(i), newNode);
 						}
+						for (int i = 0; i < curLeaf.getOverflow().size(); i++) {
+							insertIncorrectLeaf(curLeaf.getOverflow().get(i), newNode);
+						}
 						insertIncorrectLeaf(key, newNode);
 						return;
 					} else {// current is leaf but not root
@@ -112,6 +115,9 @@ public class Octree implements Serializable {
 						}
 						for (int i = 0; i < curLeaf.getBucket().size(); i++) {
 							insertIncorrectLeaf(curLeaf.getBucket().get(i), newNode);
+						}
+						for (int i = 0; i < curLeaf.getOverflow().size(); i++) {
+							insertIncorrectLeaf(curLeaf.getOverflow().get(i), newNode);
 						}
 						insertIncorrectLeaf(key, newNode);
 						return;
