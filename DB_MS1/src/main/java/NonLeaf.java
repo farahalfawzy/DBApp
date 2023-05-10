@@ -12,12 +12,12 @@ public class NonLeaf extends Node {
 
 	public Node left0, left1, left2, left3, right3, right2, right1, right0;
 
-	public NonLeaf(Object MinX, Object MaxX, Object MinY, Object MaxY, Object MinZ, Object MaxZ) {
+	public NonLeaf(Object MinX, Object MaxX, Object MinY, Object MaxY, Object MinZ, Object MaxZ,Leaf before,Leaf after) {
 		super(MinX, MaxX, MinY, MaxY, MinZ, MaxZ);
-		CreateLeaves();
+		CreateLeaves(before,after);
 	}
 
-	public void CreateLeaves() {
+	public void CreateLeaves(Leaf before,Leaf after) {
 		Object midX = getAvg(getMinX(),getMaxX());
 		Object midY = getAvg(getMinY(),getMaxY());
 		Object midZ = getAvg(getMinZ(),getMaxZ());
@@ -29,6 +29,24 @@ public class NonLeaf extends Node {
 		right2 = new Leaf(midX, this.getMaxX(), this.getMinY(), midY, midZ, this.getMaxZ());// 101
 		right1 = new Leaf(midX, this.getMaxX(), this.getMinY(), midY, this.getMinZ(), midZ);// 110
 		right0 = new Leaf(midX, this.getMaxX(), midY, this.getMaxY(), midZ, this.getMaxZ());// 111
+		((Leaf)left0).setBeforeLeaf(before);
+		((Leaf)left1).setBeforeLeaf((Leaf)left0);
+		((Leaf)left2).setBeforeLeaf((Leaf)left1);
+		((Leaf)left3).setBeforeLeaf((Leaf)left2);
+		((Leaf)right3).setBeforeLeaf((Leaf)left3);
+		((Leaf)right2).setBeforeLeaf((Leaf)right3);
+		((Leaf)right1).setBeforeLeaf((Leaf)right2);
+		((Leaf)right0).setBeforeLeaf((Leaf)right1);
+		
+		((Leaf)left0).setAfterLeaf((Leaf)left1);
+		((Leaf)left1).setAfterLeaf((Leaf)left2);
+		((Leaf)left2).setAfterLeaf((Leaf)left3);
+		((Leaf)left3).setAfterLeaf((Leaf)right3);
+		((Leaf)right3).setAfterLeaf((Leaf)right2);
+		((Leaf)right2).setAfterLeaf((Leaf)right1);
+		((Leaf)right1).setAfterLeaf((Leaf)right0);
+		((Leaf)right0).setAfterLeaf(after);
+
 
 	}
 

@@ -75,7 +75,7 @@ public class Octree implements Serializable {
 					System.out.println(MaxRowsinNode + " " + curLeaf.getSize());
 
 					NonLeaf newNode = new NonLeaf(current.getMinX(), current.getMaxX(), current.getMinY(),
-							current.getMaxY(), current.getMinZ(), current.getMaxZ());
+							current.getMaxY(), current.getMinZ(), current.getMaxZ(),curLeaf.getBeforeLeaf(),curLeaf.getAfterLeaf());
 					if (Parent == null) {// if current is root
 						this.root = newNode;
 						for (int i = 0; i < curLeaf.getBucket().size(); i++) {

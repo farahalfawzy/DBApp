@@ -4,13 +4,23 @@ import java.util.Vector;
 public class Leaf extends Node{
 
 private	Vector<Hashtable<String,Object>> Bucket;
+	public Leaf getBeforeLeaf() {
+	return beforeLeaf;
+}
+
+
+
 	private int size=0;
+	private Leaf beforeLeaf;
+
+	private Leaf afterLeaf;
 	
 	
 	 public Leaf(Object MinX,Object MaxX,Object MinY,Object MaxY,Object MinZ,Object MaxZ) {
 		 super( MinX,MaxX, MinY, MaxY, MinZ, MaxZ);
 		 Bucket = new Vector<Hashtable<String,Object>>();
-		 
+
+
 	 }
 
 	 
@@ -64,6 +74,22 @@ private	Vector<Hashtable<String,Object>> Bucket;
 	public void setSize(int size) {
 		this.size = size;
 	}	 
+
+public void setBeforeLeaf(Leaf beforeLeaf) {
+	this.beforeLeaf = beforeLeaf;
+}
+
+
+
+public Leaf getAfterLeaf() {
+	return afterLeaf;
+}
+
+
+
+public void setAfterLeaf(Leaf afterLeaf) {
+	this.afterLeaf = afterLeaf;
+}
 	public void removeFromBucket(Hashtable<String,Object> htbl) {
 		for(int i=0;i<Bucket.size();i++) {
 			if(Bucket.get(i).equals(htbl)) {
