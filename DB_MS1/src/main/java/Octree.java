@@ -11,6 +11,7 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.Vector;
 
 public class Octree implements Serializable {
@@ -72,10 +73,10 @@ public class Octree implements Serializable {
 
 				Leaf curLeaf = (Leaf) current;
 				if (curLeaf.getSize() == MaxRowsinNode) {// need to create new node
-					System.out.println(MaxRowsinNode + " " + curLeaf.getSize());
 
 					NonLeaf newNode = new NonLeaf(current.getMinX(), current.getMaxX(), current.getMinY(),
-							current.getMaxY(), current.getMinZ(), current.getMaxZ(),curLeaf.getBeforeLeaf(),curLeaf.getAfterLeaf());
+							current.getMaxY(), current.getMinZ(), current.getMaxZ(), curLeaf.getBeforeLeaf(),
+							curLeaf.getAfterLeaf());
 					if (Parent == null) {// if current is root
 						this.root = newNode;
 						for (int i = 0; i < curLeaf.getBucket().size(); i++) {
@@ -142,11 +143,9 @@ public class Octree implements Serializable {
 				higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
 				higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
 				higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
-				
 
 				String r = get3BitString(higherX, higherY, higherZ);
-				System.out.println(key.toString()+" "+r);
-				System.out.println(higherX+" "+higherY+" "+higherZ);
+				
 				positionOfLeaf = r;
 				switch (r) {
 				case "000":
@@ -412,7 +411,7 @@ public class Octree implements Serializable {
 		if (minZ instanceof Integer && maxZ instanceof Integer) {
 			int midZ = ((Integer.parseInt(minZ.toString())) + ((Integer.parseInt(maxZ.toString())))) / 2;
 
-			if (((Integer)key.get(getZ())) > midZ) {
+			if (((Integer) key.get(getZ())) > midZ) {
 				return true;
 			} else {
 				return false;
@@ -420,41 +419,41 @@ public class Octree implements Serializable {
 		}
 		if (minZ instanceof Double && maxZ instanceof Double) {
 			Double midZ = ((Double.parseDouble(minZ.toString())) + ((Double.parseDouble(maxZ.toString())))) / 2;
-			if (((Double)key.get(getZ()))> midZ) {
+			if (((Double) key.get(getZ())) > midZ) {
 				return true;
 			} else {
 				return false;
 			}
 		}
 		if (minZ instanceof String && maxZ instanceof String) {
-			String midZ = printMiddleString(((String)minZ).toLowerCase(), ((String)maxZ).toLowerCase(),
-					((String)minZ).length());
-			if (((String)key.get(getZ())).toLowerCase().compareTo(midZ) > 0)
+			String midZ = printMiddleString(((String) minZ).toLowerCase(), ((String) maxZ).toLowerCase(),
+					((String) minZ).length());
+			if (((String) key.get(getZ())).toLowerCase().compareTo(midZ) > 0)
 				return true;
 			else
 				return false;
 		}
 		if (minZ instanceof java.util.Date && maxZ instanceof java.util.Date) {
-				Date minDate = (Date)minZ;
-				Date maxDate = (Date)maxZ;
-				Date currDate = (Date)key.get(getZ());
-				Date midZ = findMidPoint(minDate, maxDate);
-				if (currDate.after(midZ))
-					return true;
-				else
-					return false;
-			
+			Date minDate = (Date) minZ;
+			Date maxDate = (Date) maxZ;
+			Date currDate = (Date) key.get(getZ());
+			Date midZ = findMidPoint(minDate, maxDate);
+			if (currDate.after(midZ))
+				return true;
+			else
+				return false;
+
 		}
 		return false;
 	}
 
 	private boolean getHigherY(Object minY, Object maxY, Hashtable<String, Object> key) {
-		
+
 		if (minY instanceof Integer && maxY instanceof Integer) {
 			int midY = ((Integer.parseInt(minY.toString())) + ((Integer.parseInt(maxY.toString())))) / 2;
-			System.out.println(minY+" "+maxY+" "+ midY);
+			System.out.println(minY + " " + maxY + " " + midY);
 
-			if (((Integer)key.get(getY())) > midY) {
+			if (((Integer) key.get(getY())) > midY) {
 				return true;
 			} else {
 				return false;
@@ -462,30 +461,30 @@ public class Octree implements Serializable {
 		}
 		if (minY instanceof Double && maxY instanceof Double) {
 			Double midY = ((Double.parseDouble(minY.toString())) + ((Double.parseDouble(maxY.toString())))) / 2;
-			if (((Double)key.get(getY()))> midY) {
+			if (((Double) key.get(getY())) > midY) {
 				return true;
 			} else {
 				return false;
 			}
 		}
 		if (minY instanceof String && maxY instanceof String) {
-			String midY = printMiddleString(((String)minY).toLowerCase(), ((String)maxY).toLowerCase(),
-					((String)minY).length());
-			if (((String)key.get(getY())).toLowerCase().compareTo(midY) > 0)
+			String midY = printMiddleString(((String) minY).toLowerCase(), ((String) maxY).toLowerCase(),
+					((String) minY).length());
+			if (((String) key.get(getY())).toLowerCase().compareTo(midY) > 0)
 				return true;
 			else
 				return false;
 		}
 		if (minY instanceof java.util.Date && maxY instanceof java.util.Date) {
-				Date minDate = (Date)minY;
-				Date maxDate = (Date)maxY;
-				Date currDate = (Date)key.get(getY());
-				Date midX = findMidPoint(minDate, maxDate);
-				if (currDate.after(midX))
-					return true;
-				else
-					return false;
-			
+			Date minDate = (Date) minY;
+			Date maxDate = (Date) maxY;
+			Date currDate = (Date) key.get(getY());
+			Date midX = findMidPoint(minDate, maxDate);
+			if (currDate.after(midX))
+				return true;
+			else
+				return false;
+
 		}
 		return false;
 	}
@@ -493,7 +492,8 @@ public class Octree implements Serializable {
 	private boolean getHigherX(Object minX, Object maxX, Hashtable<String, Object> key) {
 		if (minX instanceof Integer && maxX instanceof Integer) {
 			int midX = ((Integer.parseInt(minX.toString())) + ((Integer.parseInt(maxX.toString())))) / 2;
-			if (((Integer)key.get(getX())) > midX) {
+			
+			if (((Integer) key.get(getX())) > midX) {
 				return true;
 			} else {
 				return false;
@@ -501,30 +501,30 @@ public class Octree implements Serializable {
 		}
 		if (minX instanceof Double && maxX instanceof Double) {
 			Double midX = ((Double.parseDouble(minX.toString())) + ((Double.parseDouble(maxX.toString())))) / 2;
-			if (((Double)key.get(getX()))> midX) {
+			if (((Double) key.get(getX())) > midX) {
 				return true;
 			} else {
 				return false;
 			}
 		}
 		if (minX instanceof String && maxX instanceof String) {
-			String midX = printMiddleString(((String)minX).toLowerCase(), ((String)maxX).toLowerCase(),
-					((String)minX).length());
-			if (((String)key.get(getX())).toLowerCase().compareTo(midX) > 0)
+			String midX = printMiddleString(((String) minX).toLowerCase(), ((String) maxX).toLowerCase(),
+					((String) minX).length());
+			if (((String) key.get(getX())).toLowerCase().compareTo(midX) > 0)
 				return true;
 			else
 				return false;
 		}
 		if (minX instanceof java.util.Date && maxX instanceof java.util.Date) {
-				Date minDate = (Date)minX;
-				Date maxDate = (Date)maxX;
-				Date currDate = (Date)key.get(getX());
-				Date midX = findMidPoint(minDate, maxDate);
-				if (currDate.after(midX))
-					return true;
-				else
-					return false;
-			
+			Date minDate = (Date) minX;
+			Date maxDate = (Date) maxX;
+			Date currDate = (Date) key.get(getX());
+			Date midX = findMidPoint(minDate, maxDate);
+			if (currDate.after(midX))
+				return true;
+			else
+				return false;
+
 		}
 		return false;
 	}
@@ -732,7 +732,7 @@ public class Octree implements Serializable {
 
 			break;
 		}
-		if(leaf.getSize()==this.MaxRowsinNode) {
+		if (leaf.getSize() == this.MaxRowsinNode) {
 			this.insertTupleInIndex(keyrec);
 			return;
 		}
@@ -752,7 +752,7 @@ public class Octree implements Serializable {
 		Object val1 = keyrec.get(this.getX());
 		Object val2 = keyrec.get(this.getY());
 		Object val3 = keyrec.get(this.getZ());
-		Object val4= keyrec.get("Page Name");
+		Object val4 = oldPageName;
 		while (current != null) {
 
 			if (current instanceof Leaf) {
@@ -825,6 +825,7 @@ public class Octree implements Serializable {
 		}
 
 	}
+
 	public void deleteTuple(Hashtable<String, Object> key) {
 		Node current = root;
 		NonLeaf parent = null;
@@ -834,11 +835,11 @@ public class Octree implements Serializable {
 				Leaf myLeaf = ((Leaf) current);
 				myLeaf.removeFromBucket(key);
 				int i = 0; // number of empty nodes
-				if(myStack.empty()) {
-					setRoot(myLeaf);
-					this.root = new Leaf(MinX,MaxX,MinY,MaxY,MinZ,MaxZ);
-					return;
-				}
+//				if(myStack.empty()) {
+//					setRoot(myLeaf);
+//					this.root = new Leaf(MinX,MaxX,MinY,MaxY,MinZ,MaxZ);
+//					return;
+//				}
 				NonLeaf myParent = myStack.pop();
 				if (((Leaf) (myParent.left0)).getBucket().isEmpty()) {
 					i++;
@@ -1024,119 +1025,282 @@ public class Octree implements Serializable {
 		return res;
 	}
 
+	public Hashtable<String, Object> getPageNameToInsert(Hashtable<String, Object> key, String clustKey, Node current,
+			int minDiff, String pageName) {
+
+		if (current == null)
+			return null;
+
+		if (current instanceof Leaf) {
+			Leaf myLeaf = (Leaf) current;
+			int minCurDiff = minDiff;
+			String page = pageName;
+			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+				if (  ((Integer) myLeaf.getBucket().get(i).get(clustKey)) - ((Integer) key.get(clustKey)) < minCurDiff) {
+					if(((Integer) myLeaf.getBucket().get(i).get(clustKey)) > ((Integer) key.get(clustKey))) {
+					minCurDiff = ((Integer) myLeaf.getBucket().get(i).get(clustKey)) - ((Integer) key.get(clustKey));
+					page = (String) myLeaf.getBucket().get(i).get("Page Name");
+					
+					}
+				}
+			}
+		
+			Hashtable<String, Object> hash = new Hashtable<>();
+			hash.put("minDiff", minCurDiff);
+			hash.put("Page Name", page);
+
+			return hash;
+		} else {
+			NonLeaf curNonleaf = (NonLeaf) current;
+
+			if (this.getX().equals(clustKey)) {
+				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
+				if (!higherX) {
+					Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.left0, minDiff,
+							pageName);// 000
+					Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.left1, minDiff,
+							pageName);// 001
+					Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.left2, minDiff,
+							pageName);// 010
+					Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.left3, minDiff,
+							pageName);//
+					int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
+					int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
+					int min = Math.min(min1, min2);
+					if (min == ((Integer) hash1.get("minDiff"))) {
+						return hash1;
+					}
+					if (min == ((Integer) hash2.get("minDiff"))) {
+						return hash2;
+					}
+					if (min == ((Integer) hash3.get("minDiff"))) {
+						return hash3;
+					}
+					if (min == ((Integer) hash4.get("minDiff"))) {
+						return hash4;
+					}
+
+				} else {
+					Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.right3, minDiff,
+							pageName);// 100
+					Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.right2, minDiff,
+							pageName);// 101
+					Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.right1, minDiff,
+							pageName);// 110
+					Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.right0, minDiff,
+							pageName);// 111
+					int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
+					int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
+					int min = Math.min(min1, min2);
+					if (min == ((Integer) hash1.get("minDiff"))) {
+						return hash1;
+					}
+					if (min == ((Integer) hash2.get("minDiff"))) {
+						return hash2;
+					}
+					if (min == ((Integer) hash3.get("minDiff"))) {
+						return hash3;
+					}
+					if (min == ((Integer) hash4.get("minDiff"))) {
+						return hash4;
+					}
+				}
+
+			} else {
+				if (this.getY().equals(clustKey)) {
+					boolean higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
+					if (!higherY) {
+						Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.left0, minDiff,
+								pageName);
+						Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.left1, minDiff,
+								pageName);
+						Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.right3, minDiff,
+								pageName);
+						Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.right2, minDiff,
+								pageName);
+						int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
+						int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
+						int min = Math.min(min1, min2);
+						if (min == ((Integer) hash1.get("minDiff"))) {
+							return hash1;
+						}
+						if (min == ((Integer) hash2.get("minDiff"))) {
+							return hash2;
+						}
+						if (min == ((Integer) hash3.get("minDiff"))) {
+							return hash3;
+						}
+						if (min == ((Integer) hash4.get("minDiff"))) {
+							return hash4;
+						}
+					} else {
+						Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.left2, minDiff,
+								pageName);
+						Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.left3, minDiff,
+								pageName);
+						Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.right1, minDiff,
+								pageName);
+						Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.right0, minDiff,
+								pageName);
+						int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
+						int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
+						int min = Math.min(min1, min2);
+						if (min == ((Integer) hash1.get("minDiff"))) {
+							return hash1;
+						}
+						if (min == ((Integer) hash2.get("minDiff"))) {
+							return hash2;
+						}
+						if (min == ((Integer) hash3.get("minDiff"))) {
+							return hash3;
+						}
+						if (min == ((Integer) hash4.get("minDiff"))) {
+							return hash4;
+						}
+					}
+				} else {
+					boolean higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
+					if (!higherZ) {
+						Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.left0, minDiff,
+								pageName);// 000
+						Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.left2, minDiff,
+								pageName);// 010
+						Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.right3, minDiff,
+								pageName);// 100
+						Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.right1, minDiff,
+								pageName);// 110
+						int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
+						int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
+						int min = Math.min(min1, min2);
+						if (min == ((Integer) hash1.get("minDiff"))) {
+							return hash1;
+						}
+						if (min == ((Integer) hash2.get("minDiff"))) {
+							return hash2;
+						}
+						if (min == ((Integer) hash3.get("minDiff"))) {
+							return hash3;
+						}
+						if (min == ((Integer) hash4.get("minDiff"))) {
+							return hash4;
+						}
+					} else {
+						Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.left1, minDiff,
+								pageName);
+						Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.left3, minDiff,
+								pageName);
+						Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.right2, minDiff,
+								pageName);
+						Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.right0, minDiff,
+								pageName);
+						int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
+						int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
+						int min = Math.min(min1, min2);
+						if (min == ((Integer) hash1.get("minDiff"))) {
+							return hash1;
+						}
+						if (min == ((Integer) hash2.get("minDiff"))) {
+							return hash2;
+						}
+						if (min == ((Integer) hash3.get("minDiff"))) {
+							return hash3;
+						}
+						if (min == ((Integer) hash4.get("minDiff"))) {
+							return hash4;
+						}
+					}
+				}
+			}
+		}
+		return null;
+
+	}
+
+	public String getPageNameToInsert(Hashtable<String, Object> key, String clustKey) {
+		Hashtable<String, Object> hash = getPageNameToInsert(key, clustKey, this.root, (int) 1e6, "");
+		String page=(String) hash.get("Page Name");
+		if(page=="") return "";
+		else
+			return page.charAt(page.length()-1)+"";
+	}
+
 	public static void main(String[] args) {
 		Octree tree = new Octree("X", "Y", "Z", 0, 10, 0, 20, 0, 40);
 		Hashtable<String, Object> key = new Hashtable<>();
 		Hashtable<String, Object> key1 = new Hashtable<>();
-//		key1.put("X", 2);
-//		key1.put("Y", 3);
-//		key1.put("Z", 6);
-//		key1.put("Page Name", "Student0");
-//		tree.insertTupleInIndex(key1);// 000
-////		key = new Hashtable<>();
-////		key.put("X", 6);
-////		key.put("Y", 3);
-////		key.put("Z", 5);
-////		key.put("Page Name", "Student1");
-////		tree.insertTupleInIndex(key);// 100
-//		// tree.displayTree2();
-////		key = new Hashtable<>();
-////		key.put("X", 2);
-////		key.put("Y", 3);
-////		key.put("Z", 25);
-////		key.put("Page Name", "Student2");
-////		tree.insertTupleInIndex(key);// 001
-//		// tree.displayTree2();
-////		key = new Hashtable<>();
-////
-////		key.put("X", 2);
-////		key.put("Y", 13);
-////		key.put("Z", 6);
-////		key.put("Page Name", "Student3");
-////		tree.insertTupleInIndex(key);// 010
-//		// tree.displayTree2();
-//		Hashtable key4 = new Hashtable<>();
-//
-//		key4.put("X", 7);
-//		key4.put("Y", 3);
-//		key4.put("Z", 27);
-//		key4.put("Page Name", "Student4");
-//		tree.insertTupleInIndex(key4);// 101
-//		Hashtable key2 = new Hashtable<>();
-//
-//		key2.put("X", 2);
-//		key2.put("Y", 3);
-//		key2.put("Z", 9);
-//		key2.put("Page Name", "Student5");
-//		tree.insertTupleInIndex(key2);// 000
-//		Hashtable key3 = new Hashtable<>();
-//
-//		key3.put("X", 1);
-//		key3.put("Y", 8);
-//		key3.put("Z", 2);
-//		key3.put("Page Name", "Student6");
-//		tree.insertTupleInIndex(key3);// 000
-////		key = new Hashtable<>();
-////
-////		key.put("X", 7);
-////		key.put("Y", 11);
-////		key.put("Z", 26);
-////		key.put("Page Name", "Student7");
-////		tree.insertTupleInIndex(key);// 111
-//		// tree.displayTree2();
-//		key = new Hashtable<>();
-//
-//		key.put("X", 4);
-//		key.put("Y", 9);
-//		key.put("Z", 18);
-//		key.put("Page Name", "Student8");
-//		tree.insertTupleInIndex(key);// 000 //4th element in 000
-//		System.out.println("\n\n");
-////		tree.deleteTuple(key);
-////		tree.deleteTuple(key1);
-////		tree.deleteTuple(key2);
-////		tree.deleteTuple(key3);
-////		tree.deleteTuple(key4);
-//		tree.displayTree2();
-//		Hashtable<String, Object> key9 = new Hashtable<>();
-//		key9.put("X", 2);
-//		key9.put("Y", 3);
-//		key9.put("Z", 6);
-//		key9.put("Page Name", "Student0");
-//		tree.insertTupleInIndex(key9);// 000
-//		tree.displayTree2();
-
-		Hashtable rec = new Hashtable();
-		rec.put("x", new Integer(2));
-		rec.put("y", new Integer(3));
-		rec.put("z", new Integer(5));
-		tree.insertTupleInIndex(rec);
-		rec = new Hashtable();
-		rec.put("x", new Integer(1));
-		rec.put("y", new Integer(3));
-		rec.put("z", new Integer(5));
-		tree.insertTupleInIndex(rec);
-		rec = new Hashtable();
-		rec.put("x", new Integer(2));
-		rec.put("y", new Integer(3));
-		rec.put("z", new Integer(6));
-		tree.insertTupleInIndex(rec);
-		rec = new Hashtable();
-		rec.put("x", new Integer(2));
-		rec.put("y", new Integer(4));
-		rec.put("z", new Integer(5));
-		tree.insertTupleInIndex(rec);
-		rec = new Hashtable();
-		rec.put("x", new Integer(1));
-		rec.put("y", new Integer(3));
-		rec.put("z", new Integer(3));
-		tree.insertTupleInIndex(rec);
-		rec = new Hashtable();
-		rec = new Hashtable();
-		rec.put("x", new Integer(2));
-		rec.put("y", new Integer(3));
-		rec.put("z", new Integer(6));
-		tree.insertTupleInIndex(rec);
+		key1.put("x", 2);
+		key1.put("y", 3);
+		key1.put("z", 6);
+		key1.put("Page Name", "Student0");
+		tree.insertTupleInIndex(key1);// 000
+		key = new Hashtable<>();
+		key.put("x", 6);
+		key.put("y", 3);
+		key.put("z", 5);
+		key.put("Page Name", "Student1");
+		tree.insertTupleInIndex(key);// 100
+		key = new Hashtable<>();
+		key.put("x", 2);
+		key.put("y", 3);
+		key.put("z", 25);
+		key.put("Page Name", "Student2");
+		tree.insertTupleInIndex(key);// 001
+		key = new Hashtable<>();
 		tree.displayTree2();
+
+		key.put("x", 2);
+		key.put("y", 13);
+		key.put("z", 6);
+		key.put("Page Name", "Student3");
+		tree.insertTupleInIndex(key);// 010
+		Hashtable key4 = new Hashtable<>();
+		key4.put("x", 7);
+		key4.put("y", 3);
+		key4.put("z", 27);
+		key4.put("Page Name", "Student4");
+		tree.insertTupleInIndex(key4);// 101
+		Hashtable key2 = new Hashtable<>();
+
+		key2.put("x", 2);
+		key2.put("y", 3);
+		key2.put("z", 9);
+		key2.put("Page Name", "Student5");
+		tree.insertTupleInIndex(key2);// 000
+		Hashtable key3 = new Hashtable<>();
+
+		key3.put("x", 1);
+		key3.put("y", 8);
+		key3.put("z", 2);
+		key3.put("Page Name", "Student6");
+		tree.insertTupleInIndex(key3);// 000
+		key = new Hashtable<>();
+
+		key.put("x", 7);
+		key.put("y", 11);
+		key.put("z", 26);
+		key.put("Page Name", "Student7");
+		tree.insertTupleInIndex(key);// 111
+		key = new Hashtable<>();
+
+		key.put("x", 4);
+		key.put("y", 9);
+		key.put("z", 18);
+		key.put("Page Name", "Student8");
+		tree.insertTupleInIndex(key);// 000 //4th element in 000
+		System.out.println("\n\n");
+//			tree.deleteTuple(key);
+//			tree.deleteTuple(key1);
+//			tree.deleteTuple(key2);
+//			tree.deleteTuple(key3);
+//			tree.deleteTuple(key4);
+		tree.displayTree2();
+//			Hashtable<String, Object> key9 = new Hashtable<>();
+//			key9.put("X", 2);
+//			key9.put("Y", 3);
+//			key9.put("Z", 6);
+//			key9.put("Page Name", "Student0");
+//			tree.insertTupleInIndex(key9);// 000
+//			tree.displayTree2();
+
 	}
 }

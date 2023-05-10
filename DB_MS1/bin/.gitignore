@@ -1,3 +1,14 @@
-/override.class
-/Values.class
+/DBApp.class
+/DBAppException.class
+/Leaf.class
+/Node.class
+/NonLeaf.class
+/Octree.class
+/Page.class
+/PageInfo.class
+/Table.class
+/Test.class
 /Testing.class
+/Tuple.class
+/Values.class
+/SQLTerm.class

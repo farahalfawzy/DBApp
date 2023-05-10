@@ -14,9 +14,10 @@ public class Values {
 		DBApp dbApp = new DBApp();
 		dbApp.init();
 //		creating(strTableName, dbApp);
-//		inserting(dbApp);
-//		dbApp.createIndex(strTableName, new String[] { "name", "gpa", "date of birth" });
-//		dbApp.displayTree(strTableName);
+//		dbApp.createIndex(strTableName, new String[] { "id", "gpa", "date of birth" });
+
+		inserting(dbApp);
+		dbApp.displayTree(strTableName);
 		Hashtable rec = new Hashtable();
 		rec.put("name", new String("Seif"));
 		rec.put("id", new Integer(67));
@@ -40,17 +41,19 @@ public class Values {
 	private static void deleting(String strTableName, DBApp dbApp, Hashtable rec) throws DBAppException {
 		// TODO Auto-generated method stub
 
-		dbApp.deleteFromTable(strTableName, rec);
+		//dbApp.deleteFromTable(strTableName, rec);
 		dbApp.getPages("Student");
 	}
 
 	private static void inserting(DBApp dbApp) throws DBAppException {
 		// TODO Auto-generated method stub
+		String strTableName="Student";
 		Hashtable rec = new Hashtable();
 		rec.put("id", new Integer(0));
 		rec.put("name", new String("Kkk"));// 0
 		rec.put("gpa", 0.95);// 0
 		rec.put("Date of Birth", new Date(2015 - 1900, 9 - 1, 17));// 1
+		dbApp.getPages(strTableName);
 
 		dbApp.insertIntoTable("Student", rec);// 001
 		rec.clear();
@@ -58,41 +61,47 @@ public class Values {
 		rec.put("name", new String("jjjjj"));// 0
 		rec.put("gpa", 0.19);// 0
 		rec.put("Date of Birth", new Date(2013 - 1900, 9 - 1, 17));// 1
+		dbApp.getPages(strTableName);
+
 		dbApp.insertIntoTable("Student", rec);// 001
 //		dbApp.getPages("Student");
 
 		rec.clear();
 
-		rec.put("id", new Integer(15));
+		rec.put("id", new Integer(5));
 		rec.put("name", new String("paula"));// 1
 		rec.put("gpa", 2.9);// 1
 		rec.put("Date of Birth", new Date(2005 - 1900, 9 - 1, 26));// 0
+		dbApp.getPages(strTableName);
 
 		dbApp.insertIntoTable("Student", rec);// 110
 		rec.clear();
 
-		rec.put("id", new Integer(3));
+		rec.put("id", new Integer(4));
 		rec.put("name", new String("malak"));
 		rec.put("gpa", 3.9);
 		rec.put("Date of Birth", new Date(2013 - 1900, 11 - 1, 26));
+		dbApp.getPages(strTableName);
 
 		dbApp.insertIntoTable("Student", rec);// 111
 
 		rec.clear();
 
 		rec.put("name", new String("nameee"));
-		rec.put("id", new Integer(7));
+		rec.put("id", new Integer(8));
 		rec.put("gpa", 1.97);
 		rec.put("Date of Birth", new Date(2013 - 1900, 10 - 1, 26));// 011
+		dbApp.getPages(strTableName);
 
 		dbApp.insertIntoTable("Student", rec);// 011
 
 		rec.clear();
 
 		rec.put("name", new String("Nameee3"));
-		rec.put("id", new Integer(8));
+		rec.put("id", new Integer(7));
 		rec.put("gpa", 1.29);
 		rec.put("Date of Birth", new Date(2022 - 1900, 10 - 1, 28));// 011
+		dbApp.getPages(strTableName);
 
 		dbApp.insertIntoTable("Student", rec);
 
@@ -101,6 +110,7 @@ public class Values {
 		rec.put("id", new Integer(1));
 		rec.put("gpa", 1.99);
 		rec.put("Date of Birth", new Date(2019 - 1900, 10 - 1, 26));// 011
+		dbApp.getPages(strTableName);
 
 		dbApp.insertIntoTable("Student", rec);
 
@@ -109,6 +119,7 @@ public class Values {
 		rec.put("id", new Integer(60));
 		rec.put("gpa", 1.26);
 		rec.put("Date of Birth", new Date(2012 - 1900, 10 - 1, 26));// 011
+		dbApp.getPages(strTableName);
 
 		dbApp.insertIntoTable("Student", rec);
 //		

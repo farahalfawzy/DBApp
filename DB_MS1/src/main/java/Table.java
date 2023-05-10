@@ -12,7 +12,10 @@ public class Table extends Vector implements Serializable {
 	private int currentMaxId=-1;
 	private Vector<PageInfo>  PageInfo=new Vector<PageInfo>();
 	private Vector <String> index=new Vector<>();
+	private boolean indexOnClustKey;
 	
+	
+
 	public Table(String tableName, String clusteringKey, Hashtable<String, String> colNameType,
 			Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) {
 
@@ -85,7 +88,13 @@ public class Table extends Vector implements Serializable {
 	public void setIndex(Vector<String> index) {
 		this.index = index;
 	}
+	public boolean isIndexOnClustKey() {
+		return indexOnClustKey;
+	}
 
+	public void setIndexOnClustKey(boolean indexOnClustKey) {
+		this.indexOnClustKey = indexOnClustKey;
+	}
 //	public Vector<Page> getPages() {
 //		return Pages;
 //	}
