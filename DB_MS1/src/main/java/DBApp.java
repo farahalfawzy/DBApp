@@ -317,7 +317,7 @@ public class DBApp {
 									serializePage(t, newPage, t.getTableName() + "" + ind);
 									t.setCurrentMaxId(t.getCurrentMaxId() + 1);
 									newPage = null;
-									updateRefrenceInIndex(strTableName,newtup.getRecord(),t.getTableName() + "" + pageind );
+									updateRefrenceInIndex(strTableName,newtup.getRecord(),t.getTableName() + "" + pageind,t.getTableName() + "" + (pageind-1) );
 
 
 									break;
@@ -335,14 +335,14 @@ public class DBApp {
 										((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(nextpage));
 										serializePage(t, nextpage, t.getTableName() + "" + ind);
 										nextpage = null;
-										updateRefrenceInIndex(strTableName,newtup.getRecord(),t.getTableName() + "" + pageind );
+										updateRefrenceInIndex(strTableName,newtup.getRecord(),t.getTableName() + "" + pageind,t.getTableName() + "" + (pageind-1) );
 
 										break;
 
 									} else {
 										int newindexInPage = nextpage.getIndexInPage(newtup);
 										nextpage.insertElementAt(newtup, newindexInPage);
-										updateRefrenceInIndex(strTableName,newtup.getRecord(),t.getTableName() + "" + ind );
+										updateRefrenceInIndex(strTableName,newtup.getRecord(),t.getTableName() + "" + ind ,t.getTableName() + "" + (ind-1));
 
 										newtup = (Tuple) nextpage.remove(nextpage.size() - 1);//remove
 										((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(nextpage));
@@ -1307,6 +1307,7 @@ public class DBApp {
 		}
 
 	}
+	//insertIntoIndex creates a hashtable with X,Y,Z and pagename for every index  then call method insert in Octree Class
 	private void insertIntoIndex (String strTableName, Hashtable<String, Object> htblColNameValue,String pagename) throws DBAppException{
 		try {
 			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
@@ -1348,7 +1349,7 @@ public class DBApp {
 
 
 	}
-	private void updateRefrenceInIndex (String strTableName, Hashtable<String, Object> htblColNameValue,String pagename) throws DBAppException{
+	private void updateRefrenceInIndex (String strTableName, Hashtable<String, Object> htblColNameValue,String pageName, String oldPageName) throws DBAppException{
 		BufferedReader br;
 		try {
 			br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
@@ -1370,7 +1371,7 @@ public class DBApp {
 		for(int i=0;i<indices.size();i++) {
 			String TreeName=strTableName+indices.get(i);
 			Octree Octree=deserializeOctree(TreeName);
-			Octree.updateTupleReferenceInIndex(htblColNameValue, pagename);
+			Octree.updateTupleReferenceInIndex(htblColNameValue, pageName, oldPageName);
 			serializeIndex(Octree,TreeName);
 			Octree=null;
 
@@ -1617,15 +1618,22 @@ public class DBApp {
 				if (level - 1 >= 0) {
 					int parentnode = queueInfo.poll();
 					System.out.println("--Leaf-- Parent at level:" + (level - 1) + " Node " + parentnode+" Size "+temp.getSize());
-					System.out.println("MinX "+Current.getMinX()+"MaxX "+Current.getMaxX()+" ,MinY "+Current.getMinY()+" ,MaxY "+Current.getMaxY()+", MinZ "+Current.getMinZ()+", MaxZ "+Current.getMaxZ());
+					System.out.println("MinX "+Current.getMinX()+" MaxX "+Current.getMaxX()+" ,MinY "+Current.getMinY()+" ,MaxY "+Current.getMaxY()+" ,MinZ "+Current.getMinZ()+" ,MaxZ "+Current.getMaxZ());
 
 				} else {
 					System.out.println("--Leaf-- Root");
-					System.out.println("MinX "+Current.getMinX()+"MaxX "+Current.getMaxX()+" ,MinY "+Current.getMinY()+" ,MaxY "+Current.getMaxY()+", MinZ "+Current.getMinZ()+", MaxZ "+Current.getMaxZ());
+					System.out.println("MinX "+Current.getMinX()+" MaxX "+Current.getMaxX()+" ,MinY "+Current.getMinY()+" ,MaxY "+Current.getMaxY()+" ,MinZ "+Current.getMinZ()+" ,MaxZ "+Current.getMaxZ());
 
 				}
+				System.out.println("--Main Bucket--");
 				for (int i = 0; i < temp.getBucket().size(); i++) {
 					Hashtable h = temp.getBucket().get(i);
+					System.out.println(i + " " + h.toString());
+
+				}
+				System.out.println("--Overflow Bucket--");
+				for (int i = 0; i < temp.getOverflow().size(); i++) {
+					Hashtable h = temp.getOverflow().get(i);
 					System.out.println(i + " " + h.toString());
 
 				}

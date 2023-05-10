@@ -120,7 +120,7 @@ public class Octree implements Serializable {
 
 				} else {
 					if (curLeaf.IsDup(key)) {
-						curLeaf.getBucket().add(key);
+						curLeaf.getOverflow().add(key);
 					} else {
 						curLeaf.getBucket().add(key);
 						curLeaf.setSize(curLeaf.getSize() + 1);
@@ -731,7 +731,7 @@ public class Octree implements Serializable {
 			return;
 		}
 		if (leaf.IsDup(keyrec)) {
-			leaf.getBucket().add(keyrec);
+			leaf.getOverflow().add(keyrec);
 
 		} else {
 			leaf.getBucket().add(keyrec);
@@ -739,13 +739,14 @@ public class Octree implements Serializable {
 		}
 	}
 
-	public void updateTupleReferenceInIndex(Hashtable<String, Object> keyrec, String PageName) {
+	public void updateTupleReferenceInIndex(Hashtable<String, Object> keyrec, String pageName, String oldPageName) {
 		Node current = this.root;
 		NonLeaf Parent = null;
 		String positionOfLeaf = "";
 		Object val1 = keyrec.get(this.getX());
 		Object val2 = keyrec.get(this.getY());
 		Object val3 = keyrec.get(this.getZ());
+		Object val4= keyrec.get("Page Name");
 		while (current != null) {
 
 			if (current instanceof Leaf) {
@@ -755,13 +756,25 @@ public class Octree implements Serializable {
 
 					if (curLeaf.getBucket().get(i).get(this.getX()).equals(val1)
 							&& curLeaf.getBucket().get(i).get(this.getY()).equals(val2)
-							&& curLeaf.getBucket().get(i).get(this.getZ()).equals(val3)) {
+							&& curLeaf.getBucket().get(i).get(this.getZ()).equals(val3)
+							&& curLeaf.getBucket().get(i).get("Page Name").equals(val4)) {
 
-						curLeaf.getBucket().get(i).put("Page Name", PageName);
+						curLeaf.getBucket().get(i).put("Page Name", pageName);
 						return;
 					}
 
 				}
+				for (int i = 0; i < curLeaf.getOverflow().size(); i++) {
+					if (curLeaf.getOverflow().get(i).get(this.getX()).equals(val1)
+							&& curLeaf.getOverflow().get(i).get(this.getY()).equals(val2)
+							&& curLeaf.getOverflow().get(i).get(this.getZ()).equals(val3)
+							&& curLeaf.getOverflow().get(i).get("Page Name").equals(val4)) {
+						curLeaf.getOverflow().get(i).put("Page Name", pageName);
+						return;
+
+					}
+				}
+
 				current = null;
 				return;
 

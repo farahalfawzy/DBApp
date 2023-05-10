@@ -21,7 +21,7 @@ public class Values {
 		rec.put("name", new String("Seif"));
 		rec.put("id", new Integer(67));
 		rec.put("gpa", 1.26);
-		//rec.put("Date of Birth", new Date(2012 - 1900, 10 - 1, 26));
+		rec.put("Date of Birth", new Date(2012 - 1900, 10 - 1, 26));
 
 		dbApp.insertIntoTable("Student", rec);
 
