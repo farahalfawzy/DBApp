@@ -11,6 +11,7 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.Vector;
 
 public class Octree implements Serializable {
@@ -834,11 +835,11 @@ public class Octree implements Serializable {
 				Leaf myLeaf = ((Leaf) current);
 				myLeaf.removeFromBucket(key);
 				int i = 0; // number of empty nodes
-				if(myStack.empty()) {
-					setRoot(myLeaf);
-					this.root = new Leaf(MinX,MaxX,MinY,MaxY,MinZ,MaxZ);
-					return;
-				}
+//				if(myStack.empty()) {
+//					setRoot(myLeaf);
+//					this.root = new Leaf(MinX,MaxX,MinY,MaxY,MinZ,MaxZ);
+//					return;
+//				}
 				NonLeaf myParent = myStack.pop();
 				if (((Leaf) (myParent.left0)).getBucket().isEmpty()) {
 					i++;

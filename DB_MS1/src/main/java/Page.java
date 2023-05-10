@@ -263,4 +263,27 @@ public class Page extends Vector<Tuple> implements Serializable {
 		return index;
 	}
 
+	public Tuple PrintTuple(Tuple t) {
+
+		Object clustKey = t.getClusteringkey();
+		Object clustValue = t.getRecord().get(clustKey);
+		int index = -1;
+		if (clustValue instanceof java.lang.Integer) {
+			index = this.binarySearchInt((Integer) clustValue);
+		}
+		if (clustValue instanceof java.lang.String) {
+			System.out.println("it is a string");
+			index = this.binarySearchString((String) clustValue);
+		}
+		if (clustValue instanceof java.lang.Double) {
+			index = this.binarySearchDouble((Double) clustValue);
+		}
+		if (clustValue instanceof java.util.Date) {
+			index = this.binarySearchDate((Date) clustValue);
+		}
+//		System.out.println(t.getRecord() + " " + this.get(index).getRecord());
+		return this.get(index);
+
+	}
+
 }
