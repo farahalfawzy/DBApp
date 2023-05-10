@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.Vector;
 
-public abstract class Node {
+public abstract class Node implements Serializable {
 
 private	Object MinX;
 private	Object MaxX;

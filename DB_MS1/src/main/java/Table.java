@@ -11,7 +11,7 @@ public class Table extends Vector implements Serializable {
 	private Hashtable<String, String> ColNameMax;
 	private int currentMaxId=-1;
 	private Vector<PageInfo>  PageInfo=new Vector<PageInfo>();
-	//private Vector <Page> Pages;
+	private Vector <String> index=new Vector<>();
 	
 	public Table(String tableName, String clusteringKey, Hashtable<String, String> colNameType,
 			Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) {
@@ -76,6 +76,14 @@ public class Table extends Vector implements Serializable {
 
 	public void setPageInfo(Vector<PageInfo> pageInfo) {
 		PageInfo = pageInfo;
+	}
+
+	public Vector<String> getIndex() {
+		return index;
+	}
+
+	public void setIndex(Vector<String> index) {
+		this.index = index;
 	}
 
 //	public Vector<Page> getPages() {

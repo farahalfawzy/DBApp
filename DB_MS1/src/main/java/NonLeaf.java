@@ -18,9 +18,9 @@ public class NonLeaf extends Node {
 	}
 
 	public void CreateLeaves() {
-		Object midX = getAvgX(getMinX(),getMaxX());
-		Object midY = getAvgY(getMinY(),getMaxY());
-		Object midZ = getAvgZ(getMinZ(),getMaxZ());
+		Object midX = getAvg(getMinX(),getMaxX());
+		Object midY = getAvg(getMinY(),getMaxY());
+		Object midZ = getAvg(getMinZ(),getMaxZ());
 		left0 = new Leaf(this.getMinX(), midX, this.getMinY(), midY, this.getMinZ(), midZ);// 000
 		left1 = new Leaf(this.getMinX(), midX, this.getMinY(), midY, midZ, this.getMaxZ());// 001
 		left2 = new Leaf(this.getMinX(), midX, midY, this.getMaxY(), this.getMinZ(), midZ);// 010
@@ -32,59 +32,25 @@ public class NonLeaf extends Node {
 
 	}
 
-	private Object getAvgX(Object minX, Object maxX) {
+	private Object getAvg(Object min, Object max) {//changed to directly type casting instead of parsing as some errors and null values where returned
 		Object midX = null;
-		if(minX instanceof Integer && maxX instanceof Integer)
-			midX = ((Integer.parseInt(this.getMinX().toString())) + ((Integer.parseInt(this.getMaxX().toString())))) / 2;
-		if(minX instanceof Double && maxX instanceof Double)
-			midX = ((Double.parseDouble(this.getMinX().toString())) + ((Double.parseDouble(this.getMaxX().toString())))) / 2;
-		if(minX instanceof String && maxX instanceof String)
-			midX = printMiddleString(this.getMinX().toString().toLowerCase(),this.getMaxX().toString().toLowerCase(),this.getMinX().toString().length());
-		if(minX instanceof java.util.Date && maxX instanceof java.util.Date) {
-			try {
-			Date minDate = new SimpleDateFormat("yyyy-MM-dd").parse(this.getMinX().toString());
-			Date maxDate = new SimpleDateFormat("yyyy-MM-dd").parse(this.getMaxX().toString());
+		if(min instanceof Integer && max instanceof Integer)
+			midX = ((Integer)min) + (((Integer)max)) / 2;
+		if(min instanceof Double && max instanceof Double)
+			midX = ((Double)min) + (((Double)max)) / 2;
+		if(min instanceof String && max instanceof String)
+			midX = printMiddleString(((String)min).toLowerCase(),((String)max).toLowerCase(),((String)min).length());
+		if(min instanceof java.util.Date && max instanceof java.util.Date) {
+			
+			Date minDate = (Date)min;
+			Date maxDate = (Date)max;
 			midX = findMidPoint(minDate,maxDate);
-			}catch(ParseException e) {}
+			
 		}
 		return midX;
 	}
 
-	private Object getAvgY(Object minY, Object maxY) {
-		Object midY = null;
-		if(minY instanceof Integer && maxY instanceof Integer)
-			midY = ((Integer.parseInt(this.getMinY().toString())) + ((Integer.parseInt(this.getMaxY().toString())))) / 2;
-		if(minY instanceof Double && maxY instanceof Double)
-			midY = ((Double.parseDouble(this.getMinY().toString())) + ((Double.parseDouble(this.getMaxY().toString())))) / 2;
-		if(minY instanceof String && maxY instanceof String)
-			midY = printMiddleString(this.getMinY().toString().toLowerCase(),this.getMaxY().toString().toLowerCase(),minY.toString().length());
-		if(minY instanceof java.util.Date && maxY instanceof java.util.Date) {
-			try {
-			Date minDate = new SimpleDateFormat("yyyy-MM-dd").parse(this.getMinY().toString());
-			Date maxDate = new SimpleDateFormat("yyyy-MM-dd").parse(this.getMaxY().toString());
-			midY = findMidPoint(minDate,maxDate);
-			}catch(ParseException e) {}
-		}
-		return midY;
-	}
 	
-	private Object getAvgZ(Object minZ, Object maxZ) {
-		Object midZ = null;
-		if(minZ instanceof Integer && maxZ instanceof Integer)
-			midZ = ((Integer.parseInt(this.getMinZ().toString())) + ((Integer.parseInt(this.getMaxZ().toString())))) / 2;
-		if(minZ instanceof Double && maxZ instanceof Double)
-			midZ = ((Double.parseDouble(this.getMinZ().toString())) + ((Double.parseDouble(this.getMaxZ().toString())))) / 2;
-		if(minZ instanceof String && maxZ instanceof String)
-			midZ = printMiddleString(this.getMinZ().toString().toLowerCase(),this.getMaxZ().toString().toLowerCase(),this.getMinZ().toString().length());
-		if(minZ instanceof java.util.Date && maxZ instanceof java.util.Date) {
-			try {
-			Date minDate = new SimpleDateFormat("yyyy-MM-dd").parse(this.getMinZ().toString());
-			Date maxDate = new SimpleDateFormat("yyyy-MM-dd").parse(this.getMaxZ().toString());
-			midZ = findMidPoint(minDate,maxDate);
-			}catch(ParseException e) {}
-		}
-		return midZ;
-	}
 	
 	private Object findMidPoint(Date date1, Date date2) {
 		LocalDate localDate1 = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();

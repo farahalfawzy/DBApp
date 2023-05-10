@@ -1,5 +1,5 @@
 Table Name, Column Name, Column Type, ClusteringKey, IndexName,IndexType, min, max
-Student,gpa,java.lang.Double,False,null,null,0.0,4.0,
-Student,name,java.lang.String,False,null,null,A,zzzzzzzzz,
-Student,Date of Birth,java.util.Date,True,null,null,1990-01-01,2022-12-31,
-Student,id,java.lang.Integer,False,null,null,0,1000,
+Student,gpa,java.lang.Double,False,gpanamedate of birthIndex,Octree,0.0,4.0
+Student,name,java.lang.String,False,gpanamedate of birthIndex,Octree,A,zzzzzzzzz
+Student,date of birth,java.util.Date,False,gpanamedate of birthIndex,Octree,1990-01-01,2022-12-31
+Student,id,java.lang.Integer,True,null,null,0,1000

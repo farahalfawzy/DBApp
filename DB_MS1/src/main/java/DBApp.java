@@ -14,14 +14,18 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 //TODO LAW el clustering key mawgood
 public class DBApp {
 
-	//Vector<Table> allTable = new Vector<Table>();
+	// Vector<Table> allTable = new Vector<Table>();
 	static int maxnoOfRows = getMaxRows();
 	boolean isDeletingMethod = false;
 	boolean isUpdatingMethod = false;
@@ -32,7 +36,7 @@ public class DBApp {
 		try (FileInputStream fis = new FileInputStream(fileName)) {
 			prop.load(fis);
 			return Integer.parseInt(prop.getProperty("MaximumRowsCountinTablePage"));
-			//return 4;
+			// return 4;
 		} catch (Exception ex) {
 			return -1;
 		}
@@ -42,6 +46,11 @@ public class DBApp {
 		try {
 			File csv = new File("src/main/resources/metadata.csv");
 			if (csv.createNewFile()) {
+				FileWriter writer=new FileWriter("src/main/resources/metadata.csv");
+				writer.append("Table Name, Column Name, Column Type, ClusteringKey, IndexName,IndexType, min, max");
+				writer.append("\n");
+				writer.close();
+
 				// System.out.println("The CSV file was created!!");
 			} else {
 //				System.out.println("Already exists");
@@ -63,19 +72,19 @@ public class DBApp {
 			htblColNameType = convertKeysToLowerCreate(htblColNameType);
 			htblColNameMin = convertKeysToLowerCreate(htblColNameMin);
 			htblColNameMax = convertKeysToLowerCreate(htblColNameMax);
-			
-			if (!CanCreate(htblColNameType, htblColNameMin, htblColNameMax)) {
+
+			if (!canCreate(htblColNameType, htblColNameMin, htblColNameMax)) {
 				throw new DBAppException("Enter Valid Data to create table");
 			}
-			Set keys=htblColNameType.keySet();
-			if(!keys.contains(strClusteringKeyColumn.toLowerCase())) {
+			Set keys = htblColNameType.keySet();
+			if (!keys.contains(strClusteringKeyColumn.toLowerCase())) {
 				throw new DBAppException("Enter Valid Data to create table");
 			}
 			try {
 				writer = new FileWriter(filePath, true);
 				// header
-				writer.append("Table Name, Column Name, Column Type, ClusteringKey, IndexName,IndexType, min, max");
-				writer.append("\n");
+				//writer.append("Table Name, Column Name, Column Type, ClusteringKey, IndexName,IndexType, min, max");
+				//writer.append("\n");
 				for (String key : htblColNameType.keySet()) {
 					strColName = key;
 					String type = htblColNameType.get(key);
@@ -88,20 +97,18 @@ public class DBApp {
 						writer.append("True,");
 					else
 						writer.append("False,");
-					//just for testing: TODO
-					writer.append("XYZIndex"+",");
-					writer.append("Octree"+",");
-					//###############
+					writer.append("null" + ",");
+					writer.append("null" + ",");
 					writer.append(min + ",");
 					writer.append(max + ",");
 					writer.append("\n");
 				}
 				writer.close();
-				Table myTable = new Table(strTableName, strClusteringKeyColumn.toLowerCase(), htblColNameType, htblColNameMin,
-						htblColNameMax);
-				//allTable.add(myTable);
+				Table myTable = new Table(strTableName, strClusteringKeyColumn.toLowerCase(), htblColNameType,
+						htblColNameMin, htblColNameMax);
+				// allTable.add(myTable);
 				serializeTable(myTable, strTableName);
-				myTable=null;
+				myTable = null;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
@@ -112,30 +119,79 @@ public class DBApp {
 
 	}
 
-	private Hashtable<String, String> convertKeysToLowerCreate(Hashtable<String, String> htblColNameValue){
+	private Hashtable<String, String> convertKeysToLowerCreate(Hashtable<String, String> htblColNameValue) {
 		Hashtable<String, String> result = new Hashtable<String, String>();
-		for(String key : htblColNameValue.keySet()) {
+		for (String key : htblColNameValue.keySet()) {
 			result.put(key.toLowerCase(), htblColNameValue.get(key));
 		}
 		return result;
 	}
-	
-	private Hashtable<String, Object> convertKeysToLower(Hashtable<String, Object> htblColNameValue){
+
+	private Hashtable<String, Object> convertKeysToLower(Hashtable<String, Object> htblColNameValue) {
 		Hashtable<String, Object> result = new Hashtable<String, Object>();
-		for(String key : htblColNameValue.keySet()) {
+		for (String key : htblColNameValue.keySet()) {
 			result.put(key.toLowerCase(), htblColNameValue.get(key));
 		}
 		return result;
 	}
-	
+
+	public void createIndex(String strTableName, String[] strarrColName) throws DBAppException {
+		if (strarrColName.length != 3) {
+			throw new DBAppException("Have to Use 3 Columns");
+		}
+		if(strarrColName[0].toLowerCase().equals(strarrColName[1].toLowerCase())||
+				strarrColName[0].toLowerCase().equals(strarrColName[2].toLowerCase() )||
+				strarrColName[1].toLowerCase().equals(strarrColName[2].toLowerCase())) {
+			throw new DBAppException("Have to Use 3 UNIQUE Columns");
+
+		}
+		checkIndexMeta(strTableName, strarrColName);// ask
+
+		Table t = deserializeTable(strTableName);
+		Octree newTree = createOctree(strTableName, strarrColName);
+		String col1=newTree.getX();
+		String col2=newTree.getY();
+		String col3=newTree.getZ();
+		String Octname=t.getTableName()+col1+col2+col3+"Index";
+		t.getIndex().add(Octname);
+		for (int i = 0; i < t.getPageInfo().size(); i++) {
+			String pagename = ((PageInfo) ((t.getPageInfo()).get(i))).getPageName();
+			Page p = deserializePage(pagename);
+
+			for (int j = 0; j < p.size(); j++) {
+				Tuple tup = (Tuple) p.get(j);
+					if(tup.getRecord().get(col1)==null ||
+							tup.getRecord().get(col2)==null	||
+							tup.getRecord().get(col3)==null) {
+						throw new DBAppException("Some null values exists");
+						
+					}
+					Hashtable<String,Object> recInIndex=new Hashtable<>();
+					recInIndex.put(col1, tup.getRecord().get(col1));
+					recInIndex.put(col2, tup.getRecord().get(col2));
+					recInIndex.put(col3, tup.getRecord().get(col3));
+					recInIndex.put("Page Name", pagename);
+					newTree.insertTupleInIndex(recInIndex);
+				
+
+			}
+			serializePage(t, p, pagename);
+		}
+		serializeIndex(newTree,Octname);
+		serializeTable(t, strTableName);
+
+	}
+
+
 	public void insertIntoTable(String strTableName, Hashtable<String, Object> htblColNameValue) throws DBAppException {
-		this.isDeletingMethod=false;
+		this.isDeletingMethod = false;
 		this.isUpdatingMethod = false;
 
 		if (tableExits(strTableName)) {
 			htblColNameValue = convertKeysToLower(htblColNameValue);
 //			System.out.println(htblColNameValue);
 			if (isValid(strTableName, htblColNameValue)) {
+				isValidIndex(strTableName, htblColNameValue);
 				Table t = deserializeTable(strTableName);
 				Object clustKey = htblColNameValue.get(t.getClusteringKey());
 				if (t.getCurrentMaxId() == -1) {
@@ -149,8 +205,9 @@ public class DBApp {
 					t.setCurrentMaxId(t.getCurrentMaxId() + 1);
 					serializePage(t, page, PageName);
 					serializeTable(t, t.getTableName());
-					page=null;
-					t=null;
+					insertIntoIndex(strTableName,htblColNameValue,PageName);
+					page = null;
+					t = null;
 					return;
 				} else {
 					int pageind = 0;
@@ -165,8 +222,8 @@ public class DBApp {
 					}
 					if (clustKey instanceof java.lang.String) {
 						pageind = binarySearchString(t, (String) clustKey);
-						if (((String) clustKey).toLowerCase()
-								.compareTo(((String) (((PageInfo) (pageInfoVector.get(pageind))).getMin())).toLowerCase()) < 0) {
+						if (((String) clustKey).toLowerCase().compareTo(
+								((String) (((PageInfo) (pageInfoVector.get(pageind))).getMin())).toLowerCase()) < 0) {
 							isSmallerThanmin = true;
 
 						}
@@ -189,53 +246,61 @@ public class DBApp {
 					Page page = deserializePage(pagename);
 					Tuple tuple = new Tuple(clustKey, htblColNameValue);
 					if (page.contains2(tuple)) {
-						page=null;
-						t=null;
+						page = null;
+						t = null;
 						throw new DBAppException("Clustering Key already exists");
 					} else {
 						if (isSmallerThanmin) {
-							if(pageind-1>-1) {
-								if(((PageInfo) (pageInfoVector.get(pageind-1))).getCount()<maxnoOfRows) {
+							if (pageind - 1 > -1) {
+								if (((PageInfo) (pageInfoVector.get(pageind - 1))).getCount() < maxnoOfRows) {
 									serializePage(t, page, t.getTableName() + "" + pageind);
-									 pagename = ((PageInfo) (pageInfoVector.get(pageind-1))).getPageName();
-									 page = deserializePage(pagename);
-									 int indexInPage=page.getIndexInPage(tuple);
-									 page.insertElementAt(tuple, indexInPage);
-//									 page.add(tuple);
-//									 Collections.sort(page);
-									((PageInfo) pageInfoVector.get(pageind-1)).setMax(getMaxInPage(page));
-									((PageInfo) pageInfoVector.get(pageind-1)).setMin(getMinInPage(page));
-									serializePage(t, page, t.getTableName() + "" + (pageind-1));
+									pagename = ((PageInfo) (pageInfoVector.get(pageind - 1))).getPageName();
+									page = deserializePage(pagename);
+									int indexInPage = page.getIndexInPage(tuple);
+									page.insertElementAt(tuple, indexInPage);
+//									
+									((PageInfo) pageInfoVector.get(pageind - 1)).setMax(getMaxInPage(page));
+									((PageInfo) pageInfoVector.get(pageind - 1)).setMin(getMinInPage(page));
+									insertIntoIndex(strTableName,htblColNameValue,t.getTableName() + "" + (pageind - 1));
+
+									serializePage(t, page, t.getTableName() + "" + (pageind - 1));
 									serializeTable(t, t.getTableName());
-									page=null;
-									t=null;
+									page = null;
+									t = null;
 									return;
 								}
 							}
 
 						}
 						if (page.size() < maxnoOfRows) {
-							int indexInPage=page.getIndexInPage(tuple);
-							 page.insertElementAt(tuple, indexInPage);
+							int indexInPage = page.getIndexInPage(tuple);
+							page.insertElementAt(tuple, indexInPage);
 //							page.add(tuple);
 //							Collections.sort(page);
 							((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
 							((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
+
 							serializePage(t, page, t.getTableName() + "" + pageind);
 							serializeTable(t, t.getTableName());
-							page=null;
-							t=null;
+							insertIntoIndex(strTableName,htblColNameValue,t.getTableName() + "" + pageind );
+
+							page = null;
+							t = null;
+
 							return;
 						} else {// law fel nos
-							int indexInPage=page.getIndexInPage(tuple);
-							 page.insertElementAt(tuple, indexInPage);
+							int indexInPage = page.getIndexInPage(tuple);
+							page.insertElementAt(tuple, indexInPage);
 //							 page.add(tuple);
 //							Collections.sort(page);
-							Tuple newtup = (Tuple) page.remove(page.size() - 1);
+							Tuple newtup = (Tuple) page.remove(page.size() - 1);//remove
 							((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
 							((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
+							
 							serializePage(t, page, t.getTableName() + "" + pageind);
-							page=null;
+							page = null;
+							insertIntoIndex(strTableName,htblColNameValue,t.getTableName() + "" + pageind );
+
 							int ind = pageind + 1;
 							while (true) {
 
@@ -246,13 +311,14 @@ public class DBApp {
 											newtup.Clusteringkey);
 									pageInfoVector.add(pi);
 									// page.getIndex(tuple);
-									 
+
 									newPage.add(newtup);
-//									Collections.sort(newPage);
 
 									serializePage(t, newPage, t.getTableName() + "" + ind);
 									t.setCurrentMaxId(t.getCurrentMaxId() + 1);
-									newPage=null;
+									newPage = null;
+									updateRefrenceInIndex(strTableName,newtup.getRecord(),t.getTableName() + "" + pageind );
+
 
 									break;
 								} else {// lesa fel nos
@@ -261,28 +327,28 @@ public class DBApp {
 											((PageInfo) (pageInfoVector.get(ind))).getPageName());
 
 									if (nextpage.size() < maxnoOfRows) {
-										 //page.getIndex(tuple);
-										 int newindexInPage=nextpage.getIndexInPage(newtup);
-										 nextpage.insertElementAt(newtup, newindexInPage);
-										// System.out.println(newtup.Clusteringkey);
-//										nextpage.add(newtup);
-//										Collections.sort(nextpage);
+										int newindexInPage = nextpage.getIndexInPage(newtup);
+										nextpage.insertElementAt(newtup, newindexInPage);
+										
+										
 										((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(nextpage));
 										((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(nextpage));
 										serializePage(t, nextpage, t.getTableName() + "" + ind);
-										nextpage=null;
+										nextpage = null;
+										updateRefrenceInIndex(strTableName,newtup.getRecord(),t.getTableName() + "" + pageind );
+
 										break;
 
 									} else {
-										 int newindexInPage=nextpage.getIndexInPage(newtup);
-										 nextpage.insertElementAt(newtup, newindexInPage);
-//										nextpage.add(newtup);
-//										Collections.sort(nextpage);
-										newtup = (Tuple) nextpage.remove(nextpage.size() - 1);
+										int newindexInPage = nextpage.getIndexInPage(newtup);
+										nextpage.insertElementAt(newtup, newindexInPage);
+										updateRefrenceInIndex(strTableName,newtup.getRecord(),t.getTableName() + "" + ind );
+
+										newtup = (Tuple) nextpage.remove(nextpage.size() - 1);//remove
 										((PageInfo) pageInfoVector.get(ind)).setMax(getMaxInPage(nextpage));
 										((PageInfo) pageInfoVector.get(ind)).setMin(getMinInPage(nextpage));
 										serializePage(t, nextpage, t.getTableName() + "" + ind);
-										nextpage=null;
+										nextpage = null;
 										ind = ind + 1;
 									}
 
@@ -295,7 +361,7 @@ public class DBApp {
 
 				// check if page is full
 				serializeTable(t, t.getTableName());
-				t=null;
+				t = null;
 
 			} else {
 				throw new DBAppException("Invalid Data");
@@ -308,8 +374,8 @@ public class DBApp {
 
 	public void updateTable(String strTableName, String strClusteringKeyValue,
 			Hashtable<String, Object> htblColNameValue) throws DBAppException {
-		Page page=null;
-		Table t= null;
+		Page page = null;
+		Table t = null;
 		try {
 			if (!tableExits(strTableName))
 				throw new DBAppException("Table does not exist");
@@ -320,9 +386,9 @@ public class DBApp {
 				int pageind = -1;
 				String type = this.getClusteringKeyType(strTableName);
 				t = deserializeTable(strTableName);
-				if(t.getPageInfo().size()==0) {
+				if (t.getPageInfo().size() == 0) {
 					serializeTable(t, strTableName);
-					t=null;
+					t = null;
 					return;
 				}
 				Object ClustObj = null;
@@ -355,7 +421,7 @@ public class DBApp {
 				Vector pageInfoVector = t.getPageInfo();
 				String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 				page = deserializePage(pagename);
-				if (page.containsKey(ClustObj)) {					//hna 3'yrt containsKey
+				if (page.containsKey(ClustObj)) { // hna 3'yrt containsKey
 //					for (int i = 0; i < page.size(); i++) {
 //						Tuple tuple = page.get(i);
 //						if (tuple.getClusteringkey().equals(ClustObj)) {
@@ -366,18 +432,18 @@ public class DBApp {
 //
 //						}
 //					}
-					page.replace(ClustObj,htblColNameValue);
+					page.replace(ClustObj, htblColNameValue);
 					isUpdatingMethod = false;
 					serializePage(t, page, strTableName + "" + pageind);
 
 					serializeTable(t, strTableName);
-					page=null;
-					t=null;
+					page = null;
+					t = null;
 				}
 
 				else {
-					page=null;
-					t=null;
+					page = null;
+					t = null;
 					isUpdatingMethod = false;
 //					throw new DBAppException("clustering key doesnt exist");
 					return;
@@ -392,26 +458,24 @@ public class DBApp {
 
 		} catch (DBAppException e) {
 			serializeTable(t, strTableName);
-			t=null;
+			t = null;
 			isUpdatingMethod = false;
 			throw new DBAppException(e.toString());
-		}catch(ParseException e) {
+		} catch (ParseException e) {
 			serializeTable(t, strTableName);
-			t=null;
+			t = null;
 			isUpdatingMethod = false;
 			throw new DBAppException("enter valid clustring key value");
-		}
-		catch(java.lang.NumberFormatException e) {
+		} catch (java.lang.NumberFormatException e) {
 			serializeTable(t, strTableName);
-			t=null;
+			t = null;
 			isUpdatingMethod = false;
 			throw new DBAppException("enter valid clustring key value");
 		}
 
 	}
 
-	public void deleteFromTable(String strTableName, Hashtable<String, Object> htblColNameValue)
-			throws DBAppException{
+	public void deleteFromTable(String strTableName, Hashtable<String, Object> htblColNameValue) throws DBAppException {
 		this.isDeletingMethod = true;
 		if (tableExits(strTableName)) {
 			htblColNameValue = convertKeysToLower(htblColNameValue);
@@ -420,17 +484,17 @@ public class DBApp {
 			if (isValid(strTableName, htblColNameValue)) {
 				Table t = deserializeTable(strTableName);
 				String myCluster = t.getClusteringKey();
-				if(t.getPageInfo().size()==0) {
+				if (t.getPageInfo().size() == 0) {
 					serializeTable(t, strTableName);
-					t=null;
+					t = null;
 					return;
 				}
-				//New
+				// New
 				Octree myOct = deserializeOctree("XYZIndex");
 				Tuple myTuple = new Tuple(t.getClusteringKey(), htblColNameValue);
-				if(htblColNameValue.contains(myOct.getX()) && htblColNameValue.contains(myOct.getY()) &&
-						htblColNameValue.contains(myOct.getZ())) {
-					Hashtable<String,Object> key = new Hashtable<>();
+				if (htblColNameValue.contains(myOct.getX()) && htblColNameValue.contains(myOct.getY())
+						&& htblColNameValue.contains(myOct.getZ())) {
+					Hashtable<String, Object> key = new Hashtable<>();
 					key.put(myOct.getX(), htblColNameValue.get(myOct.getX()));
 					key.put(myOct.getY(), htblColNameValue.get(myOct.getY()));
 					key.put(myOct.getZ(), htblColNameValue.get(myOct.getZ()));
@@ -441,10 +505,10 @@ public class DBApp {
 						if (page.contains(myTuple)) {
 							page.removeBinary(myTuple);
 							myOct.deleteTuple(key);
-							String res="";
-							for(int i = pageName.length()-1; i>(-1);i--) {
-								if((pageName.charAt(i)) >='0' && pageName.charAt(i) <='9') {
-									res=pageName.charAt(i)+res;
+							String res = "";
+							for (int i = pageName.length() - 1; i > (-1); i--) {
+								if ((pageName.charAt(i)) >= '0' && pageName.charAt(i) <= '9') {
+									res = pageName.charAt(i) + res;
 								}
 							}
 							int pageind = Integer.parseInt(res);
@@ -458,15 +522,15 @@ public class DBApp {
 								((PageInfo) pageInfoVector.get(pageind)).setMin(min);
 
 								serializePage(t, page, t.getTableName() + "" + pageind);
-								serializeIndex(t, myOct, strTableName);
-								myOct=null;
-								page=null;
+								serializeIndex(myOct, strTableName);
+								myOct = null;
+								page = null;
 							}
 						}
 					}
 				}
-				//End of the new part
-				
+				// End of the new part
+
 				int pageind = -1;
 				if (htblColNameValue.containsKey(myCluster)) {
 //					 System.out.println("was hereee");
@@ -483,7 +547,7 @@ public class DBApp {
 					if (myClusterType instanceof java.util.Date) {
 						pageind = binarySearchDate(t, (Date) myClusterType);
 					}
-				//	System.out.println(pageind);
+					// System.out.println(pageind);
 					Vector pageInfoVector = t.getPageInfo();
 					if (pageInfoVector.size() != 0) {
 						String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
@@ -503,7 +567,7 @@ public class DBApp {
 								((PageInfo) pageInfoVector.get(pageind)).setMin(min);
 
 								serializePage(t, page, t.getTableName() + "" + pageind);
-								page=null;
+								page = null;
 							}
 						}
 
@@ -513,7 +577,7 @@ public class DBApp {
 					removeFromAllPages(pageInfoVector, myTuple, 0, t, htblColNameValue);
 				}
 				serializeTable(t, strTableName);
-				t=null;
+				t = null;
 			} else {
 				this.isDeletingMethod = false;
 //				System.out.println("ana hena");
@@ -558,7 +622,7 @@ public class DBApp {
 
 	// 3ayez awel lma 2ms7 row mn page 2geeb mn elmin mn elpage eltanya w 27otha
 	// fel page ely ana wa2ef feeha
-	private void removeFromAllPages(Vector pageInfoVector, Tuple myTuple, int i, Table t, Hashtable htblColNameValue){
+	private void removeFromAllPages(Vector pageInfoVector, Tuple myTuple, int i, Table t, Hashtable htblColNameValue) {
 		// TODO Auto-generated method stub
 		if (pageInfoVector.size() == i)
 			return;
@@ -574,7 +638,7 @@ public class DBApp {
 			((PageInfo) pageInfoVector.get(i)).setMax(max);
 			((PageInfo) pageInfoVector.get(i)).setMin(min);
 			serializePage(t, page, pagename);
-			page=null;
+			page = null;
 			removeFromAllPages(pageInfoVector, myTuple, ++i, t, htblColNameValue);
 		}
 	}
@@ -629,8 +693,9 @@ public class DBApp {
 					break;
 				}
 			}
-			if (!ClustKeyfound && !isDeletingMethod && !isUpdatingMethod) { // ana 3mlt deh 3lshan fel delete lw ana msh m3aya elcluster key
-														// e3ml delete 3ady bardo
+			if (!ClustKeyfound && !isDeletingMethod && !isUpdatingMethod) { // ana 3mlt deh 3lshan fel delete lw ana msh
+																			// m3aya elcluster key
+				// e3ml delete 3ady bardo
 				throw new DBAppException("You have to insert Clustering Key");
 			}
 			boolean flag = true;
@@ -638,6 +703,7 @@ public class DBApp {
 			for (String key : htblColNameValue.keySet()) {
 				// System.out.println(key);
 				if (!tableInfo.containsKey(key)) {
+					System.out.println(key);
 					throw new DBAppException("Invalid Column");
 				}
 				String ogNameType = tableInfo.get(key)[0];
@@ -650,37 +716,38 @@ public class DBApp {
 						flag = true;
 						continue;
 					} else {
-						if(isDeletingMethod) {
+						if (isDeletingMethod) {
 							if (!(compareNameType instanceof java.lang.Integer))
 								throw new DBAppException("Reenter your values!");
 							else
 								return false;
-								
-						}else
-						// System.out.println("int");
+
+						} else
+							// System.out.println("int");
 							return false;
 					}
 				}
 				case "java.lang.String": {
 
 					if (compareNameType instanceof java.lang.String
-							&& tableInfo.get(key)[1].toLowerCase().compareTo(htblColNameValue.get(key).toString().toLowerCase()) <= 0
-							&& tableInfo.get(key)[2].toLowerCase().compareTo(htblColNameValue.get(key).toString().toLowerCase()) >= 0) {
+							&& tableInfo.get(key)[1].toLowerCase()
+									.compareTo(htblColNameValue.get(key).toString().toLowerCase()) <= 0
+							&& tableInfo.get(key)[2].toLowerCase()
+									.compareTo(htblColNameValue.get(key).toString().toLowerCase()) >= 0) {
 						flag = true;
 
 						continue;
-					}
-						else {
-							if(isDeletingMethod) {
+					} else {
+						if (isDeletingMethod) {
 
-								if (!(compareNameType instanceof java.lang.String))
-									throw new DBAppException("Reenter your values!");
-								else
-									return false;
-							}else
-							// System.out.println("int");
+							if (!(compareNameType instanceof java.lang.String))
+								throw new DBAppException("Reenter your values!");
+							else
 								return false;
-						}
+						} else
+							// System.out.println("int");
+							return false;
+					}
 				}
 				case "java.lang.Double": {
 
@@ -693,14 +760,14 @@ public class DBApp {
 					}
 
 					else {
-						if(isDeletingMethod) {
+						if (isDeletingMethod) {
 							if (!(compareNameType instanceof java.lang.Double))
 								throw new DBAppException("Reenter your values!");
 							else
 								return false;
-								
-						}else
-						// System.out.println("int");
+
+						} else
+							// System.out.println("int");
 							return false;
 					}
 				}
@@ -728,12 +795,12 @@ public class DBApp {
 								return false;
 							}
 						} else {
-							
-								if(isDeletingMethod)
-										throw new DBAppException("Reenter your values!");
-									else
-										return false;
-							
+
+							if (isDeletingMethod)
+								throw new DBAppException("Reenter your values!");
+							else
+								return false;
+
 						}
 					} catch (ParseException e) {
 						return false;
@@ -750,6 +817,38 @@ public class DBApp {
 			throw new DBAppException("CSV doesn't exist");
 		}
 	}
+	//isValidIndex checks if the Tuple to be inserted has all Columns that have an index on otherwise throws an exception
+	private void isValidIndex(String strTableName, Hashtable<String, Object> htblColNameValue) throws DBAppException {
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			String line = br.readLine();
+			Hashtable<String, String[]> tableInfo = new Hashtable<String, String[]>();
+			String ClustKey = "";
+			
+			
+			while (line != null) {
+				String[] x = line.split(",");
+				if (x[0].equals(strTableName)) {
+					if(!x[4].equals("null")){
+						if(htblColNameValue.get(x[1])==null) {
+							throw new DBAppException("Cant insert null values in col with index on");
+							
+						}
+					}
+				}
+				line = br.readLine();
+						}
+			br.close();
+		}
+			catch (IOException e) {
+			throw new DBAppException("CSV doesn't exist");
+		}
+		
+		
+		
+		
+		
+	}
 
 	private static void serializePage(Table t, Page p, String name) {
 		try {
@@ -762,8 +861,8 @@ public class DBApp {
 			Vector<PageInfo> piVector = t.getPageInfo();
 			PageInfo pi = piVector.get(ind);
 			pi.setCount(p.size());
-			t=null;
-			p=null;
+			t = null;
+			p = null;
 			// System.out.println("Page is serialized successfully");
 		} catch (IOException i) {
 			i.printStackTrace();
@@ -794,7 +893,7 @@ public class DBApp {
 			out.writeObject(t);
 			out.close();
 			fileOut.close();
-			t=null;
+			t = null;
 			// System.out.println("Table is serialized successfully");
 		} catch (IOException i) {
 			i.printStackTrace();
@@ -819,8 +918,8 @@ public class DBApp {
 		}
 		return null;
 	}
-	
-	private static void serializeIndex(Table t, Octree p, String indexName) {
+
+	private static void serializeIndex( Octree p, String indexName) {
 		try {
 			FileOutputStream fileOut = new FileOutputStream("src/main/resources/Data/" + indexName + ".ser", false);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -832,7 +931,7 @@ public class DBApp {
 			i.printStackTrace();
 		}
 	}
-	
+
 	private static Octree deserializeOctree(String indexName) {
 		try {
 			FileInputStream fileIn = new FileInputStream("src/main/resources/Data/" + indexName + ".ser");
@@ -870,7 +969,7 @@ public class DBApp {
 				}
 			}
 		}
-		//System.out.println(mid);
+		// System.out.println(mid);
 		return mid;
 
 	}
@@ -884,8 +983,7 @@ public class DBApp {
 			mid = (high + low) / 2;
 			Date minDate = ((Date) ((PageInfo) (pageInfoVector.get(mid))).getMin());
 			Date maxDate = ((Date) ((PageInfo) (pageInfoVector.get(mid))).getMax());
-		
-			
+
 			if (ClustKey.before(minDate)) {
 				high = mid - 1;
 			} else {
@@ -908,10 +1006,12 @@ public class DBApp {
 		while (low <= high) {
 
 			mid = (high + low) / 2; // 0
-			if ((ClustKey.toLowerCase()).compareTo((((PageInfo) (pageInfoVector.get(mid))).getMin()).toString().toLowerCase()) < 0) {
+			if ((ClustKey.toLowerCase())
+					.compareTo((((PageInfo) (pageInfoVector.get(mid))).getMin()).toString().toLowerCase()) < 0) {
 				high = mid - 1;
 			} else {
-				if ((ClustKey.toLowerCase()).compareTo((((PageInfo) (pageInfoVector.get(mid))).getMax()).toString().toLowerCase()) > 0) {
+				if ((ClustKey.toLowerCase())
+						.compareTo((((PageInfo) (pageInfoVector.get(mid))).getMax()).toString().toLowerCase()) > 0) {
 					low = mid + 1;
 				} else {
 					break;
@@ -921,6 +1021,7 @@ public class DBApp {
 		return mid;
 
 	}
+
 	private static int binarySearchDouble(Table t, double ClustKey) {
 		Vector pageInfoVector = t.getPageInfo();
 		int low = 0;
@@ -957,7 +1058,7 @@ public class DBApp {
 
 	private static Object getMaxInPage(Page page) {
 
-		Tuple max = page.get(page.size()-1);
+		Tuple max = page.get(page.size() - 1);
 		return max.getClusteringkey();
 	}
 
@@ -1017,7 +1118,7 @@ public class DBApp {
 		return null;
 	}
 
-	private static boolean CanCreate(Hashtable<String, String> htblColNameType,
+	private static boolean canCreate(Hashtable<String, String> htblColNameType,
 			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax) throws DBAppException {
 		boolean flag = true;
 		if (!(htblColNameType.size() == htblColNameMin.size() && htblColNameMax.size() == htblColNameType.size()))
@@ -1025,7 +1126,7 @@ public class DBApp {
 		for (String key : htblColNameType.keySet()) {
 			String type = htblColNameType.get(key);
 			if (type.equals("java.util.Date")) {
-				//System.out.println(type);
+				// System.out.println(type);
 				String min = htblColNameMin.get(key);
 				String max = htblColNameMax.get(key);
 				if (min == null || max == null)
@@ -1090,6 +1191,451 @@ public class DBApp {
 		}
 		return true;
 	}
+	private static Octree createOctree(String strTableName, String[] strarrColName) throws DBAppException {
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			String line = br.readLine();
+			Object[] arrayMinAndMax = new Object[6];
+			String[] arrayName = new String[3];
+			int j = 0;
+			int k = 0;
+			int n=0;
+			while (line != null && n<3) {
+				String[] x = line.split(",");
+				if (x[0].equals(strTableName)) {
+					for (int i = 0; i < strarrColName.length; i++) {
+						if (x[1].equals(strarrColName[i].toLowerCase() )) {
+							n++;
+							arrayName[j++] = strarrColName[i];
+							switch(x[2]) {
+							case "java.lang.Integer":
+								arrayMinAndMax[k++]=Integer.parseInt(x[6]);
+								arrayMinAndMax[k++]=Integer.parseInt(x[7]);
+								System.out.println("Are Integers");
+								break;
+							case "java.lang.Double":
+								arrayMinAndMax[k++]=Double.parseDouble(x[6]);
+								arrayMinAndMax[k++]=Double.parseDouble(x[7]);
+								break;	
+							case "java.util.Date":
+								try {
+									arrayMinAndMax[k++] = new SimpleDateFormat("yyyy-MM-dd").parse(x[6]);
+									arrayMinAndMax[k++] = new SimpleDateFormat("yyyy-MM-dd").parse(x[7]);
+
+								} catch (ParseException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								break;
+							default:
+								arrayMinAndMax[k++] = x[6].toLowerCase();
+								arrayMinAndMax[k++] = x[7].toLowerCase();
+
+							}
+							//x[4] = strarrColName[0].toLowerCase() + strarrColName[1].toLowerCase()  + strarrColName[2].toLowerCase()  + "Index";
+							//x[5] = "Octree";
+						}
+					}
+				}
+				line = br.readLine();
+			}
+
+			br.close();
+			Octree tree = new Octree(arrayName[0].toLowerCase(), arrayName[1].toLowerCase(), arrayName[2].toLowerCase(), arrayMinAndMax[0], arrayMinAndMax[1],
+					arrayMinAndMax[2], arrayMinAndMax[3], arrayMinAndMax[4], arrayMinAndMax[5]);
+			
+			br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			String data = "";
+			line = br.readLine();
+			while (line != null) {
+				String[] x = line.split(",");
+				if (x[0].equals(strTableName)) {
+					for (int i = 0; i < strarrColName.length; i++) {
+						if (x[1].equals(strarrColName[i].toLowerCase() )) {
+							x[4] = arrayName[0].toLowerCase() + arrayName[1].toLowerCase()  + arrayName[2].toLowerCase()  + "Index";
+							x[5] = "Octree";
+							
+						}
+					}
+				}
+				data += String.join(",", x) + "\n";
+
+				line = br.readLine();
+			}
+
+			br.close();
+			
+			FileOutputStream out = new FileOutputStream("src/main/resources/metadata.csv");
+			out.write(data.getBytes());
+			out.close();
+			
+			return tree;
+
+		} catch (IOException e) {
+			throw new DBAppException("CSV doesn't exist");
+		}
+
+	}
+	private static void checkIndexMeta(String strTableName, String[] strarrColName) throws DBAppException {
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			String line = br.readLine();
+			boolean[] flags = { false, false, false };
+			while (line != null) {
+				String[] x = line.split(",");
+				if (x[0].equals(strTableName)) {
+					for (int i = 0; i < strarrColName.length; i++) {
+						if (x[1].equals(strarrColName[i].toLowerCase())) {
+							if (!x[4].equals("null")) {
+								throw new DBAppException("An Index already exits");
+							}
+
+							flags[i] = true;
+						}
+					}
+				}
+				line = br.readLine();
+			}
+			br.close();
+			if ((flags[0] && flags[1] && flags[2]) == false) {
+				System.out.println(Arrays.toString(flags));
+				throw new DBAppException("A Column or More doesnt exist");
+			}
+
+		} catch (IOException e) {
+			throw new DBAppException("CSV doesn't exist");
+		}
+
+	}
+	private void insertIntoIndex (String strTableName, Hashtable<String, Object> htblColNameValue,String pagename) throws DBAppException{
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			String line = br.readLine();
+			ArrayList<String > indices = new ArrayList<String >();
+
+			while (line != null) {
+				String[] x = line.split(",");
+				if (x[0].equals(strTableName)) {
+					if (!x[4].equals("null")) {
+						if(!indices.contains(x[4]))
+							indices.add(x[4]);
+					}
+				}
+				line = br.readLine();
+			}
+			br.close();
+			for(int i=0;i<indices.size();i++) {
+				String TreeName=strTableName+indices.get(i);
+				Octree Octree=deserializeOctree(TreeName);
+				Object val1=htblColNameValue.get(Octree.getX());
+				Object val2=htblColNameValue.get(Octree.getY());
+				Object val3=htblColNameValue.get(Octree.getZ());
+				Hashtable<String,Object> recInIndex=new Hashtable<>();
+				recInIndex.put(Octree.getX(), val1);
+				recInIndex.put(Octree.getY(), val2);
+				recInIndex.put(Octree.getZ(), val3);
+				recInIndex.put("Page Name", pagename);
+
+				Octree.insertTupleInIndex(recInIndex);
+				serializeIndex(Octree,TreeName);
+				Octree=null;
+
+			}
+
+		} catch (IOException e) {
+			throw new DBAppException("CSV doesn't exist");
+		}
+
+
+	}
+	private void updateRefrenceInIndex (String strTableName, Hashtable<String, Object> htblColNameValue,String pagename) throws DBAppException{
+		BufferedReader br;
+		try {
+			br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+		
+		String line = br.readLine();
+		ArrayList<String > indices = new ArrayList<String >();
+
+		while (line != null) {
+			String[] x = line.split(",");
+			if (x[0].equals(strTableName)) {
+				if (!x[4].equals("null")) {
+					if(!indices.contains(x[4]))
+						indices.add(x[4]);
+				}
+			}
+			line = br.readLine();
+		}
+		br.close();
+		for(int i=0;i<indices.size();i++) {
+			String TreeName=strTableName+indices.get(i);
+			Octree Octree=deserializeOctree(TreeName);
+			Octree.updateTupleReferenceInIndex(htblColNameValue, pagename);
+			serializeIndex(Octree,TreeName);
+			Octree=null;
+
+		}
+		
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			throw new DBAppException("CSV doesn't exist");
+		}
+
+	}
+
+	private static boolean hasThreeIndexMeta(String strTableName, String[] strarrColName) throws DBAppException {
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			String line = br.readLine();
+			boolean[] flags = { false, false, false };
+			while (line != null) {
+				String[] x = line.split(",");
+				if (x[0].equals(strTableName)) {
+					for (int i = 0; i < strarrColName.length; i++) {
+						if (x[1].equals(strarrColName[i])) {
+							flags[i] = true;
+						}
+					}
+				}
+				line = br.readLine();
+			}
+			br.close();
+			if ((flags[0] && flags[1] && flags[2]) == false) {
+				return false;
+			}
+			return true;
+
+		} catch (IOException e) {
+			throw new DBAppException("CSV doesn't exist");
+		}
+
+	}
+
+	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
+		String indxName;
+		if (arrSQLTerms.length == 0)
+			throw new DBAppException("Insert a valid select");
+		if (!tableExits(arrSQLTerms[0].get_strTableName()))
+			throw new DBAppException("Table doesn't exist!!");
+		Vector result = new Vector<>();
+		Table t = deserializeTable(arrSQLTerms[0].get_strTableName());
+		Hashtable<String, Object> htblColValue = new Hashtable<>();
+		String[] colName = new String[3];
+		boolean flag = true;
+		for (int i = 0; i < arrSQLTerms.length; i++) {
+			htblColValue.put(arrSQLTerms[i].get_strColumnName(), arrSQLTerms[i].get_objValue());
+			if (i < 3)
+				colName[i] = arrSQLTerms[i].get_strColumnName();
+			else
+				flag = false;
+			if (!isValid(t.getTableName(), htblColValue))
+				throw new DBAppException("Coloumn is invalid");
+		}
+		boolean flag1 = true;
+		if (flag && hasThreeIndexMeta(t.getTableName(), colName) && strarrOperators[0] == "AND") {
+			indxName = getindexname(t, colName);
+			Octree o = deserializeOctree(t.getTableName()+""+indxName);
+			Vector<String> res = o.getPageName(htblColValue);
+			Tuple tuple = new Tuple(t.getClusteringKey(),htblColValue);
+			for(int i=0;i<res.size();i++) {
+				Page p=deserializePage(res.get(i));
+				result.add(p.PrintTuple(tuple));
+				
+			}
+		} else {
+			// TODO sequentially
+			Tuple myTuple = new Tuple(t.getClusteringKey(), htblColValue);
+			int pageind = -1;
+			String myCluster=t.getClusteringKey();
+			if (htblColValue.containsKey(myCluster)) {
+//				 System.out.println("was hereee");
+				Object myClusterType = htblColValue.get(myCluster);
+				if (myClusterType instanceof java.lang.Integer) {
+					pageind = binarySearchInt(t, (Integer) myClusterType);
+				}
+				if (myClusterType instanceof java.lang.String) {
+					pageind = binarySearchString(t, (String) myClusterType);
+				}
+				if (myClusterType instanceof java.lang.Double) {
+					pageind = binarySearchDouble(t, (Double) myClusterType);
+				}
+				if (myClusterType instanceof java.util.Date) {
+					pageind = binarySearchDate(t, (Date) myClusterType);
+				}
+				// System.out.println(pageind);
+				Vector pageInfoVector = t.getPageInfo();
+				if (pageInfoVector.size() != 0) {
+					String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
+					Page page = deserializePage(pagename);
+//					System.out.println("before contains");
+					if (page.contains(myTuple)) {
+//						System.out.println("after contains");
+						// System.out.println("was here111111");
+						int index = page.getIndexInPage(myTuple);
+						result.add(page.get(index).toString());
+						serializePage(t, page, t.getTableName() + "" + pageind);
+						page = null;
+					}
+
+				}
+			}
+			else {
+				for(int i =0;i<t.getPageInfo().size();i++) {
+					Page page = deserializePage(t.getPageInfo().get(i).getPageName());
+					for(Tuple myTuple2:page) {
+						if (myTuple2.equals(myTuple)) {
+							result.add(myTuple2.toString());
+							
+						}
+					}
+					
+				}
+			}
+			
+		}
+		return result.iterator();
+
+
+	}
+
+	public static String getindexname(Table t, String[] colName) throws DBAppException {
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			String line = br.readLine();
+			Hashtable<String, String[]> tableInfo = new Hashtable<String, String[]>();
+			String TName = t.getTableName();
+			boolean indeces[] = { false, false, false };
+			String temp = "";
+			int j = 0;
+			while (line != null) {
+				String[] x = line.split(",");
+				if (x[0].equals(TName)) {
+					for (int i = 0; i < colName.length; i++) {
+						if (x[1] == colName[i] && j == 0) {
+							temp = x[4];
+							j++;
+						} else {
+							if (x[1] == colName[i]) {
+								if (temp.equals(x[4])) {
+									continue;
+								} else {
+									temp = "null";
+									return temp;
+								}
+							}
+						}
+					}
+				}
+				line = br.readLine();
+			}
+			br.close();
+			return temp;
+		} catch (FileNotFoundException e) {
+			throw new DBAppException("File not found");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			throw new DBAppException("IO Exception");
+		}
+	}
+	public void displayTree(String tableName) {
+		Table t= deserializeTable(tableName);
+		for(int k=0;k<t.getIndex().size();k++) {
+			String IndexName=t.getIndex().get(k);
+			Octree tree=deserializeOctree(IndexName);
+			System.out.println("ColX: "+tree.getX()+" ColY:"+tree.getY()+" ColZ:"+tree.getZ());
+		Node Current = tree.getRoot();
+		int n = 0;
+		Queue<Node> queueNode = new LinkedList<Node>();
+		Queue<Integer> queueInfo = new LinkedList<>();
+
+		int level = 0;
+		queueNode.add(Current);
+		queueInfo.add(level);
+		queueInfo.add(n);
+		while (queueNode.isEmpty() == false) {
+			Current = queueNode.poll();
+			if (Current instanceof NonLeaf) {
+				NonLeaf temp = (NonLeaf) Current;
+				level = queueInfo.poll();
+				int node = queueInfo.poll();
+				
+				System.out.println("Level " + level + " Node no." + node);
+				if (level - 1 >= 0) {
+					int parentnode = queueInfo.poll();
+					System.out.println("--NonLeaf-- Parent at level:" + (level - 1) + " Node " + parentnode);
+					System.out.println("MinX "+Current.getMinX()+"MaxX "+Current.getMaxX()+" ,MinY "+Current.getMinY()+" ,MaxY "+Current.getMaxY()+", MinZ "+Current.getMinZ()+", MaxZ "+Current.getMaxZ());
+
+				} else {
+					System.out.println("--NonLeaf-- Root");
+					System.out.println("MinX "+Current.getMinX()+"MaxX "+Current.getMaxX()+" ,MinY "+Current.getMinY()+" ,MaxY "+Current.getMaxY()+", MinZ "+Current.getMinZ()+", MaxZ "+Current.getMaxZ());
+
+				}
+
+				System.out.println("----------------------------------------");
+
+				level++;
+
+				n = -1;
+				queueNode.add(temp.left0);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.left1);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.left2);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.left3);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.right3);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.right2);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.right1);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+				queueNode.add(temp.right0);
+				queueInfo.add(level);
+				queueInfo.add(++n);
+				queueInfo.add(node);
+			} else {
+				Leaf temp = (Leaf) Current;
+				level = queueInfo.poll();
+				int node = queueInfo.poll();
+
+				System.out.println("Level " + level + " Node no." + node);
+				if (level - 1 >= 0) {
+					int parentnode = queueInfo.poll();
+					System.out.println("--Leaf-- Parent at level:" + (level - 1) + " Node " + parentnode+" Size "+temp.getSize());
+					System.out.println("MinX "+Current.getMinX()+"MaxX "+Current.getMaxX()+" ,MinY "+Current.getMinY()+" ,MaxY "+Current.getMaxY()+", MinZ "+Current.getMinZ()+", MaxZ "+Current.getMaxZ());
+
+				} else {
+					System.out.println("--Leaf-- Root");
+					System.out.println("MinX "+Current.getMinX()+"MaxX "+Current.getMaxX()+" ,MinY "+Current.getMinY()+" ,MaxY "+Current.getMaxY()+", MinZ "+Current.getMinZ()+", MaxZ "+Current.getMaxZ());
+
+				}
+				for (int i = 0; i < temp.getBucket().size(); i++) {
+					Hashtable h = temp.getBucket().get(i);
+					System.out.println(i + " " + h.toString());
+
+				}
+				System.out.println("----------------------------------------");
+
+			}
+		}
+		}
+	}
+
 
 	public static void main(String[] args) throws IOException, ClassNotFoundException, DBAppException, ParseException {
 
