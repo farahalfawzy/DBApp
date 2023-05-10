@@ -4,9 +4,7 @@ import java.util.Vector;
 public class Leaf extends Node{
 
 private	Vector<Hashtable<String,Object>> Bucket;
-	public Leaf getBeforeLeaf() {
-	return beforeLeaf;
-}
+
 
 
 
@@ -86,6 +84,9 @@ public Leaf getAfterLeaf() {
 }
 
 
+public Leaf getBeforeLeaf() {
+return beforeLeaf;
+}
 
 public void setAfterLeaf(Leaf afterLeaf) {
 	this.afterLeaf = afterLeaf;
