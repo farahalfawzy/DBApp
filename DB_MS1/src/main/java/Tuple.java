@@ -83,22 +83,30 @@ public class Tuple implements Comparable, Serializable {
 			}
 			return true;
 		} else {
-//			for (String key : this.getRecord().keySet()) {
-//				System.out.println("deleting was herezzz other.getRecord().size() > this.getRecord().size()");
-//				Object otherValue = other.getRecord().get(key);
-//				Object thisValue = this.getRecord().get(key);
-//				System.out.println(otherValue.toString() +" "+thisValue.toString());
-//				if(otherValue instanceof java.lang.String && thisValue instanceof java.lang.String ) {
-//					if (!(((String)otherValue).toLowerCase().equals(((String)thisValue).toLowerCase())))
-//						return false;
-//				}else {
-//				if (!(otherValue.equals(thisValue)))
-//					return false;
-//				}
-//			}
-//			return true;
 			return false;
 		}
 	}
+	
+//	public boolean greaterThan (Object obj) {
+//		if (obj == null)
+//			return false;
+//		if (this == obj)
+//			return true;
+//		if (getClass() != obj.getClass())
+//			return false;
+//		Tuple other = (Tuple) obj;
+//		for (String key : other.getRecord().keySet()) {
+//			Object otherValue = other.getRecord().get(key);
+//			Object thisValue = this.getRecord().get(key);
+//			if (otherValue instanceof java.lang.String && thisValue instanceof java.lang.String) {
+//				if (!(((String) otherValue).toLowerCase().compareTo(((String) thisValue).toLowerCase())>0))
+//					return false;
+//			} else {
+//				if (otherValue<(thisValue))
+//					return false;
+//			}
+//		}
+//		return true;
+//	}
 
 }

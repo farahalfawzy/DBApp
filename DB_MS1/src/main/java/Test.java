@@ -90,6 +90,8 @@ public class Test {
 		}
 		int pageind = Integer.parseInt(res);
 		System.out.println(pageind);
+		String x= "operatorSeifra2asa";
+		System.out.println(x.substring(0,8));
 	}
 }
 
