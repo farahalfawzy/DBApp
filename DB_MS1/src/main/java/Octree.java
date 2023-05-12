@@ -675,8 +675,8 @@ public class Octree implements Serializable {
 						res.add(myLeaf.getBucket().get(i).get("Page Name").toString());
 					}
 				}
-				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
-					if (myLeaf.getBucket().get(i).equals(key)) {
+				for (int i = 0; i < myLeaf.getOverflow().size(); i++) {
+					if (myLeaf.getOverflow().get(i).equals(key)) {
 						res.add(myLeaf.getOverflow().get(i).get("Page Name").toString());
 					}
 				}
