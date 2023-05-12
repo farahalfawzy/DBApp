@@ -675,6 +675,11 @@ public class Octree implements Serializable {
 						res.add(myLeaf.getBucket().get(i).get("Page Name").toString());
 					}
 				}
+				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+					if (myLeaf.getBucket().get(i).equals(key)) {
+						res.add(myLeaf.getOverflow().get(i).get("Page Name").toString());
+					}
+				}
 				break;
 			} else {
 				NonLeaf curNonleaf = (NonLeaf) current;
