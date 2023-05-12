@@ -162,6 +162,7 @@ public class DBApp {
 		String Octname = t.getTableName() + col1 + col2 + col3 + "Index";
 		t.getIndex().add(Octname);
 		Hashtable<String, Object> htblIndex = new Hashtable<>();
+		htblIndex.put("Name of Index", Octname);
 		htblIndex.put(col1, Octname);
 		htblIndex.put(col2, Octname);
 		htblIndex.put(col3, Octname);
