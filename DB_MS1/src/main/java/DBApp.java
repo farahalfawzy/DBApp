@@ -261,6 +261,7 @@ public class DBApp {
 					String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 					Page page = deserializePage(pagename);
 					Tuple tuple = new Tuple(clustKey, htblColNameValue);
+					System.out.println(pagename+"  kkkkkkk");
 
 					if (page.containsClustKey(tuple)) {
 						page = null;
@@ -312,6 +313,7 @@ public class DBApp {
 //							 page.add(tuple);
 //							Collections.sort(page);
 							Tuple newtup = (Tuple) page.remove(page.size() - 1);// remove
+							System.out.println(indexInPage+"   ll   "+newtup.getClusteringkey());
 							((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
 							((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
 
@@ -320,6 +322,7 @@ public class DBApp {
 							insertIntoIndex(strTableName, htblColNameValue, t.getTableName() + "" + pageind);
 
 							int ind = pageind + 1;
+
 							while (true) {
 
 								if (ind > t.getCurrentMaxId()) {// new page
@@ -353,7 +356,7 @@ public class DBApp {
 										serializePage(t, nextpage, t.getTableName() + "" + ind);
 										nextpage = null;
 										updateRefrenceInIndex(strTableName, newtup.getRecord(),
-												t.getTableName() + "" + pageind, t.getTableName() + "" + (pageind - 1));
+												t.getTableName() + "" + ind, t.getTableName() + "" + (ind - 1));
 
 										break;
 
@@ -794,7 +797,6 @@ public class DBApp {
 			for (String key : htblColNameValue.keySet()) {
 				// System.out.println(key);
 				if (!tableInfo.containsKey(key)) {
-					System.out.println(key);
 					throw new DBAppException("Invalid Column");
 				}
 				String ogNameType = tableInfo.get(key)[0];
@@ -1532,6 +1534,7 @@ public class DBApp {
 			for (int i = 0; i < indices.size(); i++) {
 				String TreeName = strTableName + indices.get(i);
 				Octree Octree = deserializeOctree(TreeName);
+				System.out.println(htblColNameValue.toString()+" "+pageName+" "+oldPageName);
 				Octree.updateTupleReferenceInIndex(htblColNameValue, pageName, oldPageName);
 				serializeIndex(Octree, TreeName);
 				Octree = null;

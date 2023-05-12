@@ -730,7 +730,6 @@ public class Octree implements Serializable {
 
 	public Hashtable<String, Object> searchForPageNameUsingIndex(Hashtable<String, Object> key, String clustKey,
 			Node current,  Object closest, String pageName) {
-System.out.println(closest.toString()+" "+key.get(clustKey));
 		if (current == null)
 			return null;
 
@@ -739,18 +738,31 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 			String page = pageName;
 
 			if (closest instanceof java.lang.Integer) {
-				int closestInt = (Integer) closest;
+				Integer  closestInt = (Integer) closest;
+				
 				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
-					int curTuple = ((Integer) myLeaf.getBucket().get(i).get(clustKey));
-					if (((Integer) key.get(clustKey)) > curTuple)
-						continue;
-					int diff1 = curTuple - ((Integer) key.get(clustKey));
-					int diff2 = closestInt - ((Integer) key.get(clustKey));
-					if (diff1 < diff2) {
-						closestInt = diff1;
-						page = (String) myLeaf.getBucket().get(i).get("Page Name");
-
+					Integer curTuple = ((Integer) myLeaf.getBucket().get(i).get(clustKey));
+					if(!closestInt.equals((int)1e6)) {
+						if(closestInt.compareTo(((Integer) key.get(clustKey)))<0) {
+							if (curTuple.compareTo(closestInt) > 0) {
+								closestInt = curTuple;
+								page = (String) myLeaf.getBucket().get(i).get("Page Name");
+							}
+						}
+						else {
+							if ((((Integer) key.get(clustKey))).compareTo(curTuple) > 0)
+								continue;
+							if (curTuple.compareTo(closestInt) < 0) {
+								closestInt = curTuple;
+								page = (String) myLeaf.getBucket().get(i).get("Page Name");
+							}
+						}
 					}
+					else {
+						closestInt = curTuple;
+						page = (String) myLeaf.getBucket().get(i).get("Page Name");
+					}
+
 				}
 				Hashtable<String, Object> hash = new Hashtable<>();
 				hash.put("closest", closestInt);
@@ -759,17 +771,30 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 			}
 			if (closest instanceof java.lang.Double) {
 				Double closestDouble = (Double) closest;
+				
 				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 					Double curTuple = ((Double) myLeaf.getBucket().get(i).get(clustKey));
-					if (((Double) key.get(clustKey)) > curTuple)
-						continue;
-					Double diff1 = curTuple - ((Double) key.get(clustKey));
-					Double diff2 = closestDouble - ((Double) key.get(clustKey));
-					if (diff1 < diff2) {
-						closestDouble = diff1;
-						page = (String) myLeaf.getBucket().get(i).get("Page Name");
-
+					if(!closestDouble.equals(1e6)) {
+						if(closestDouble.compareTo(((Double) key.get(clustKey)))<0) {
+							if (curTuple.compareTo(closestDouble) > 0) {
+								closestDouble = curTuple;
+								page = (String) myLeaf.getBucket().get(i).get("Page Name");
+							}
+						}
+						else {
+							if ((((Double) key.get(clustKey))).compareTo(curTuple) > 0)
+								continue;
+							if (curTuple.compareTo(closestDouble) < 0) {
+								closestDouble = curTuple;
+								page = (String) myLeaf.getBucket().get(i).get("Page Name");
+							}
+						}
 					}
+					else {
+						closestDouble = curTuple;
+						page = (String) myLeaf.getBucket().get(i).get("Page Name");
+					}
+
 				}
 				Hashtable<String, Object> hash = new Hashtable<>();
 				hash.put("closest", closestDouble);
@@ -777,14 +802,29 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 				return hash;
 			}
 			if (closest instanceof java.lang.String) {
-				String closestString = (String) closest;
-				
+				String  closestString = (String) closest;
+			
 				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
-					String curTuple = ((String) myLeaf.getBucket().get(i).get(clustKey)).toString();
-					System.out.println(curTuple);
-					if (((String) key.get(clustKey)).compareTo(curTuple) > 0)
-						continue;
-					if (curTuple.compareTo(closestString) < 0) {
+					String curTuple = ((String) myLeaf.getBucket().get(i).get(clustKey)).toString().toLowerCase();
+					if(!closest.equals("ZZZZ")) {
+						closestString=closestString.toLowerCase();
+						System.out.println(closest.toString()+" "+key.get(clustKey));
+						if(closestString.compareTo(((String) key.get(clustKey)).toLowerCase())<0) {
+							if (curTuple.compareTo(closestString) > 0) {
+								closestString = curTuple;
+								page = (String) myLeaf.getBucket().get(i).get("Page Name");
+							}
+						}
+						else {
+							if ((((String) key.get(clustKey)).toLowerCase()).compareTo(curTuple) > 0)
+								continue;
+							if (curTuple.compareTo(closestString) < 0) {
+								closestString = curTuple;
+								page = (String) myLeaf.getBucket().get(i).get("Page Name");
+							}
+						}
+					}
+					else {
 						closestString = curTuple;
 						page = (String) myLeaf.getBucket().get(i).get("Page Name");
 					}
@@ -798,11 +838,27 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 
 			if (closest instanceof java.util.Date) {
 				Date closestDate = (Date) closest;
+				
 				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 					Date curTuple = ((Date) myLeaf.getBucket().get(i).get(clustKey));
-					if (((Date) key.get(clustKey)).after(curTuple))
-						continue;
-					if (curTuple.before(closestDate)) {
+					Date date=new Date(9999-1900,12-1,31);
+					if(!closestDate.equals(date)) {
+						if(closestDate.compareTo(((Date) key.get(clustKey)))<0) {
+							if (curTuple.compareTo(closestDate) > 0) {
+								closestDate = curTuple;
+								page = (String) myLeaf.getBucket().get(i).get("Page Name");
+							}
+						}
+						else {
+							if ((((Date) key.get(clustKey))).compareTo(curTuple) > 0)
+								continue;
+							if (curTuple.compareTo(closestDate) < 0) {
+								closestDate = curTuple;
+								page = (String) myLeaf.getBucket().get(i).get("Page Name");
+							}
+						}
+					}
+					else {
 						closestDate = curTuple;
 						page = (String) myLeaf.getBucket().get(i).get("Page Name");
 					}
@@ -821,6 +877,16 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 			if (this.getX().equals(clustKey)) {
 				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
 				if (!higherX) {
+					if(curNonleaf.left0 instanceof Leaf && ((Leaf)curNonleaf.left0).getBucket().size()==0
+							&& curNonleaf.left1 instanceof Leaf && ((Leaf)curNonleaf.left1).getBucket().size()==0
+							&& curNonleaf.left2 instanceof Leaf && ((Leaf)curNonleaf.left2).getBucket().size()==0
+							&& curNonleaf.left3 instanceof Leaf && ((Leaf)curNonleaf.left3).getBucket().size()==0) {
+						Hashtable<String, Object> hash = new Hashtable<>();
+						hash.put("closest", closest);
+						hash.put("Page Name", "0");
+						return hash;
+						
+					}
 					Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left0,
 							closest, pageName);// 000
 					Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left1,
@@ -835,7 +901,7 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 					Object val3=hash3.get("closest");
 					Object val4=hash4.get("closest");
 
-					Object closestObj=getClosest(val1,val2,val3,val4);
+					Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
 					if (closestObj.equals (hash1.get("closest"))) {
 						return hash1;
 					}
@@ -853,6 +919,16 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 
 
 				} else {
+					if(curNonleaf.right3 instanceof Leaf && ((Leaf)curNonleaf.right3).getBucket().size()==0
+							&& curNonleaf.right2 instanceof Leaf && ((Leaf)curNonleaf.right2).getBucket().size()==0
+							&& curNonleaf.right1 instanceof Leaf && ((Leaf)curNonleaf.right1).getBucket().size()==0
+							&& curNonleaf.right0 instanceof Leaf && ((Leaf)curNonleaf.right0).getBucket().size()==0) {
+						Hashtable<String, Object> hash = new Hashtable<>();
+						hash.put("closest", closest);
+						hash.put("Page Name", "0");
+						return hash;
+						
+					}
 					Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right3,
 							closest, pageName);// 100
 					Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right2,
@@ -866,7 +942,7 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 					Object val3=hash3.get("closest");
 					Object val4=hash4.get("closest");
 
-					Object closestObj=getClosest(val1,val2,val3,val4);
+					Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
 					if (closestObj.equals (hash1.get("closest"))) {
 						return hash1;
 					}
@@ -887,20 +963,33 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 				if (this.getY().equals(clustKey)) {
 					boolean higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
 					if (!higherY) {
+						if(curNonleaf.left0 instanceof Leaf && ((Leaf)curNonleaf.left0).getBucket().size()==0
+								&& curNonleaf.left1 instanceof Leaf && ((Leaf)curNonleaf.left1).getBucket().size()==0
+								&& curNonleaf.right3 instanceof Leaf && ((Leaf)curNonleaf.right3).getBucket().size()==0
+								&& curNonleaf.right2 instanceof Leaf && ((Leaf)curNonleaf.right2).getBucket().size()==0) {
+							Hashtable<String, Object> hash = new Hashtable<>();
+							hash.put("closest", closest);
+							hash.put("Page Name", "0");
+							return hash;
+							
+						}
 						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left0,
-								closest, pageName);
+								closest, pageName);//000
 						Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left1,
-								closest, pageName);
+								closest, pageName);//001
 						Hashtable<String, Object> hash3 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right3,
-								closest, pageName);
+								closest, pageName);//100
 						Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right2,
-								closest, pageName);
+								closest, pageName);//101
 						Object val1=hash1.get("closest");
 						Object val2=hash2.get("closest");
 						Object val3=hash3.get("closest");
 						Object val4=hash4.get("closest");
 
-						Object closestObj=getClosest(val1,val2,val3,val4);
+						Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
+//						System.out.println(hash1.toString()+" "+hash2.toString()+" "+hash3.toString()+" "+hash4.toString());
+//						System.out.println(closestObj+"    closestObj");
+
 						if (closestObj.equals (hash1.get("closest"))) {
 							return hash1;
 						}
@@ -916,6 +1005,16 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 							return hash4;
 						}
 					} else {
+						if(curNonleaf.left2 instanceof Leaf && ((Leaf)curNonleaf.left2).getBucket().size()==0
+								&& curNonleaf.left3 instanceof Leaf && ((Leaf)curNonleaf.left3).getBucket().size()==0
+								&& curNonleaf.right1 instanceof Leaf && ((Leaf)curNonleaf.right1).getBucket().size()==0
+								&& curNonleaf.right0 instanceof Leaf && ((Leaf)curNonleaf.right0).getBucket().size()==0) {
+							Hashtable<String, Object> hash = new Hashtable<>();
+							hash.put("closest", closest);
+							hash.put("Page Name", "0");
+							return hash;
+							
+						}
 						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left2,
 								closest, pageName);
 						Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left3,
@@ -929,7 +1028,10 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 						Object val3=hash3.get("closest");
 						Object val4=hash4.get("closest");
 
-						Object closestObj=getClosest(val1,val2,val3,val4);
+						Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
+//						System.out.println(closestObj+"    closestObj");
+//						System.out.println(hash1.toString()+" "+hash2.toString()+" "+hash3.toString()+" "+hash4.toString());
+
 						if (closestObj.equals (hash1.get("closest"))) {
 							return hash1;
 						}
@@ -948,6 +1050,17 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 				} else {
 					boolean higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
 					if (!higherZ) {
+						if(curNonleaf.left0 instanceof Leaf && ((Leaf)curNonleaf.left0).getBucket().size()==0
+								&& curNonleaf.left2 instanceof Leaf && ((Leaf)curNonleaf.left2).getBucket().size()==0
+								&& curNonleaf.right3 instanceof Leaf && ((Leaf)curNonleaf.right3).getBucket().size()==0
+								&& curNonleaf.right1 instanceof Leaf && ((Leaf)curNonleaf.right1).getBucket().size()==0) {
+							Hashtable<String, Object> hash = new Hashtable<>();
+							hash.put("closest", closest);
+							hash.put("Page Name", "0");
+							return hash;
+							
+						}
+					
 						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left0,
 								closest, pageName);// 000
 						Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left2,
@@ -961,7 +1074,7 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 						Object val3=hash3.get("closest");
 						Object val4=hash4.get("closest");
 
-						Object closestObj=getClosest(val1,val2,val3,val4);
+						Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
 						if (closestObj.equals (hash1.get("closest"))) {
 							return hash1;
 						}
@@ -977,6 +1090,16 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 							return hash4;
 						}
 					} else {
+						if(curNonleaf.left1 instanceof Leaf && ((Leaf)curNonleaf.left1).getBucket().size()==0
+								&& curNonleaf.left3 instanceof Leaf && ((Leaf)curNonleaf.left3).getBucket().size()==0
+								&& curNonleaf.right2 instanceof Leaf && ((Leaf)curNonleaf.right2).getBucket().size()==0
+								&& curNonleaf.right0 instanceof Leaf && ((Leaf)curNonleaf.right0).getBucket().size()==0) {
+							Hashtable<String, Object> hash = new Hashtable<>();
+							hash.put("closest", closest);
+							hash.put("Page Name", "0");
+							return hash;
+							
+						}
 						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left1,
 								closest, pageName);
 						Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left3,
@@ -990,7 +1113,7 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 						Object val3=hash3.get("closest");
 						Object val4=hash4.get("closest");
 
-						Object closestObj=getClosest(val1,val2,val3,val4);
+						Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
 						if (closestObj.equals (hash1.get("closest"))) {
 							return hash1;
 						}
@@ -1021,11 +1144,11 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 		if(key.get(clustKey)instanceof java.lang.Double)
 			hash = searchForPageNameUsingIndex(key, clustKey, this.root,  1e6, "");
 		if(key.get(clustKey)instanceof java.lang.String)
-			hash = searchForPageNameUsingIndex(key, clustKey, this.root, max, "");
+			hash = searchForPageNameUsingIndex(key, clustKey, this.root, "ZZZZ", "");
 		if(key.get(clustKey)instanceof java.util.Date) {
 			Date date;
 			try {
-				date = new SimpleDateFormat("yyyy-MM-dd").parse(max);
+				date = new SimpleDateFormat("yyyy-MM-dd").parse("9999-12-31");
 				hash = searchForPageNameUsingIndex(key, clustKey, this.root,  date,"");
 
 			} catch (ParseException e) {
@@ -1144,53 +1267,133 @@ System.out.println(closest.toString()+" "+key.get(clustKey));
 		}
 
 	}
-	public static Object getClosest(Object obj1,Object obj2,Object obj3,Object obj4) {
+	public static Object getClosest(Object obj1,Object obj2,Object obj3,Object obj4,Object Clustkey) {
 		if (obj1 instanceof java.lang.Integer){
-			int min1 = Math.min(((Integer) obj1), (Integer) obj2);
-			int min2 = Math.min(((Integer) obj3), (Integer) obj4);
-			int min = Math.min(min1, min2);
-			return min;
-		}
+			Integer min1,min2,min;
+			ArrayList<Integer>toCompare=new ArrayList<>();
+			//System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+" "+obj4.toString());
+			if(!((Integer)obj1).equals((int)1e6)) toCompare.add(((Integer)obj1));
+			if(!((Integer)obj2).equals((int)1e6)) toCompare.add(((Integer)obj2));
+			if(!((Integer)obj3).equals((int)1e6)) toCompare.add(((Integer)obj3));
+			if(!((Integer)obj4).equals((int)1e6)) toCompare.add(((Integer)obj4));
+			if(toCompare.size()==0)return ((Integer)obj1);
+			min=toCompare.remove(0);
+			while(toCompare.size()>0) {
+				min2=toCompare.remove(0);
+				if(min.compareTo(((Integer)Clustkey))<0) {
+					if(min2.compareTo(((Integer)Clustkey))<0) {
+						if(min.compareTo(min2)<0)
+							min=min2;
+						}
+					else
+						min=min2;
+				}
+				else {
+					if(min2.compareTo(((Integer)Clustkey))>0) {
+						if(min.compareTo(min2)>0)
+							min=min2;
+					}
+				}
+				
+			}
+			return min;			
+							
+			}
 		if (obj1 instanceof java.lang.Double){
-			Double min1 = Math.min(((Double) obj1), (Double) obj2);
-			Double min2 = Math.min(((Double) obj3), (Double) obj4);
-			Double min = Math.min(min1, min2);
-			return min;
+			Double min1,min2,min;
+			ArrayList<Double>toCompare=new ArrayList<>();
+			//System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+" "+obj4.toString());
+			if(!((Double)obj1).equals(1e6)) toCompare.add(((Double)obj1));
+			if(!((Double)obj2).equals(1e6)) toCompare.add(((Double)obj2));
+			if(!((Double)obj3).equals(1e6)) toCompare.add(((Double)obj3));
+			if(!((Double)obj4).equals(1e6)) toCompare.add(((Double)obj4));
+			if(toCompare.size()==0)return ((Double)obj1);
+			min=toCompare.remove(0);
+			while(toCompare.size()>0) {
+				min2=toCompare.remove(0);
+				if(min.compareTo(((Double)Clustkey))<0) {
+					if(min2.compareTo(((Double)Clustkey))<0) {
+						if(min.compareTo(min2)<0)
+							min=min2;
+						}
+					else
+						min=min2;
+				}
+				else {
+					if(min2.compareTo(((Double)Clustkey))>0) {
+						if(min.compareTo(min2)>0)
+							min=min2;
+					}
+				}
+				
+			}
+			return min;			
+							
+			
 		}
 		if (obj1 instanceof java.lang.String){
 			String min1,min2,min;
-			if(((String)obj1).compareTo((String)obj2)<0)
-				min1=((String)obj1);
-			else
-				min1=((String)obj2);
-			if(((String)obj3).compareTo((String)obj4)<0)
-				min2=((String)obj3);
-			else
-				min2=((String)obj4);
-			if((min1).compareTo(min2)<0)
-				min=min1;
-			else
-				min=min2;
-			
-			return min;
-		}
+			ArrayList<String>toCompare=new ArrayList<>();
+			//System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+" "+obj4.toString());
+			if(!((String)obj1).equals("ZZZZ")) toCompare.add(((String)obj1).toLowerCase());
+			if(!((String)obj2).equals("ZZZZ")) toCompare.add(((String)obj2).toLowerCase());
+			if(!((String)obj3).equals("ZZZZ")) toCompare.add(((String)obj3).toLowerCase());
+			if(!((String)obj4).equals("ZZZZ")) toCompare.add(((String)obj4).toLowerCase());
+			if(toCompare.size()==0)return ((String)obj1);
+			min=toCompare.remove(0);
+			while(toCompare.size()>0) {
+				min2=toCompare.remove(0);
+				if(min.compareTo(((String)Clustkey).toLowerCase())<0) {
+					if(min2.compareTo(((String)Clustkey).toLowerCase())<0) {
+						if(min.compareTo(min2)<0)
+							min=min2;
+						}
+					else
+						min=min2;
+				}
+				else {
+					if(min2.compareTo(((String)Clustkey).toLowerCase())>0) {
+						if(min.compareTo(min2)>0)
+							min=min2;
+					}
+				}
+				
+			}
+			return min;			
+							
+			}
 		if (obj1 instanceof java.util.Date){
 			Date min1,min2,min;
-			if(((Date)obj1).before((Date)obj2))
-				min1=((Date)obj1);
-			else
-				min1=((Date)obj2);
-			if(((Date)obj3).before((Date)obj4))
-				min2=((Date)obj3);
-			else
-				min2=((Date)obj4);
-			if((min1).before(min2))
-				min=min1;
-			else
-				min=min2;
-			
-			return min;
-		}
+			ArrayList<Date>toCompare=new ArrayList<>();
+			Date d=new Date(9999-1900,12-1,31);
+			//System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+" "+obj4.toString());
+			if(!((Date)obj1).equals(d)) toCompare.add(((Date)obj1));
+			if(!((Date)obj2).equals(d)) toCompare.add(((Date)obj2));
+			if(!((Date)obj3).equals(d)) toCompare.add(((Date)obj3));
+			if(!((Date)obj4).equals(d)) toCompare.add(((Date)obj4));
+			if(toCompare.size()==0)return ((Integer)obj1);
+			min=toCompare.remove(0);
+			while(toCompare.size()>0) {
+				min2=toCompare.remove(0);
+				if(min.compareTo(((Date)Clustkey))<0) {
+					if(min2.compareTo(((Date)Clustkey))<0) {
+						if(min.compareTo(min2)<0)
+							min=min2;
+						}
+					else
+						min=min2;
+				}
+				else {
+					if(min2.compareTo(((Date)Clustkey))>0) {
+						if(min.compareTo(min2)>0)
+							min=min2;
+					}
+				}
+				
+			}
+			return min;			
+							
+			}
 		return null;
 	}
 

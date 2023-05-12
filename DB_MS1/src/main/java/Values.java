@@ -18,18 +18,18 @@ public class Values {
 
 		inserting(dbApp);
 		dbApp.displayTree(strTableName);
-		Hashtable rec = new Hashtable();
-		rec.put("name", new String("Seif"));
-		rec.put("id", new Integer(67));
-		rec.put("gpa", 1.26);
-		rec.put("Date of Birth", new Date(2012 - 1900, 10 - 1, 26));
-
-		dbApp.insertIntoTable("Student", rec);
+//		Hashtable rec = new Hashtable();
+//		rec.put("name", new String("Seif"));
+//		rec.put("id", new Integer(67));
+//		rec.put("gpa", 1.26);
+//		rec.put("Date of Birth", new Date(2012 - 1900, 10 - 1, 26));
+//
+//		dbApp.insertIntoTable("Student", rec);
 
 		dbApp.getPages(strTableName);
 		// dbApp.createIndex(strTableName, new String[] { "name", "gpa", "date of birth"
 		// });
-		dbApp.displayTree(strTableName);
+	//	dbApp.displayTree(strTableName);
 //		Hashtable rec = new Hashtable();
 //		rec.put("gpa", new Double(3.5));
 //		rec.put("name", "Nameee3");
@@ -49,7 +49,7 @@ public class Values {
 		// TODO Auto-generated method stub
 		String strTableName="Student";
 		Hashtable rec = new Hashtable();
-		rec.put("id", new Integer(0));
+		rec.put("id", new Integer(10));
 		rec.put("name", new String("Kkk"));// 0
 		rec.put("gpa", 0.95);// 0
 		rec.put("Date of Birth", new Date(2015 - 1900, 9 - 1, 17));// 1
@@ -68,7 +68,7 @@ public class Values {
 
 		rec.clear();
 
-		rec.put("id", new Integer(5));
+		rec.put("id", new Integer(60));
 		rec.put("name", new String("paula"));// 1
 		rec.put("gpa", 2.9);// 1
 		rec.put("Date of Birth", new Date(2005 - 1900, 9 - 1, 26));// 0
@@ -77,7 +77,7 @@ public class Values {
 		dbApp.insertIntoTable("Student", rec);// 110
 		rec.clear();
 
-		rec.put("id", new Integer(4));
+		rec.put("id", new Integer(64));
 		rec.put("name", new String("malak"));
 		rec.put("gpa", 3.9);
 		rec.put("Date of Birth", new Date(2013 - 1900, 11 - 1, 26));
@@ -88,40 +88,40 @@ public class Values {
 		rec.clear();
 
 		rec.put("name", new String("nameee"));
-		rec.put("id", new Integer(8));
+		rec.put("id", new Integer(4));
 		rec.put("gpa", 1.97);
 		rec.put("Date of Birth", new Date(2013 - 1900, 10 - 1, 26));// 011
 		dbApp.getPages(strTableName);
 
 		dbApp.insertIntoTable("Student", rec);// 011
 
-		rec.clear();
-
-		rec.put("name", new String("Nameee3"));
-		rec.put("id", new Integer(7));
-		rec.put("gpa", 1.29);
-		rec.put("Date of Birth", new Date(2022 - 1900, 10 - 1, 28));// 011
-		dbApp.getPages(strTableName);
-
-		dbApp.insertIntoTable("Student", rec);
-
-		rec.clear();
-		rec.put("name", new String("lolat"));
-		rec.put("id", new Integer(1));
-		rec.put("gpa", 1.99);
-		rec.put("Date of Birth", new Date(2019 - 1900, 10 - 1, 26));// 011
-		dbApp.getPages(strTableName);
-
-		dbApp.insertIntoTable("Student", rec);
-
-		rec.clear();
-		rec.put("name", new String("Seif"));
-		rec.put("id", new Integer(60));
-		rec.put("gpa", 1.26);
-		rec.put("Date of Birth", new Date(2012 - 1900, 10 - 1, 26));// 011
-		dbApp.getPages(strTableName);
-
-		dbApp.insertIntoTable("Student", rec);
+//		rec.clear();
+//
+//		rec.put("name", new String("Nameee3"));
+//		rec.put("id", new Integer(7));
+//		rec.put("gpa", 1.29);
+//		rec.put("Date of Birth", new Date(2022 - 1900, 10 - 1, 28));// 011
+//		dbApp.getPages(strTableName);
+//
+//		dbApp.insertIntoTable("Student", rec);
+//dbApp.displayTree(strTableName);
+//		rec.clear();
+//		rec.put("name", new String("lolat"));
+//		rec.put("id", new Integer(1));
+//		rec.put("gpa", 1.99);
+//		rec.put("Date of Birth", new Date(2019 - 1900, 10 - 1, 26));// 011
+//		dbApp.getPages(strTableName);
+//
+//		dbApp.insertIntoTable("Student", rec);
+//
+//		rec.clear();
+//		rec.put("name", new String("Seif"));
+//		rec.put("id", new Integer(60));
+//		rec.put("gpa", 1.26);
+//		rec.put("Date of Birth", new Date(2012 - 1900, 10 - 1, 26));// 011
+//		dbApp.getPages(strTableName);
+//
+//		dbApp.insertIntoTable("Student", rec);
 //		
 //		rec.clear();
 //		dbApp.getPages("Student");
@@ -153,14 +153,14 @@ public class Values {
 		htblColNameMin.put("gpa", "0.0");
 
 		Hashtable htblColNameMax = new Hashtable<>();
-		htblColNameMax.put("id", "1000");
+		htblColNameMax.put("id", "100");
 		htblColNameMax.put("name", "zzzzzzzzz");
 		htblColNameMax.put("Date of Birth", "2022-12-31");
 		htblColNameMax.put("gpa", "4.0");
 
 		// dbApp.init();
 
-		dbApp.createTable(strTableName, "name", htblColNameType, htblColNameMin, htblColNameMax);
+		dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
 
 	}
 
