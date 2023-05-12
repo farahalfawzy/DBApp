@@ -261,7 +261,7 @@ public class DBApp {
 					String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 					Page page = deserializePage(pagename);
 					Tuple tuple = new Tuple(clustKey, htblColNameValue);
-					System.out.println(pagename+"  kkkkkkk");
+					System.out.println(pagename + "  kkkkkkk");
 
 					if (page.containsClustKey(tuple)) {
 						page = null;
@@ -313,7 +313,7 @@ public class DBApp {
 //							 page.add(tuple);
 //							Collections.sort(page);
 							Tuple newtup = (Tuple) page.remove(page.size() - 1);// remove
-							System.out.println(indexInPage+"   ll   "+newtup.getClusteringkey());
+							System.out.println(indexInPage + "   ll   " + newtup.getClusteringkey());
 							((PageInfo) pageInfoVector.get(pageind)).setMax(getMaxInPage(page));
 							((PageInfo) pageInfoVector.get(pageind)).setMin(getMinInPage(page));
 
@@ -683,7 +683,7 @@ public class DBApp {
 				}
 			}
 			Octree currOctree = deserializeOctree(currIndex);
-			tobedeleted.put("Clust key", t.getClusteringKey());
+			tobedeleted.put("Clust key", myTuple.getClusteringkey());
 			currOctree.deleteTuple(tobedeleted);
 			serializeIndex(currOctree, currIndex);
 		}
@@ -1538,7 +1538,7 @@ public class DBApp {
 			for (int i = 0; i < indices.size(); i++) {
 				String TreeName = strTableName + indices.get(i);
 				Octree Octree = deserializeOctree(TreeName);
-				System.out.println(htblColNameValue.toString()+" "+pageName+" "+oldPageName);
+				System.out.println(htblColNameValue.toString() + " " + pageName + " " + oldPageName);
 				Octree.updateTupleReferenceInIndex(htblColNameValue, pageName, oldPageName);
 				serializeIndex(Octree, TreeName);
 				Octree = null;
@@ -1580,175 +1580,28 @@ public class DBApp {
 
 	}
 
-//	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
-//		String indxName;
-//		if (arrSQLTerms.length == 0)
-//			throw new DBAppException("Insert a valid select");
-//		if (!tableExits(arrSQLTerms[0].get_strTableName()))
-//			throw new DBAppException("Table doesn't exist!!");
-//		Vector result = new Vector<>();
-//		Table t = deserializeTable(arrSQLTerms[0].get_strTableName());
-//		Hashtable<String, Object> htblColValue = new Hashtable<>();
-//		Vector<String> indexName = new Vector<>();
-//		for (int i = 0; i < arrSQLTerms.length; i++) {
-//			htblColValue.put(arrSQLTerms[i].get_strColumnName(), arrSQLTerms[i].get_objValue());
-//		}
-//		if (!isValid(t.getTableName(), htblColValue))
-//			throw new DBAppException("Coloumn is invalid");
-//		indexName = getindexname(t, htblColValue);
-//		Queue<Hashtable<String, Object>> resIndex = new LinkedList<Hashtable<String, Object>>();
-//		Queue<String> operators = new LinkedList<String>();
-//		boolean notIndex = false;
-//		int tempCounter = 0;
-//		int colCounter = 0;
-//		int operatorCounter = 0;
-//		int outerCounter = 0;
-//		Boolean[] taken = new Boolean[indexName.size()];
-//		boolean once = true;
-//		boolean flag = true;
-//		for (int indexCounter = 0; indexCounter < indexName.size(); indexCounter++) {
-//			Hashtable<String, Object> myHtbl = new Hashtable<String, Object>();
-//			myHtbl.put(arrSQLTerms[colCounter].get_strColumnName(), arrSQLTerms[colCounter].get_objValue());
-//			myHtbl.put("operator" + arrSQLTerms[colCounter].get_strColumnName(),
-//					arrSQLTerms[colCounter].get_strOperator());
-//			if (taken[colCounter]) {
-//				colCounter++;
-//				indexCounter--;
-//				continue;
-//			}
-//			colCounter++;
-//			for (int j = indexCounter + 1; j < indexName.size(); j++) {
-//				if (myHtbl.size() == 6) {
-////					operatorCounter++;
-////					colCounter++;
-//					break;
-//				}
-//				if (!strarrOperators[operatorCounter].equals("AND")) {
-//					// notIndex=true;
-////					operatorCounter++;
-////					colCounter++;
-//					break;
-//				}
-//				if (indexName.get(indexCounter).equals(indexName.get(j)) && myHtbl.size() < 6) {
-//					myHtbl.put(arrSQLTerms[colCounter].get_strColumnName(), arrSQLTerms[colCounter].get_objValue());
-//					myHtbl.put("operator" + arrSQLTerms[colCounter].get_strColumnName(),
-//							arrSQLTerms[colCounter].get_strOperator());
-//					indexName.remove(j);
-//					j--;
-////					if(flag)
-////						outerCounter++;
-//					taken[colCounter] = true;
-//				} else {
-//					if (once) {
-//						outerCounter = colCounter;
-//						once = false;
-//					}
-//					flag = false;
-//				}
-//				operatorCounter++;
-//				colCounter++;
-//			}
-//			if (!flag) {
-//				colCounter = outerCounter;
-//				operatorCounter = outerCounter - 1;
-//			}
-//			once = true;
-//			flag = true;
-//			myHtbl.put("indxName", indexName.get(indexCounter));
-//			resIndex.add(myHtbl);
-//			if (resIndex.size() == 2) {
-//				resIndex = compute(resIndex, operators, t);
-//			}
-//			if (operatorCounter < strarrOperators.length) {
-//				operators.add(strarrOperators[operatorCounter]);
-//				operatorCounter++;
-//			}
-//
-////			if(tempCounter!=0)
-////				operators.add(strarrOperators[operatorCounter]);
-////			tempCounter++;
-////			if(!notIndex && myHtbl.size()==6) {
-////				//computer hashtable then insert into Queue
-////				
-////				resIndex.add(myHtbl);
-////				if(tempCounter!=0)
-////					operators.add(strarrOperators[operatorCounter]);
-////				tempCounter++;
-////			}
-////			else if (notIndex
-////					notIndex=false;
-//		}
-//
-//		if (flag && hasThreeIndexMeta(t.getTableName(), colName) && strarrOperators[0] == "AND") {
-//			indxName = getindexname(t, colName);
-//			Octree o = deserializeOctree(t.getTableName() + "" + indxName);
-//			Vector<String> res = o.getPageName(htblColValue);
-//			Tuple tuple = new Tuple(t.getClusteringKey(), htblColValue);
-//			for (int i = 0; i < res.size(); i++) {
-//				Page p = deserializePage(res.get(i));
-//				result.add(p.PrintTuple(tuple));
-//
-//			}
-//		} else {
-//			// TODO sequentially
-//			Tuple myTuple = new Tuple(t.getClusteringKey(), htblColValue);
-//			int pageind = -1;
-//			String myCluster = t.getClusteringKey();
-//			if (htblColValue.containsKey(myCluster)) {
-////				 System.out.println("was hereee");
-//				Object myClusterType = htblColValue.get(myCluster);
-//				if (myClusterType instanceof java.lang.Integer) {
-//					pageind = binarySearchInt(t, (Integer) myClusterType);
-//				}
-//				if (myClusterType instanceof java.lang.String) {
-//					pageind = binarySearchString(t, (String) myClusterType);
-//				}
-//				if (myClusterType instanceof java.lang.Double) {
-//					pageind = binarySearchDouble(t, (Double) myClusterType);
-//				}
-//				if (myClusterType instanceof java.util.Date) {
-//					pageind = binarySearchDate(t, (Date) myClusterType);
-//				}
-//				// System.out.println(pageind);
-//				Vector pageInfoVector = t.getPageInfo();
-//				if (pageInfoVector.size() != 0) {
-//					String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
-//					Page page = deserializePage(pagename);
-////					System.out.println("before contains");
-//					if (page.contains(myTuple)) {
-////						System.out.println("after contains");
-//						// System.out.println("was here111111");
-//						int index = page.getIndexInPage(myTuple);
-//						result.add(page.get(index).toString());
-//						serializePage(t, page, t.getTableName() + "" + pageind);
-//						page = null;
-//					}
-//
-//				}
-//			} else {
-//				for (int i = 0; i < t.getPageInfo().size(); i++) {
-//					Page page = deserializePage(t.getPageInfo().get(i).getPageName());
-//					for (Tuple myTuple2 : page) {
-//						if (myTuple2.equals(myTuple)) {
-//							result.add(myTuple2.toString());
-//
-//						}
-//					}
-//
-//				}
-//			}
-//
-//		}
-//		return result.iterator();
-//
-//	}
+	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
+		if (arrSQLTerms.length == 0)
+			throw new DBAppException("Insert a valid select");
+		if (!tableExits(arrSQLTerms[0]._strTableName))
+			throw new DBAppException("Table doesn't exist!!");
+		Vector<Tuple> result = new Vector<>();
+		Table t = deserializeTable(arrSQLTerms[0]._strTableName);
+		Hashtable<String, Object> htblColValue = new Hashtable<>();
+		Vector<String> indexName = new Vector<>();
+		for (int i = 0; i < arrSQLTerms.length; i++) {
+			htblColValue.put(arrSQLTerms[i]._strColumnName, arrSQLTerms[i]._objValue);
+		}
+		if (!isValid(t.getTableName(), htblColValue))
+			throw new DBAppException("Column is invalid");
+		
+		return null;
+	}
 
 //es2l 3ala 7tt elcomplexity mohma wala la2?
 	public static void compute(Queue<Hashtable<String, Object>> resIndex, Queue<String> operators, Table t) {
 		Hashtable<String, Object> htbloperand1 = resIndex.poll();
-		Tuple operand1 = new Tuple(t, htbloperand1);
 		Hashtable<String, Object> htbloperand2 = resIndex.poll();
-		Tuple operand2 = new Tuple(t, htbloperand2);
 		String strOperator = operators.poll();
 		String value1, value2;
 		value1 = htbloperand1.get("indxName").toString();
@@ -1767,10 +1620,6 @@ public class DBApp {
 			myOct2 = deserializeOctree(value2);
 			pages2 = myOct2.getPageName(htbloperand2);
 		}
-		boolean greaterThan1, equal1, smallerThan1, NotEqual1, greaterThanOrEqual1, SmallerThanOrEqual1, greaterThan2,
-				equal2, smallerThan2, NotEqual2, greaterThanOrEqual2, SmallerThanOrEqual2, greaterThan3, equal3,
-				smallerThan3, NotEqual3, greaterThanOrEqual3, SmallerThanOrEqual3;
-//		boolean[] greaterThan,equal,smallerThan,notequal,greaterthanorequal,smallerthanorequal,notEqual= {false,false,false};
 //		momken ne3melha as a loop fel arrays beta3et kol operator
 		Hashtable<String, Integer> Bitmask1 = new Hashtable<>();
 		Hashtable<String, Integer> Bitmask2 = new Hashtable<>();
