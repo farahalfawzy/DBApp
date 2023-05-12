@@ -13,11 +13,11 @@ public class Values {
 		String strTableName = "Student";
 		DBApp dbApp = new DBApp();
 		dbApp.init();
-		creating(strTableName, dbApp);
-		dbApp.createIndex(strTableName, new String[] { "id", "gpa", "name" });
+//		creating(strTableName, dbApp);
+//		dbApp.createIndex(strTableName, new String[] { "id", "gpa", "name" });
 
-		inserting(dbApp);
-		dbApp.displayTree(strTableName);
+	//	inserting(dbApp);
+		//dbApp.displayTree(strTableName);
 //		Hashtable rec = new Hashtable();
 //		rec.put("name", new String("Seif"));
 //		rec.put("id", new Integer(67));
@@ -26,16 +26,19 @@ public class Values {
 //
 //		dbApp.insertIntoTable("Student", rec);
 
-		dbApp.getPages(strTableName);
-		// dbApp.createIndex(strTableName, new String[] { "name", "gpa", "date of birth"
-		// });
+		//dbApp.getPages(strTableName);
+	
 	//	dbApp.displayTree(strTableName);
-//		Hashtable rec = new Hashtable();
-//		rec.put("gpa", new Double(3.5));
-//		rec.put("name", "Nameee3");
-//		deleting(strTableName,dbApp,rec);
+		Hashtable rec = new Hashtable();
+		rec.put("gpa", new Double(1.29));
+		rec.put("name", "Nameee3");
+		deleting(strTableName,dbApp,rec);
 //		updating(strTableName, dbApp);
 //		dbApp.getPages("Student");
+		dbApp.getPages(strTableName);
+		dbApp.displayTree(strTableName);
+
+
 	}
 
 	private static void deleting(String strTableName, DBApp dbApp, Hashtable rec) throws DBAppException {
@@ -95,15 +98,15 @@ public class Values {
 
 		dbApp.insertIntoTable("Student", rec);// 011
 
-//		rec.clear();
-//
-//		rec.put("name", new String("Nameee3"));
-//		rec.put("id", new Integer(7));
-//		rec.put("gpa", 1.29);
-//		rec.put("Date of Birth", new Date(2022 - 1900, 10 - 1, 28));// 011
-//		dbApp.getPages(strTableName);
-//
-//		dbApp.insertIntoTable("Student", rec);
+		rec.clear();
+
+		rec.put("name", new String("Nameee3"));
+		rec.put("id", new Integer(7));
+		rec.put("gpa", 1.29);
+		rec.put("Date of Birth", new Date(2022 - 1900, 10 - 1, 28));// 011
+		dbApp.getPages(strTableName);
+
+		dbApp.insertIntoTable("Student", rec);
 //dbApp.displayTree(strTableName);
 //		rec.clear();
 //		rec.put("name", new String("lolat"));

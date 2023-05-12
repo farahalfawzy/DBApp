@@ -441,6 +441,7 @@ public class DBApp {
 				case "java.util.Date":
 					Date date = new SimpleDateFormat("yyyy-MM-dd").parse(strClusteringKeyValue);
 					pageind = getPageNumFromIndex(strTableName, htblColNameValue, date);
+					System.out.println("PAGEIND"+pageind);
 					if (pageind == -1)
 						pageind = binarySearchDate(t, date);
 					ClustObj = date;
@@ -470,14 +471,14 @@ public class DBApp {
 					}
 					serializePage(t, page, strTableName + "" + pageind);
 					serializeTable(t, strTableName);
-
+					page = null;
+					t = null;
 					updateTupleinIndex(strTableName, oldtuple, tuple.getRecord(), strTableName + "" + pageind,
 							htblColNameValue);
 					// page.replace(ClustObj, htblColNameValue);
 					isUpdatingMethod = false;
 
-					page = null;
-					t = null;
+					
 				}
 
 				else {
@@ -513,7 +514,6 @@ public class DBApp {
 		}
 
 	}
-
 	public void deleteFromTable(String strTableName, Hashtable<String, Object> htblColNameValue) throws DBAppException {
 		this.isDeletingMethod = true;
 		if (tableExits(strTableName)) {
@@ -1477,6 +1477,7 @@ public class DBApp {
 				line = br.readLine();
 			}
 			br.close();
+			System.out.println("hereeeeeeeeeee");
 			for (int i = 0; i < indices.size(); i++) {
 				String TreeName = strTableName + indices.get(i);
 				Octree Octree = deserializeOctree(TreeName);
@@ -1514,7 +1515,6 @@ public class DBApp {
 		}
 
 	}
-
 	private void updateRefrenceInIndex(String strTableName, Hashtable<String, Object> htblColNameValue, String pageName,
 			String oldPageName) throws DBAppException {
 		BufferedReader br;
@@ -2281,42 +2281,40 @@ public class DBApp {
 		}
 	}
 
+
 	public static int getPageNumFromIndex(String t, Hashtable<String, Object> htbl, Object clustVal)
 			throws DBAppException {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 			String line = br.readLine();
-			Hashtable<String, Integer> Indices = new Hashtable<String, Integer>();
+			String Indices =null;
+			String col="";
+			System.out.println(t);
 			// String TName = t.getTableName();
 			// Vector<String> res = new Vector<>();
 			while (line != null) {
 				String[] x = line.split(",");
+				System.out.println(Arrays.toString(x));
 				if (x[0].equals(t)) {
-					if (x[4] != null) {
-						if (htbl.containsKey(x[1])) {
-							if (Indices.containsKey(x[4])) {
-								Indices.put(x[4], Indices.get(x[4]) + 1);
-							} else {
-								Indices.put(x[4], 1);
-							}
-						}
+					if (x[3].equals("True")&&!x[4].equals("null")) {
+							System.out.println("here");
+							Indices=x[4];
+							col=x[1];
+						
 					}
 				}
 				line = br.readLine();
 			}
 			br.close();
-			int max = -1;
-			String maxIndex = "";
-			for (String key : Indices.keySet()) {
-				if (Indices.get(key) > max)
-					maxIndex = key;
-			}
+			
+			if(Indices==null)return -1;
+			System.out.println(Indices.toString());
 
-			if (max == -1)
-				return -1;
-			String treeName = t + maxIndex;
+			
+			String treeName = t + Indices;
 			Octree tree = deserializeOctree(treeName);
-			String page = tree.getExactPage(htbl, tree.getRoot(), clustVal);
+			String page = tree.getExactPage(col,tree.getRoot(), clustVal);
+			System.out.println("PAGE "+page);
 			return Integer.parseInt(page.charAt(page.length() - 1) + "");
 
 		} catch (FileNotFoundException e) {
@@ -2326,7 +2324,6 @@ public class DBApp {
 			throw new DBAppException("IO Exception");
 		}
 	}
-
 	public void displayTree(String tableName) {
 		Table t = deserializeTable(tableName);
 		for (int k = 0; k < t.getIndex().size(); k++) {

@@ -1,3 +1,6 @@
+
+
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -53,9 +56,9 @@ public class NonLeaf extends Node {
 	private Object getAvg(Object min, Object max) {//changed to directly type casting instead of parsing as some errors and null values where returned
 		Object midX = null;
 		if(min instanceof Integer && max instanceof Integer)
-			midX = ((Integer)min) + (((Integer)max)) / 2;
+			midX = (((Integer)min) + (((Integer)max))) / 2;
 		if(min instanceof Double && max instanceof Double)
-			midX = ((Double)min) + (((Double)max)) / 2;
+			midX =( ((Double)min) + (((Double)max)) )/ 2;
 		if(min instanceof String && max instanceof String)
 			midX = printMiddleString(((String)min).toLowerCase(),((String)max).toLowerCase(),((String)min).length());
 		if(min instanceof java.util.Date && max instanceof java.util.Date) {
@@ -137,3 +140,19 @@ public class NonLeaf extends Node {
 	
 	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

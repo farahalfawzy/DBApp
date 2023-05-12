@@ -926,7 +926,7 @@ public class Octree implements Serializable {
 			
 				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 					String curTuple = ((String) myLeaf.getBucket().get(i).get(clustKey)).toString().toLowerCase();
-					if(!closest.equals("ZZZZ")) {
+					if(!closest.equals("ZZZZZZZZZZZ")) {
 						closestString=closestString.toLowerCase();
 						System.out.println(closest.toString()+" "+key.get(clustKey));
 						if(closestString.compareTo(((String) key.get(clustKey)).toLowerCase())<0) {
@@ -1264,7 +1264,7 @@ public class Octree implements Serializable {
 		if(key.get(clustKey)instanceof java.lang.Double)
 			hash = searchForPageNameUsingIndex(key, clustKey, this.root,  1e6, "");
 		if(key.get(clustKey)instanceof java.lang.String)
-			hash = searchForPageNameUsingIndex(key, clustKey, this.root, "ZZZZ", "");
+			hash = searchForPageNameUsingIndex(key, clustKey, this.root, "ZZZZZZZZZZZ", "");
 		if(key.get(clustKey)instanceof java.util.Date) {
 			Date date;
 			try {
@@ -1283,7 +1283,7 @@ public class Octree implements Serializable {
 			return page.charAt(page.length() - 1) + "";
 	}
 
-	public String getExactPage(Hashtable<String, Object> key, Node current, Object clust) {
+	public String getExactPage(String ClustCol, Node current, Object clust) {
 		if (current == null)
 			return null;
 
@@ -1292,7 +1292,7 @@ public class Octree implements Serializable {
 
 			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
-
+				System.out.println(record.get("Clust key")+" "+clust);
 				if (clust.equals(record.get("Clust key"))) {
 					return (String) record.get("Page Name");
 				}
@@ -1307,7 +1307,6 @@ public class Octree implements Serializable {
 			}
 			return "";
 		} else {
-			ArrayList<String> x = new ArrayList<String>();
 			ArrayList<String> nextNodes = new ArrayList<String>();
 			nextNodes.add("000");
 			nextNodes.add("001");
@@ -1320,8 +1319,10 @@ public class Octree implements Serializable {
 
 			ArrayList<String> z = new ArrayList<String>();
 
-			if (key.get(this.getX()) != null) {
-				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
+			if (ClustCol.toLowerCase().equals(getX())) {
+				Hashtable<String,Object>tmp=new Hashtable<String,Object>();
+				tmp.put(getX(),clust);
+				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), tmp);
 				if (higherX) {
 					nextNodes.remove("000");
 					nextNodes.remove("001");
@@ -1335,8 +1336,10 @@ public class Octree implements Serializable {
 				}
 
 			}
-			if (key.get(this.getY()) != null) {
-				boolean higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
+			if (ClustCol.toLowerCase().equals(getY())) {
+				Hashtable<String,Object>tmp=new Hashtable<String,Object>();
+				tmp.put(getY(),clust);
+				boolean higherY = getHigherY(current.getMinY(), current.getMaxY(), tmp);
 				if (higherY) {
 					nextNodes.remove("000");
 					nextNodes.remove("001");
@@ -1349,8 +1352,11 @@ public class Octree implements Serializable {
 					nextNodes.remove("111");
 				}
 			}
-			if (key.get(this.getZ()) != null) {
-				boolean higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
+			
+			if (ClustCol.toLowerCase().equals(getZ())) {
+				Hashtable<String,Object>tmp=new Hashtable<String,Object>();
+				tmp.put(getZ(),clust);
+				boolean higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), tmp);
 				if (higherZ) {
 					nextNodes.remove("000");
 					nextNodes.remove("010");
@@ -1364,24 +1370,25 @@ public class Octree implements Serializable {
 				}
 
 			}
+			System.out.println(nextNodes.toString());
 			NonLeaf NonleafCur = (NonLeaf) current;
 			String res = "";
 			if (nextNodes.contains("000"))
-				res += getExactPage(key, NonleafCur.left0, clust);
+				res += getExactPage(ClustCol, NonleafCur.left0, clust);
 			if (nextNodes.contains("001"))
-				res += getExactPage(key, NonleafCur.left1, clust);
+				res += getExactPage(ClustCol, NonleafCur.left1, clust);
 			if (nextNodes.contains("010"))
-				res += getExactPage(key, NonleafCur.left2, clust);
+				res += getExactPage(ClustCol, NonleafCur.left2, clust);
 			if (nextNodes.contains("011"))
-				res += getExactPage(key, NonleafCur.left3, clust);
+				res += getExactPage(ClustCol, NonleafCur.left3, clust);
 			if (nextNodes.contains("100"))
-				res += getExactPage(key, NonleafCur.right3, clust);
+				res += getExactPage(ClustCol, NonleafCur.right3, clust);
 			if (nextNodes.contains("101"))
-				res += getExactPage(key, NonleafCur.right2, clust);
+				res += getExactPage(ClustCol, NonleafCur.right2, clust);
 			if (nextNodes.contains("110"))
-				res += getExactPage(key, NonleafCur.right1, clust);
+				res += getExactPage(ClustCol, NonleafCur.right1, clust);
 			if (nextNodes.contains("111"))
-				res += getExactPage(key, NonleafCur.right0, clust);
+				res += getExactPage(ClustCol, NonleafCur.right0, clust);
 			return res;
 
 		}
@@ -1455,10 +1462,10 @@ public class Octree implements Serializable {
 			String min1,min2,min;
 			ArrayList<String>toCompare=new ArrayList<>();
 			//System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+" "+obj4.toString());
-			if(!((String)obj1).equals("ZZZZ")) toCompare.add(((String)obj1).toLowerCase());
-			if(!((String)obj2).equals("ZZZZ")) toCompare.add(((String)obj2).toLowerCase());
-			if(!((String)obj3).equals("ZZZZ")) toCompare.add(((String)obj3).toLowerCase());
-			if(!((String)obj4).equals("ZZZZ")) toCompare.add(((String)obj4).toLowerCase());
+			if(!((String)obj1).equals("ZZZZZZZZZZZ")) toCompare.add(((String)obj1).toLowerCase());
+			if(!((String)obj2).equals("ZZZZZZZZZZZ")) toCompare.add(((String)obj2).toLowerCase());
+			if(!((String)obj3).equals("ZZZZZZZZZZZ")) toCompare.add(((String)obj3).toLowerCase());
+			if(!((String)obj4).equals("ZZZZZZZZZZZ")) toCompare.add(((String)obj4).toLowerCase());
 			if(toCompare.size()==0)return ((String)obj1);
 			min=toCompare.remove(0);
 			while(toCompare.size()>0) {
@@ -1516,7 +1523,6 @@ public class Octree implements Serializable {
 			}
 		return null;
 	}
-
 	public static void main(String[] args) {
 		Octree tree = new Octree("X", "Y", "Z", 0, 10, 0, 20, 0, 40);
 		Hashtable<String, Object> key = new Hashtable<>();
