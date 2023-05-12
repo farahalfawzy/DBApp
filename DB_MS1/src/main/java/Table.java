@@ -13,7 +13,7 @@ public class Table extends Vector implements Serializable {
 	private Vector<PageInfo>  PageInfo=new Vector<PageInfo>();
 	private Vector <String> index=new Vector<>();
 	private boolean indexOnClustKey;
-	
+	private Vector<Hashtable<String,Object>> indexOnCol = new Vector<>();
 	
 
 	public Table(String tableName, String clusteringKey, Hashtable<String, String> colNameType,
@@ -95,11 +95,14 @@ public class Table extends Vector implements Serializable {
 	public void setIndexOnClustKey(boolean indexOnClustKey) {
 		this.indexOnClustKey = indexOnClustKey;
 	}
-//	public Vector<Page> getPages() {
-//		return Pages;
-//	}
-//
-//	public void setPages(Vector<Page> pages) {
-//		Pages = pages;
-//	}
+
+	public Vector<Hashtable<String, Object>> getIndexOnCol() {
+		return indexOnCol;
+	}
+
+	public void setIndexOnCol(Vector<Hashtable<String, Object>> indexOnCol) {
+		this.indexOnCol = indexOnCol;
+	}
+	
+	
 }

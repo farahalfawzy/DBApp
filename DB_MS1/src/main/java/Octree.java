@@ -188,225 +188,61 @@ public class Octree implements Serializable {
 
 	}
 
-//	public void deleteTuple(Hashtable<String, Object> key) {
-//		Node current = root;
-//		NonLeaf parent = null;
-//		NonLeaf grandDad = null;
-//		int k = 0;
-//		String myPos = "";
-//		while (current != null) {
-//			boolean loopAgain = false;
-//			if (current instanceof Leaf) {
-//				Leaf myLeaf = ((Leaf) current);
-//				if (parent.left0 == null)
-//					System.out.println("it is null");
-//				myLeaf.getBucket().remove(key);
-//				int i = 0; // number of empty nodes
-//				if (((Leaf) (parent.left0)).getBucket().isEmpty()) {
-//					i++;
-//				}
-//				if (((Leaf) (parent.left1)).getBucket().isEmpty()) {
-//					i++;
-//				}
-//				if (((Leaf) (parent.left2)).getBucket().isEmpty()) {
-//					i++;
-//				}
-//				if (((Leaf) (parent.left3)).getBucket().isEmpty()) {
-//					i++;
-//				}
-//				if (((Leaf) (parent.right3)).getBucket().isEmpty()) {
-//					i++;
-//				}
-//				if (((Leaf) (parent.right2)).getBucket().isEmpty()) {
-//					i++;
-//				}
-//				if (((Leaf) (parent.right1)).getBucket().isEmpty()) {
-//					i++;
-//				}
-//				if (((Leaf) (parent.right0)).getBucket().isEmpty()) {
-//					i++;
-//				}
-//				if (i == 8) {
-//					System.out.println("I am in");
-//					Leaf newLeaf = new Leaf(parent.getMinX(), parent.getMaxX(), parent.getMinY(), parent.getMaxY(),
-//							parent.getMinZ(), parent.getMaxZ());
-//					try {
-//						if (grandDad.left0 == parent)
-//							myPos = "000";
-//						if (grandDad.left1 == parent)
-//							myPos = "001";
-//						if (grandDad.left2 == parent)
-//							myPos = "010";
-//						if (grandDad.left3 == parent)
-//							myPos = "011";
-//						if (grandDad.right3 == parent)
-//							myPos = "100";
-//						if (grandDad.right2 == parent)
-//							myPos = "101";
-//						if (grandDad.right1 == parent)
-//							myPos = "110";
-//						if (grandDad.right0 == parent)
-//							myPos = "111";
-//						System.out.println(myPos);
-//						switch (myPos) {
-//						case "000":
-//							System.out.println("000");
-//							grandDad.left0 = newLeaf;
-//							break;// 000
-//						case "001":
-//							grandDad.left1 = newLeaf;
-//							break;// 001
-//						case "010":
-//							grandDad.left2 = newLeaf;
-//							break;// 010
-//						case "011":
-//							grandDad.left3 = newLeaf;
-//							break;// 011
-//						case "100":
-//							grandDad.right3 = newLeaf;
-//							break;// 100
-//						case "101":
-//							grandDad.right2 = newLeaf;
-//							break;// 101
-//						case "110":
-//							grandDad.right1 = newLeaf;
-//							break;// 110
-//						case "111":
-//							grandDad.right0 = newLeaf;// 111
-//						}
-//						System.out.println(grandDad);
-//						current = grandDad;
-//						k = 0;
-//						loopAgain = true;
-//					} catch (NullPointerException e) {
-//						setRoot(newLeaf);
-//					}
-//				}
-//				if (!loopAgain)
-//					break;
-//			} else {
-//				NonLeaf curNonleaf = (NonLeaf) current;
-//				boolean higherX = false, higherY = false, higherZ = false;
-//				higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
-//				higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
-//				higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
-//
-//				String r = get3BitString(higherX, higherY, higherZ);
-//				myPos = r;
-//				switch (r) {
-//				case "000":
-//					if (k != 0)
-//						grandDad = parent;
-//					parent = curNonleaf;
-//					current = curNonleaf.left0;
-//					break;
-//				case "001":
-//					if (k != 0)
-//						grandDad = parent;
-//					parent = curNonleaf;
-//					current = curNonleaf.left1;
-//					break;
-//				case "010":
-//					if (k != 0)
-//						grandDad = parent;
-//					parent = curNonleaf;
-//					current = curNonleaf.left2;
-//					break;
-//				case "011":
-//					if (k != 0)
-//						grandDad = parent;
-//					parent = curNonleaf;
-//					current = curNonleaf.left3;
-//					break;
-//				case "100":
-//					if (k != 0)
-//						grandDad = parent;
-//					parent = curNonleaf;
-//					current = curNonleaf.right3;
-//					break;
-//				case "101":
-//					if (k != 0)
-//						grandDad = parent;
-//					parent = curNonleaf;
-//					current = curNonleaf.right2;
-//					break;
-//				case "110":
-//					if (k != 0)
-//						grandDad = parent;
-//					parent = curNonleaf;
-//					current = curNonleaf.right1;
-//					break;
-//				case "111":
-//					if (k != 0)
-//						grandDad = parent;
-//					parent = curNonleaf;
-//					current = curNonleaf.right0;
-//					break;
-//				}
-//				k++;
-//			}
-//		}
-//	}
+	public void deleteTuple(Hashtable<String, Object> key) {
+		Node current = root;
+		NonLeaf parent = null;
+		Stack<NonLeaf> myStack = new Stack();
+		while (current != null) {
+			if (current instanceof Leaf) {
+				Leaf myLeaf = ((Leaf) current);
+				myLeaf.removeFromBucket(key);
+				break;
+			} else {
+				NonLeaf curNonleaf = (NonLeaf) current;
+				boolean higherX = false, higherY = false, higherZ = false;
+				higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
+				higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
+				higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
 
-//	public String getPageName(Hashtable<String, Object> key) {
-//		Node current = root;
-//		NonLeaf parent = null;
-//		String res = "";
-//		while (current != null) {
-//			if (current instanceof Leaf) {
-//				Leaf myLeaf = (Leaf) current;
-//				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
-//					if (myLeaf.getBucket().get(i).equals(key)) {
-//						res = myLeaf.getBucket().get(i).get("Page Name").toString();
-//					}
-//				}
-//				break;
-//			} else {
-//				NonLeaf curNonleaf = (NonLeaf) current;
-//				boolean higherX = false, higherY = false, higherZ = false;
-//				higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
-//				higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
-//				higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
-//
-//				String r = get3BitString(higherX, higherY, higherZ);
-//				switch (r) {
-//				case "000":
-//					parent = curNonleaf;
-//					current = curNonleaf.left0;
-//					break;
-//				case "001":
-//					parent = curNonleaf;
-//					current = curNonleaf.left1;
-//					break;
-//				case "010":
-//					parent = curNonleaf;
-//					current = curNonleaf.left2;
-//					break;
-//				case "011":
-//					parent = curNonleaf;
-//					current = curNonleaf.left3;
-//					break;
-//				case "100":
-//					parent = curNonleaf;
-//					current = curNonleaf.right3;
-//					break;
-//				case "101":
-//					parent = curNonleaf;
-//					current = curNonleaf.right2;
-//					break;
-//				case "110":
-//					parent = curNonleaf;
-//					current = curNonleaf.right1;
-//					break;
-//				case "111":
-//					parent = curNonleaf;
-//					current = curNonleaf.right0;
-//					break;
-//				}
-//			}
-//		}
-//		return res;
-//	}
+				String r = get3BitString(higherX, higherY, higherZ);
+				switch (r) {
+				case "000":
+					parent = curNonleaf;
+					current = curNonleaf.left0;
+					break;
+				case "001":
+					parent = curNonleaf;
+					current = curNonleaf.left1;
+					break;
+				case "010":
+					parent = curNonleaf;
+					current = curNonleaf.left2;
+					break;
+				case "011":
+					parent = curNonleaf;
+					current = curNonleaf.left3;
+					break;
+				case "100":
+					parent = curNonleaf;
+					current = curNonleaf.right3;
+					break;
+				case "101":
+					parent = curNonleaf;
+					current = curNonleaf.right2;
+					break;
+				case "110":
+					parent = curNonleaf;
+					current = curNonleaf.right1;
+					break;
+				case "111":
+					parent = curNonleaf;
+					current = curNonleaf.right0;
+					break;
+				}
+				myStack.push(parent);
+			}
+		}
+	}
 
 	private boolean getHigherZ(Object minZ, Object maxZ, Hashtable<String, Object> key) {
 		if (minZ instanceof Integer && maxZ instanceof Integer) {
@@ -825,145 +661,6 @@ public class Octree implements Serializable {
 			}
 		}
 
-	}
-
-	public void deleteTuple(Hashtable<String, Object> key) {
-		Node current = root;
-		NonLeaf parent = null;
-		Stack<NonLeaf> myStack = new Stack();
-		while (current != null) {
-			if (current instanceof Leaf) {
-				Leaf myLeaf = ((Leaf) current);
-				myLeaf.removeFromBucket(key);
-				int i = 0; // number of empty nodes
-//				if(myStack.empty()) {
-//					setRoot(myLeaf);
-//					this.root = new Leaf(MinX,MaxX,MinY,MaxY,MinZ,MaxZ);
-//					return;
-//				}
-				NonLeaf myParent = myStack.pop();
-				if (((Leaf) (myParent.left0)).getBucket().isEmpty()) {
-					i++;
-				}
-				if (((Leaf) (myParent.left1)).getBucket().isEmpty()) {
-					i++;
-				}
-				if (((Leaf) (myParent.left2)).getBucket().isEmpty()) {
-					i++;
-				}
-				if (((Leaf) (myParent.left3)).getBucket().isEmpty()) {
-					i++;
-				}
-				if (((Leaf) (myParent.right3)).getBucket().isEmpty()) {
-					i++;
-				}
-				if (((Leaf) (myParent.right2)).getBucket().isEmpty()) {
-					i++;
-				}
-				if (((Leaf) (myParent.right1)).getBucket().isEmpty()) {
-					i++;
-				}
-				if (((Leaf) (myParent.right0)).getBucket().isEmpty()) {
-					i++;
-				}
-				if (i == 8) {
-					System.out.println("I am in");
-					while (!myStack.empty()) {
-						Leaf newLeaf = new Leaf(myParent.getMinX(), myParent.getMaxX(), myParent.getMinY(),
-								myParent.getMaxY(), myParent.getMinZ(), myParent.getMaxZ());
-						NonLeaf grandDad = myStack.pop();
-						String myPos = "";
-						if (grandDad.left0 == parent)
-							myPos = "000";
-						if (grandDad.left1 == parent)
-							myPos = "001";
-						if (grandDad.left2 == parent)
-							myPos = "010";
-						if (grandDad.left3 == parent)
-							myPos = "011";
-						if (grandDad.right3 == parent)
-							myPos = "100";
-						if (grandDad.right2 == parent)
-							myPos = "101";
-						if (grandDad.right1 == parent)
-							myPos = "110";
-						if (grandDad.right0 == parent)
-							myPos = "111";
-						System.out.println(myPos);
-						switch (myPos) {
-						case "000":
-							System.out.println("000");
-							grandDad.left0 = newLeaf;
-							break;// 000
-						case "001":
-							grandDad.left1 = newLeaf;
-							break;// 001
-						case "010":
-							grandDad.left2 = newLeaf;
-							break;// 010
-						case "011":
-							grandDad.left3 = newLeaf;
-							break;// 011
-						case "100":
-							grandDad.right3 = newLeaf;
-							break;// 100
-						case "101":
-							grandDad.right2 = newLeaf;
-							break;// 101
-						case "110":
-							grandDad.right1 = newLeaf;
-							break;// 110
-						case "111":
-							grandDad.right0 = newLeaf;// 111
-						}
-					}
-				}
-				break;
-			} else {
-				NonLeaf curNonleaf = (NonLeaf) current;
-				boolean higherX = false, higherY = false, higherZ = false;
-				higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
-				higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
-				higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
-
-				String r = get3BitString(higherX, higherY, higherZ);
-				switch (r) {
-				case "000":
-					parent = curNonleaf;
-					current = curNonleaf.left0;
-					break;
-				case "001":
-					parent = curNonleaf;
-					current = curNonleaf.left1;
-					break;
-				case "010":
-					parent = curNonleaf;
-					current = curNonleaf.left2;
-					break;
-				case "011":
-					parent = curNonleaf;
-					current = curNonleaf.left3;
-					break;
-				case "100":
-					parent = curNonleaf;
-					current = curNonleaf.right3;
-					break;
-				case "101":
-					parent = curNonleaf;
-					current = curNonleaf.right2;
-					break;
-				case "110":
-					parent = curNonleaf;
-					current = curNonleaf.right1;
-					break;
-				case "111":
-					parent = curNonleaf;
-					current = curNonleaf.right0;
-					break;
-				}
-				myStack.push(parent);
-			}
-		}
 	}
 
 	public Vector<String> getPageName(Hashtable<String, Object> key) {
