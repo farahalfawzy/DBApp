@@ -534,14 +534,17 @@ public class DBApp {
 				Vector<String> indexNameVector = getindexname(t, htblColNameValue);
 				String indexName = "";
 				int count = 0;
+				int minTemp = 9999999;
 				for (int i = 0; i < indexNameVector.size(); i++) {
 					for (int j = 0; j < indexNameVector.size(); j++) {
-						if (indexNameVector.get(i).equals(indexNameVector.get(j)))
+						if (indexNameVector.get(i).equals(indexNameVector.get(j))) {
 							count++;
+							indexNameVector.remove(j);
+							j--;
+						}
 					}
-					if (count == 3) {
+					if (count < minTemp) {
 						indexName = indexNameVector.get(i);
-						break;
 					}
 				}
 				if (!indexName.equals("")) {
@@ -557,9 +560,8 @@ public class DBApp {
 							Page page = deserializePage(pageName.get(i));
 							if (page.contains(myTuple)) {
 								// get all the columns that have indices
-								deleteFromOctree(myTuple,t);
-								page.removeBinary(myTuple);
-								myOct.deleteTuple(key);
+								deleteFromOctree(myTuple, t);
+								page.removeNonBinary(myTuple);
 								String res = "";
 								for (int j = pageName.get(i).length() - 1; j > (-1); j--) {
 									if ((pageName.get(i).charAt(j)) >= '0' && pageName.get(i).charAt(j) <= '9') {
@@ -585,6 +587,7 @@ public class DBApp {
 							}
 						}
 					}
+					return;
 				}
 				// End of the new part
 
@@ -613,7 +616,7 @@ public class DBApp {
 						if (page.contains(myTuple)) {
 //							System.out.println("after contains");
 							// System.out.println("was here111111");
-							deleteFromOctree(myTuple,t);
+							deleteFromOctree(myTuple, t);
 							page.removeBinary(myTuple);
 							if (page.size() == 0) {
 								deletingFiles(pageind, pageInfoVector, t);
@@ -633,7 +636,7 @@ public class DBApp {
 				} else {
 					pageInfoVector = t.getPageInfo();
 					removeFromAllPages(pageInfoVector, myTuple, 0, t, htblColNameValue);
-					deleteFromOctree(myTuple,t);
+					deleteFromOctree(myTuple, t);
 				}
 				serializeTable(t, strTableName);
 				t = null;
@@ -652,38 +655,39 @@ public class DBApp {
 	}
 
 	private void deleteFromOctree(Tuple myTuple, Table t) {
-		for(int tableIndex=0;tableIndex<t.getIndexOnCol().size();tableIndex++) {
-		String currIndex = t.getIndexOnCol().get(tableIndex).get("Name of Index").toString();
-		String col1=""; 
-		String col2="";
-		String col3="";
-		int counter=0;
-		for(String tableKey:t.getIndexOnCol().get(tableIndex).keySet()) {
-			if(counter==0)
-				col1=tableKey;
-			if(counter==1)
-				col2=tableKey;
-			if(counter==2)
-				col3=tableKey;
-			counter++;
+		for (int tableIndex = 0; tableIndex < t.getIndexOnCol().size(); tableIndex++) {
+			String currIndex = t.getIndexOnCol().get(tableIndex).get("Name of Index").toString();
+			String col1 = "";
+			String col2 = "";
+			String col3 = "";
+			int counter = 0;
+			for (String tableKey : t.getIndexOnCol().get(tableIndex).keySet()) {
+				if (counter == 0)
+					col1 = tableKey;
+				if (counter == 1)
+					col2 = tableKey;
+				if (counter == 2)
+					col3 = tableKey;
+				counter++;
+			}
+			Hashtable<String, Object> tobedeleted = new Hashtable<>();
+			for (String myKey : myTuple.getRecord().keySet()) {
+				if (myTuple.getRecord().get(col1).equals(myKey)) {
+					tobedeleted.put(myKey, myTuple.getRecord().get(myKey).toString());
+				}
+				if (myTuple.getRecord().get(col2).equals(myKey)) {
+					tobedeleted.put(myKey, myTuple.getRecord().get(myKey).toString());
+				}
+				if (myTuple.getRecord().get(col3).equals(myKey)) {
+					tobedeleted.put(myKey, myTuple.getRecord().get(myKey).toString());
+				}
+			}
+			Octree currOctree = deserializeOctree(currIndex);
+			tobedeleted.put("Clust key", t.getClusteringKey());
+			currOctree.deleteTuple(tobedeleted);
+			serializeIndex(currOctree, currIndex);
 		}
-		Hashtable<String,Object> tobedeleted = new Hashtable<>();
-		for(String myKey:myTuple.getRecord().keySet()) {
-			if(myTuple.getRecord().get(col1).equals(myKey)) {
-				tobedeleted.put(myKey, myTuple.getRecord().get(myKey).toString());
-			}
-			if(myTuple.getRecord().get(col2).equals(myKey)) {
-				tobedeleted.put(myKey, myTuple.getRecord().get(myKey).toString());
-			}
-			if(myTuple.getRecord().get(col3).equals(myKey)) {
-				tobedeleted.put(myKey, myTuple.getRecord().get(myKey).toString());
-			}
-		}
-		Octree currOctree = deserializeOctree(currIndex);
-		currOctree.deleteTuple(tobedeleted);
-		serializeIndex(currOctree, currIndex);
-	}
-		
+
 	}
 
 	private void deletingFiles(int pageind, Vector pageInfoVector, Table t) { // 3lshan lw page kolah dups yms7ha 3ala

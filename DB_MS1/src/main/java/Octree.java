@@ -188,58 +188,178 @@ public class Octree implements Serializable {
 
 	}
 
+	public void getAllLeaves(Vector<Leaf> res,Node current,Hashtable<String, Object> htblColNameValue){
+		if(current == null)
+			return;
+//		System.out.println(current.toString());
+		if(current instanceof Leaf) {
+			Leaf myLeaf = (Leaf) current;
+			for(int i=0;i<myLeaf.getBucket().size();i++) {
+				for(String key:htblColNameValue.keySet()) {
+					if(myLeaf.getBucket().get(i).contains(htblColNameValue.get(key))) {
+						res.add(myLeaf);
+					}
+				}
+			}
+			return;
+		}
+		boolean higherX = false, higherY = false, higherZ = false;
+		boolean inX = false, inY = false, inZ = false;
+		for(String myKey:htblColNameValue.keySet()) {
+			if(myKey.equals(this.X)) {
+				higherX = getHigherX(current.getMinX(), current.getMaxX(), htblColNameValue);
+				inX = true;
+			}
+			if(myKey.equals(Y)) {
+				higherY = getHigherY(current.getMinY(), current.getMaxY(), htblColNameValue);
+				inY=true;
+			}
+			if(myKey.equals(Z)) {
+				higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), htblColNameValue);
+				inZ=true;
+			}
+		}
+		if(inX) {
+			if(higherX) {
+				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			}
+			else {
+				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
+			}
+		}
+		if(inY) {
+			if(higherY) {
+				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			}
+			else {
+				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
+			}
+		}
+		if(inZ) {
+			if(!higherZ) {
+				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
+			}
+			else {
+				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			}
+		}
+		if(inX && inY) {
+			if(higherX && higherY) {
+				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			}
+			if(higherX && !higherY) {
+				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
+			}
+			if(!higherX && higherY) {
+				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
+			}
+			if(!higherX && !higherY) {
+				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
+			}
+		}
+		if(inX && inZ) {
+			if(higherX && higherZ) {
+				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			}
+			if(higherX && !higherZ) {
+				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
+			}
+			if(!higherX && higherZ) {
+				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
+			}
+			if(!higherX && !higherZ) {
+				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
+			}
+		}
+		if(inY && inZ) {
+			if(higherY && higherZ) {
+				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			}
+			if(higherY && !higherZ) {
+				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
+			}
+			if(!higherY && higherZ) {
+				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
+			}
+			if(!higherY && !higherZ) {
+				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
+			}
+		}
+		if(inX && inY && inZ) {
+			String r = get3BitString(higherX, higherY, higherZ);
+			switch (r) {
+			case "000":
+				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
+				break;
+			case "001":
+				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
+				break;
+			case "010":
+				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
+				break;
+			case "011":
+				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
+				break;
+			case "100":
+				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
+				break;
+			case "101":
+				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
+				break;
+			case "110":
+				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
+				break;
+			case "111":
+				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+				break;
+			}
+		}
+	}
+	
 	public void deleteTuple(Hashtable<String, Object> key) {
 		Node current = root;
 		NonLeaf parent = null;
-		Stack<NonLeaf> myStack = new Stack();
-		while (current != null) {
-			if (current instanceof Leaf) {
-				Leaf myLeaf = ((Leaf) current);
-				myLeaf.removeFromBucket(key);
-				break;
-			} else {
-				NonLeaf curNonleaf = (NonLeaf) current;
-				boolean higherX = false, higherY = false, higherZ = false;
-				higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
-				higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
-				higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
-
-				String r = get3BitString(higherX, higherY, higherZ);
-				switch (r) {
-				case "000":
-					parent = curNonleaf;
-					current = curNonleaf.left0;
-					break;
-				case "001":
-					parent = curNonleaf;
-					current = curNonleaf.left1;
-					break;
-				case "010":
-					parent = curNonleaf;
-					current = curNonleaf.left2;
-					break;
-				case "011":
-					parent = curNonleaf;
-					current = curNonleaf.left3;
-					break;
-				case "100":
-					parent = curNonleaf;
-					current = curNonleaf.right3;
-					break;
-				case "101":
-					parent = curNonleaf;
-					current = curNonleaf.right2;
-					break;
-				case "110":
-					parent = curNonleaf;
-					current = curNonleaf.right1;
-					break;
-				case "111":
-					parent = curNonleaf;
-					current = curNonleaf.right0;
-					break;
+		Vector<Leaf> res = new Vector<>();
+		getAllLeaves(res,current,key);
+		for(int i=0;i<res.size();i++) {
+			res.get(i).removeFromBucket(key);
+			if(res.get(i).getSize()<MaxRowsinNode) {
+				Vector<Hashtable<String, Object>> overflow = res.get(i).getOverflow();
+				for(int j=0;j<overflow.size();j++){
+					res.get(i).getBucket().add(overflow.get(j));
+					overflow.remove(j);
+					j--;
 				}
-				myStack.push(parent);
 			}
 		}
 	}

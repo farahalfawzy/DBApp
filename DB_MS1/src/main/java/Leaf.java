@@ -90,6 +90,12 @@ public class Leaf extends Node {
 				i--;
 			}
 		}
+		for (int i = 0; i < overflow.size(); i++) {
+			if (equals1(overflow.get(i),htbl)) {
+				overflow.remove(i);
+				i--;
+			}
+		}
 	}
 	
 	private boolean equals1(Hashtable<String, Object> htbl1,Hashtable<String, Object> htbl2) {
