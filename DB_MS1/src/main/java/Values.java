@@ -13,8 +13,8 @@ public class Values {
 		String strTableName = "Student";
 		DBApp dbApp = new DBApp();
 		dbApp.init();
-//		creating(strTableName, dbApp);
-//		dbApp.createIndex(strTableName, new String[] { "id", "gpa", "date of birth" });
+		creating(strTableName, dbApp);
+		dbApp.createIndex(strTableName, new String[] { "id", "gpa", "name" });
 
 		inserting(dbApp);
 		dbApp.displayTree(strTableName);
@@ -160,7 +160,7 @@ public class Values {
 
 		// dbApp.init();
 
-		dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
+		dbApp.createTable(strTableName, "name", htblColNameType, htblColNameMin, htblColNameMax);
 
 	}
 

@@ -178,6 +178,7 @@ public class DBApp {
 				recInIndex.put(col2, tup.getRecord().get(col2));
 				recInIndex.put(col3, tup.getRecord().get(col3));
 				recInIndex.put("Page Name", pagename);
+				recInIndex.put("Clust key", tup.getRecord().get(t.getClusteringKey()));
 				newTree.insertTupleInIndex(recInIndex);
 
 			}
@@ -194,7 +195,7 @@ public class DBApp {
 
 		if (tableExits(strTableName)) {
 			htblColNameValue = convertKeysToLower(htblColNameValue);
-//			System.out.println(htblColNameValue);
+			System.out.println(htblColNameValue);
 			if (isValid(strTableName, htblColNameValue)) {
 				isValidIndex(strTableName, htblColNameValue);
 				Table t = deserializeTable(strTableName);
@@ -220,14 +221,14 @@ public class DBApp {
 					Vector pageInfoVector = t.getPageInfo();
 
 					if (clustKey instanceof java.lang.Integer) {
-						pageind = t.isIndexOnClustKey() ? getPageUsingIndex(t, htblColNameValue)
+						pageind = t.isIndexOnClustKey() ? searchForPageToInsertUsingIndex(t, htblColNameValue)
 								: binarySearchInt(t, (Integer) clustKey);
 						if ((Integer) clustKey < (Integer) ((PageInfo) (pageInfoVector.get(pageind))).getMin()) {
 							isSmallerThanmin = true;
 						}
 					}
 					if (clustKey instanceof java.lang.String) {
-						pageind = t.isIndexOnClustKey() ? getPageUsingIndex(t, htblColNameValue)
+						pageind = t.isIndexOnClustKey() ? searchForPageToInsertUsingIndex(t, htblColNameValue)
 								: binarySearchString(t, (String) clustKey);
 						if (((String) clustKey).toLowerCase().compareTo(
 								((String) (((PageInfo) (pageInfoVector.get(pageind))).getMin())).toLowerCase()) < 0) {
@@ -236,14 +237,14 @@ public class DBApp {
 						}
 					}
 					if (clustKey instanceof java.lang.Double) {
-						pageind = t.isIndexOnClustKey() ? getPageUsingIndex(t, htblColNameValue)
+						pageind = t.isIndexOnClustKey() ? searchForPageToInsertUsingIndex(t, htblColNameValue)
 								: binarySearchDouble(t, (Double) clustKey);
 						if ((Double) clustKey < ((Double) ((PageInfo) (pageInfoVector.get(pageind))).getMin())) {
 							isSmallerThanmin = true;
 						}
 					}
 					if (clustKey instanceof java.util.Date) {
-						pageind = t.isIndexOnClustKey() ? getPageUsingIndex(t, htblColNameValue)
+						pageind = t.isIndexOnClustKey() ? searchForPageToInsertUsingIndex(t, htblColNameValue)
 								: binarySearchDate(t, (Date) clustKey);
 						if (((Date) clustKey).before(((Date) ((PageInfo) (pageInfoVector.get(pageind))).getMin()))) {
 							isSmallerThanmin = true;
@@ -254,6 +255,7 @@ public class DBApp {
 					String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
 					Page page = deserializePage(pagename);
 					Tuple tuple = new Tuple(clustKey, htblColNameValue);
+
 					if (page.containsClustKey(tuple)) {
 						page = null;
 						t = null;
@@ -406,25 +408,32 @@ public class DBApp {
 				switch (type) {
 				case "java.lang.Integer":
 					int clust = Integer.parseInt(strClusteringKeyValue);
-
-					pageind = binarySearchInt(t, clust);
+					pageind = getPageNumFromIndex(strTableName, htblColNameValue, clust);
+					if (pageind == -1)
+						pageind = binarySearchInt(t, clust);
 					ClustObj = clust;
 
 					break;
 				case "java.lang.String":
+					pageind = getPageNumFromIndex(strTableName, htblColNameValue, strClusteringKeyValue);
+					if (pageind == -1)
 
-					pageind = binarySearchString(t, strClusteringKeyValue);
+						pageind = binarySearchString(t, strClusteringKeyValue);
 					ClustObj = strClusteringKeyValue;
 					break;
 				case "java.lang.Double":
 					double clustdouble = Double.parseDouble(strClusteringKeyValue);
-					pageind = binarySearchDouble(t, clustdouble);
+					pageind = getPageNumFromIndex(strTableName, htblColNameValue, clustdouble);
+					if (pageind == -1)
+						pageind = binarySearchDouble(t, clustdouble);
 					ClustObj = clustdouble;
 
 					break;
 				case "java.util.Date":
 					Date date = new SimpleDateFormat("yyyy-MM-dd").parse(strClusteringKeyValue);
-					pageind = binarySearchDate(t, date);
+					pageind = getPageNumFromIndex(strTableName, htblColNameValue, date);
+					if (pageind == -1)
+						pageind = binarySearchDate(t, date);
 					ClustObj = date;
 //					System.out.println(date);
 					break;
@@ -443,11 +452,20 @@ public class DBApp {
 //
 //						}
 //					}
-					page.replace(ClustObj, htblColNameValue);
-					isUpdatingMethod = false;
-					serializePage(t, page, strTableName + "" + pageind);
+					int indexInpage = page.getIndexInPageUsingClusteringKey(ClustObj);
+					Tuple tuple = page.get(indexInpage);
+					Hashtable<String, Object> oldtuple = (Hashtable<String, Object>) tuple.getRecord().clone();
 
+					for (String key : htblColNameValue.keySet()) {
+						tuple.getRecord().put(key, htblColNameValue.get(key));
+					}
+					serializePage(t, page, strTableName + "" + pageind);
 					serializeTable(t, strTableName);
+
+					updateTupleinIndex(strTableName,oldtuple,tuple.getRecord(),strTableName + "" + pageind,htblColNameValue);
+					// page.replace(ClustObj, htblColNameValue);
+					isUpdatingMethod = false;
+
 					page = null;
 					t = null;
 				}
@@ -1329,13 +1347,16 @@ public class DBApp {
 			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 			String line = br.readLine();
 			ArrayList<String> indices = new ArrayList<String>();
-
+			String ClustKey = "";
 			while (line != null) {
 				String[] x = line.split(",");
 				if (x[0].equals(strTableName)) {
 					if (!x[4].equals("null")) {
 						if (!indices.contains(x[4]))
 							indices.add(x[4]);
+					}
+					if (x[3].equals("True")) {
+						ClustKey = x[1];
 					}
 				}
 				line = br.readLine();
@@ -1352,11 +1373,72 @@ public class DBApp {
 				recInIndex.put(Octree.getY(), val2);
 				recInIndex.put(Octree.getZ(), val3);
 				recInIndex.put("Page Name", pagename);
+				recInIndex.put("Clust key", htblColNameValue.get(ClustKey));
 
 				Octree.insertTupleInIndex(recInIndex);
 				serializeIndex(Octree, TreeName);
 				Octree = null;
 
+			}
+
+		} catch (IOException e) {
+			throw new DBAppException("CSV doesn't exist");
+		}
+
+	}
+
+	private void updateTupleinIndex(String strTableName, Hashtable<String, Object> oldRecord,
+			Hashtable<String, Object> newRecord, String pageName, Hashtable<String, Object> updated)
+			throws DBAppException {
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			String line = br.readLine();
+			ArrayList<String> indices = new ArrayList<String>();
+			String ClustKey = "";
+			while (line != null) {
+				String[] x = line.split(",");
+				if (x[0].equals(strTableName)) {
+					if (!x[4].equals("null")) {
+						if (!indices.contains(x[4]))
+							indices.add(x[4]);
+					}
+					if (x[3].equals("True")) {
+						ClustKey = x[1];
+					}
+				}
+				line = br.readLine();
+			}
+			br.close();
+			for (int i = 0; i < indices.size(); i++) {
+				String TreeName = strTableName + indices.get(i);
+				Octree Octree = deserializeOctree(TreeName);
+				if (updated.get(Octree.getX()) != null && updated.get(Octree.getY()) != null
+						&& updated.get(Octree.getZ()) != null) {
+					Object val1 = oldRecord.get(Octree.getX());
+					Object val2 = oldRecord.get(Octree.getY());
+					Object val3 = oldRecord.get(Octree.getZ());
+					Hashtable<String, Object> recInIndex = new Hashtable<>();
+					recInIndex.put(Octree.getX(), val1);
+					recInIndex.put(Octree.getY(), val2);
+					recInIndex.put(Octree.getZ(), val3);
+					recInIndex.put("Page Name", pageName);
+					recInIndex.put("Clust key", oldRecord.get(ClustKey));
+					Octree.deleteTuple(recInIndex);
+					val1 = newRecord.get(Octree.getX());
+					val2 = newRecord.get(Octree.getY());
+					val3 = newRecord.get(Octree.getZ());
+					recInIndex = new Hashtable<>();
+					recInIndex.put(Octree.getX(), val1);
+					recInIndex.put(Octree.getY(), val2);
+					recInIndex.put(Octree.getZ(), val3);
+					recInIndex.put("Page Name", pageName);
+					recInIndex.put("Clust key", oldRecord.get(ClustKey));
+
+					Octree.insertTupleInIndex(recInIndex);
+					Octree = null;
+				}
+				serializeIndex(Octree, TreeName);
+				Octree = null;
 			}
 
 		} catch (IOException e) {
@@ -1429,168 +1511,168 @@ public class DBApp {
 
 	}
 
-	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
-		String indxName;
-		if (arrSQLTerms.length == 0)
-			throw new DBAppException("Insert a valid select");
-		if (!tableExits(arrSQLTerms[0].get_strTableName()))
-			throw new DBAppException("Table doesn't exist!!");
-		Vector result = new Vector<>();
-		Table t = deserializeTable(arrSQLTerms[0].get_strTableName());
-		Hashtable<String, Object> htblColValue = new Hashtable<>();
-		Vector<String> indexName = new Vector<>();
-		for (int i = 0; i < arrSQLTerms.length; i++) {
-			htblColValue.put(arrSQLTerms[i].get_strColumnName(), arrSQLTerms[i].get_objValue());
-		}
-		if (!isValid(t.getTableName(), htblColValue))
-			throw new DBAppException("Coloumn is invalid");
-		indexName = getindexname(t, htblColValue);
-		Queue<Hashtable<String, Object>> resIndex = new LinkedList<Hashtable<String, Object>>();
-		Queue<String> operators = new LinkedList<String>();
-		boolean notIndex = false;
-		int tempCounter = 0;
-		int colCounter = 0;
-		int operatorCounter = 0;
-		int outerCounter = 0;
-		Boolean[] taken = new Boolean[indexName.size()];
-		boolean once = true;
-		boolean flag = true;
-		for (int indexCounter = 0; indexCounter < indexName.size(); indexCounter++) {
-			Hashtable<String, Object> myHtbl = new Hashtable<String, Object>();
-			myHtbl.put(arrSQLTerms[colCounter].get_strColumnName(), arrSQLTerms[colCounter].get_objValue());
-			myHtbl.put("operator" + arrSQLTerms[colCounter].get_strColumnName(),
-					arrSQLTerms[colCounter].get_strOperator());
-			if (taken[colCounter]) {
-				colCounter++;
-				indexCounter--;
-				continue;
-			}
-			colCounter++;
-			for (int j = indexCounter + 1; j < indexName.size(); j++) {
-				if (myHtbl.size() == 6) {
-//					operatorCounter++;
-//					colCounter++;
-					break;
-				}
-				if (!strarrOperators[operatorCounter].equals("AND")) {
-					// notIndex=true;
-//					operatorCounter++;
-//					colCounter++;
-					break;
-				}
-				if (indexName.get(indexCounter).equals(indexName.get(j)) && myHtbl.size() < 6) {
-					myHtbl.put(arrSQLTerms[colCounter].get_strColumnName(), arrSQLTerms[colCounter].get_objValue());
-					myHtbl.put("operator" + arrSQLTerms[colCounter].get_strColumnName(),
-							arrSQLTerms[colCounter].get_strOperator());
-					indexName.remove(j);
-					j--;
-//					if(flag)
-//						outerCounter++;
-					taken[colCounter] = true;
-				} else {
-					if (once) {
-						outerCounter = colCounter;
-						once = false;
-					}
-					flag = false;
-				}
-				operatorCounter++;
-				colCounter++;
-			}
-			if (!flag) {
-				colCounter = outerCounter;
-				operatorCounter = outerCounter - 1;
-			}
-			once = true;
-			flag = true;
-			myHtbl.put("indxName", indexName.get(indexCounter));
-			resIndex.add(myHtbl);
-			if (resIndex.size() == 2) {
-				resIndex = compute(resIndex, operators, t);
-			}
-			if (operatorCounter < strarrOperators.length) {
-				operators.add(strarrOperators[operatorCounter]);
-				operatorCounter++;
-			}
-
-//			if(tempCounter!=0)
-//				operators.add(strarrOperators[operatorCounter]);
-//			tempCounter++;
-//			if(!notIndex && myHtbl.size()==6) {
-//				//computer hashtable then insert into Queue
-//				
-//				resIndex.add(myHtbl);
-//				if(tempCounter!=0)
-//					operators.add(strarrOperators[operatorCounter]);
-//				tempCounter++;
+//	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
+//		String indxName;
+//		if (arrSQLTerms.length == 0)
+//			throw new DBAppException("Insert a valid select");
+//		if (!tableExits(arrSQLTerms[0].get_strTableName()))
+//			throw new DBAppException("Table doesn't exist!!");
+//		Vector result = new Vector<>();
+//		Table t = deserializeTable(arrSQLTerms[0].get_strTableName());
+//		Hashtable<String, Object> htblColValue = new Hashtable<>();
+//		Vector<String> indexName = new Vector<>();
+//		for (int i = 0; i < arrSQLTerms.length; i++) {
+//			htblColValue.put(arrSQLTerms[i].get_strColumnName(), arrSQLTerms[i].get_objValue());
+//		}
+//		if (!isValid(t.getTableName(), htblColValue))
+//			throw new DBAppException("Coloumn is invalid");
+//		indexName = getindexname(t, htblColValue);
+//		Queue<Hashtable<String, Object>> resIndex = new LinkedList<Hashtable<String, Object>>();
+//		Queue<String> operators = new LinkedList<String>();
+//		boolean notIndex = false;
+//		int tempCounter = 0;
+//		int colCounter = 0;
+//		int operatorCounter = 0;
+//		int outerCounter = 0;
+//		Boolean[] taken = new Boolean[indexName.size()];
+//		boolean once = true;
+//		boolean flag = true;
+//		for (int indexCounter = 0; indexCounter < indexName.size(); indexCounter++) {
+//			Hashtable<String, Object> myHtbl = new Hashtable<String, Object>();
+//			myHtbl.put(arrSQLTerms[colCounter].get_strColumnName(), arrSQLTerms[colCounter].get_objValue());
+//			myHtbl.put("operator" + arrSQLTerms[colCounter].get_strColumnName(),
+//					arrSQLTerms[colCounter].get_strOperator());
+//			if (taken[colCounter]) {
+//				colCounter++;
+//				indexCounter--;
+//				continue;
 //			}
-//			else if (notIndex
-//					notIndex=false;
-		}
-
-		if (flag && hasThreeIndexMeta(t.getTableName(), colName) && strarrOperators[0] == "AND") {
-			indxName = getindexname(t, colName);
-			Octree o = deserializeOctree(t.getTableName() + "" + indxName);
-			Vector<String> res = o.getPageName(htblColValue);
-			Tuple tuple = new Tuple(t.getClusteringKey(), htblColValue);
-			for (int i = 0; i < res.size(); i++) {
-				Page p = deserializePage(res.get(i));
-				result.add(p.PrintTuple(tuple));
-
-			}
-		} else {
-			// TODO sequentially
-			Tuple myTuple = new Tuple(t.getClusteringKey(), htblColValue);
-			int pageind = -1;
-			String myCluster = t.getClusteringKey();
-			if (htblColValue.containsKey(myCluster)) {
-//				 System.out.println("was hereee");
-				Object myClusterType = htblColValue.get(myCluster);
-				if (myClusterType instanceof java.lang.Integer) {
-					pageind = binarySearchInt(t, (Integer) myClusterType);
-				}
-				if (myClusterType instanceof java.lang.String) {
-					pageind = binarySearchString(t, (String) myClusterType);
-				}
-				if (myClusterType instanceof java.lang.Double) {
-					pageind = binarySearchDouble(t, (Double) myClusterType);
-				}
-				if (myClusterType instanceof java.util.Date) {
-					pageind = binarySearchDate(t, (Date) myClusterType);
-				}
-				// System.out.println(pageind);
-				Vector pageInfoVector = t.getPageInfo();
-				if (pageInfoVector.size() != 0) {
-					String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
-					Page page = deserializePage(pagename);
-//					System.out.println("before contains");
-					if (page.contains(myTuple)) {
-//						System.out.println("after contains");
-						// System.out.println("was here111111");
-						int index = page.getIndexInPage(myTuple);
-						result.add(page.get(index).toString());
-						serializePage(t, page, t.getTableName() + "" + pageind);
-						page = null;
-					}
-
-				}
-			} else {
-				for (int i = 0; i < t.getPageInfo().size(); i++) {
-					Page page = deserializePage(t.getPageInfo().get(i).getPageName());
-					for (Tuple myTuple2 : page) {
-						if (myTuple2.equals(myTuple)) {
-							result.add(myTuple2.toString());
-
-						}
-					}
-
-				}
-			}
-
-		}
-		return result.iterator();
-
-	}
+//			colCounter++;
+//			for (int j = indexCounter + 1; j < indexName.size(); j++) {
+//				if (myHtbl.size() == 6) {
+////					operatorCounter++;
+////					colCounter++;
+//					break;
+//				}
+//				if (!strarrOperators[operatorCounter].equals("AND")) {
+//					// notIndex=true;
+////					operatorCounter++;
+////					colCounter++;
+//					break;
+//				}
+//				if (indexName.get(indexCounter).equals(indexName.get(j)) && myHtbl.size() < 6) {
+//					myHtbl.put(arrSQLTerms[colCounter].get_strColumnName(), arrSQLTerms[colCounter].get_objValue());
+//					myHtbl.put("operator" + arrSQLTerms[colCounter].get_strColumnName(),
+//							arrSQLTerms[colCounter].get_strOperator());
+//					indexName.remove(j);
+//					j--;
+////					if(flag)
+////						outerCounter++;
+//					taken[colCounter] = true;
+//				} else {
+//					if (once) {
+//						outerCounter = colCounter;
+//						once = false;
+//					}
+//					flag = false;
+//				}
+//				operatorCounter++;
+//				colCounter++;
+//			}
+//			if (!flag) {
+//				colCounter = outerCounter;
+//				operatorCounter = outerCounter - 1;
+//			}
+//			once = true;
+//			flag = true;
+//			myHtbl.put("indxName", indexName.get(indexCounter));
+//			resIndex.add(myHtbl);
+//			if (resIndex.size() == 2) {
+//				resIndex = compute(resIndex, operators, t);
+//			}
+//			if (operatorCounter < strarrOperators.length) {
+//				operators.add(strarrOperators[operatorCounter]);
+//				operatorCounter++;
+//			}
+//
+////			if(tempCounter!=0)
+////				operators.add(strarrOperators[operatorCounter]);
+////			tempCounter++;
+////			if(!notIndex && myHtbl.size()==6) {
+////				//computer hashtable then insert into Queue
+////				
+////				resIndex.add(myHtbl);
+////				if(tempCounter!=0)
+////					operators.add(strarrOperators[operatorCounter]);
+////				tempCounter++;
+////			}
+////			else if (notIndex
+////					notIndex=false;
+//		}
+//
+//		if (flag && hasThreeIndexMeta(t.getTableName(), colName) && strarrOperators[0] == "AND") {
+//			indxName = getindexname(t, colName);
+//			Octree o = deserializeOctree(t.getTableName() + "" + indxName);
+//			Vector<String> res = o.getPageName(htblColValue);
+//			Tuple tuple = new Tuple(t.getClusteringKey(), htblColValue);
+//			for (int i = 0; i < res.size(); i++) {
+//				Page p = deserializePage(res.get(i));
+//				result.add(p.PrintTuple(tuple));
+//
+//			}
+//		} else {
+//			// TODO sequentially
+//			Tuple myTuple = new Tuple(t.getClusteringKey(), htblColValue);
+//			int pageind = -1;
+//			String myCluster = t.getClusteringKey();
+//			if (htblColValue.containsKey(myCluster)) {
+////				 System.out.println("was hereee");
+//				Object myClusterType = htblColValue.get(myCluster);
+//				if (myClusterType instanceof java.lang.Integer) {
+//					pageind = binarySearchInt(t, (Integer) myClusterType);
+//				}
+//				if (myClusterType instanceof java.lang.String) {
+//					pageind = binarySearchString(t, (String) myClusterType);
+//				}
+//				if (myClusterType instanceof java.lang.Double) {
+//					pageind = binarySearchDouble(t, (Double) myClusterType);
+//				}
+//				if (myClusterType instanceof java.util.Date) {
+//					pageind = binarySearchDate(t, (Date) myClusterType);
+//				}
+//				// System.out.println(pageind);
+//				Vector pageInfoVector = t.getPageInfo();
+//				if (pageInfoVector.size() != 0) {
+//					String pagename = ((PageInfo) (pageInfoVector.get(pageind))).getPageName();
+//					Page page = deserializePage(pagename);
+////					System.out.println("before contains");
+//					if (page.contains(myTuple)) {
+////						System.out.println("after contains");
+//						// System.out.println("was here111111");
+//						int index = page.getIndexInPage(myTuple);
+//						result.add(page.get(index).toString());
+//						serializePage(t, page, t.getTableName() + "" + pageind);
+//						page = null;
+//					}
+//
+//				}
+//			} else {
+//				for (int i = 0; i < t.getPageInfo().size(); i++) {
+//					Page page = deserializePage(t.getPageInfo().get(i).getPageName());
+//					for (Tuple myTuple2 : page) {
+//						if (myTuple2.equals(myTuple)) {
+//							result.add(myTuple2.toString());
+//
+//						}
+//					}
+//
+//				}
+//			}
+//
+//		}
+//		return result.iterator();
+//
+//	}
 
 //es2l 3ala 7tt elcomplexity mohma wala la2?
 	public static void compute(Queue<Hashtable<String, Object>> resIndex, Queue<String> operators, Table t) {
@@ -2076,7 +2158,7 @@ public class DBApp {
 					serializePage(t, page, myPages.get(i));
 				}
 			}
-			
+
 			break;
 		}
 	}
@@ -2214,24 +2296,26 @@ public class DBApp {
 		return result;
 	}
 
-	private static int getPageUsingIndex(Table table, Hashtable<String, Object> htblColNameValue)
+	private static int searchForPageToInsertUsingIndex(Table table, Hashtable<String, Object> htblColNameValue)
 			throws DBAppException {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 			String line = br.readLine();
 			String TName = table.getTableName();
 			String indexname = "";
+			String max="";
 			while (line != null) {
 				String[] x = line.split(",");
 				System.out.println(x[1] + " " + x[3]);
 				if (x[0].equals(TName) && x[3].equals("True")) {
 					indexname = x[4];
+					max=x[7];
 				}
 				line = br.readLine();
 			}
 			br.close();
 			Octree tree = deserializeOctree(table.getTableName() + "" + indexname);
-			String page = tree.getPageNameToInsert(htblColNameValue, table.getClusteringKey());
+			String page = tree.searchForPageNameUsingIndex(htblColNameValue, table.getClusteringKey(),max);
 			if (page == "") {
 				tree = null;
 				System.out.println(htblColNameValue.toString());
@@ -2271,6 +2355,52 @@ public class DBApp {
 			}
 			br.close();
 			return res;
+		} catch (FileNotFoundException e) {
+			throw new DBAppException("File not found");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			throw new DBAppException("IO Exception");
+		}
+	}
+
+	public static int getPageNumFromIndex(String t, Hashtable<String, Object> htbl, Object clustVal)
+			throws DBAppException {
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+			String line = br.readLine();
+			Hashtable<String, Integer> Indices = new Hashtable<String, Integer>();
+			// String TName = t.getTableName();
+			// Vector<String> res = new Vector<>();
+			while (line != null) {
+				String[] x = line.split(",");
+				if (x[0].equals(t)) {
+					if (x[4] != null) {
+						if (htbl.containsKey(x[1])) {
+							if (Indices.containsKey(x[4])) {
+								Indices.put(x[4], Indices.get(x[4]) + 1);
+							} else {
+								Indices.put(x[4], 1);
+							}
+						}
+					}
+				}
+				line = br.readLine();
+			}
+			br.close();
+			int max = -1;
+			String maxIndex = "";
+			for (String key : Indices.keySet()) {
+				if (Indices.get(key) > max)
+					maxIndex = key;
+			}
+
+			if (max == -1)
+				return -1;
+			String treeName = t + maxIndex;
+			Octree tree = deserializeOctree(treeName);
+			String page = tree.getExactPage(htbl, tree.getRoot(), clustVal);
+			return Integer.parseInt(page.charAt(page.length() - 1) + "");
+
 		} catch (FileNotFoundException e) {
 			throw new DBAppException("File not found");
 		} catch (IOException e) {

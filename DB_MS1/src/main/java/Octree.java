@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.Vector;
+import java.util.ArrayList;
 
 public class Octree implements Serializable {
 	private Node root;
@@ -145,7 +146,7 @@ public class Octree implements Serializable {
 				higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
 
 				String r = get3BitString(higherX, higherY, higherZ);
-				
+
 				positionOfLeaf = r;
 				switch (r) {
 				case "000":
@@ -492,7 +493,7 @@ public class Octree implements Serializable {
 	private boolean getHigherX(Object minX, Object maxX, Hashtable<String, Object> key) {
 		if (minX instanceof Integer && maxX instanceof Integer) {
 			int midX = ((Integer.parseInt(minX.toString())) + ((Integer.parseInt(maxX.toString())))) / 2;
-			
+
 			if (((Integer) key.get(getX())) > midX) {
 				return true;
 			} else {
@@ -1025,83 +1026,157 @@ public class Octree implements Serializable {
 		return res;
 	}
 
-	public Hashtable<String, Object> getPageNameToInsert(Hashtable<String, Object> key, String clustKey, Node current,
-			int minDiff, String pageName) {
-
+	public Hashtable<String, Object> searchForPageNameUsingIndex(Hashtable<String, Object> key, String clustKey,
+			Node current,  Object closest, String pageName) {
+System.out.println(closest.toString()+" "+key.get(clustKey));
 		if (current == null)
 			return null;
 
 		if (current instanceof Leaf) {
 			Leaf myLeaf = (Leaf) current;
-			int minCurDiff = minDiff;
 			String page = pageName;
-			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
-				if (  ((Integer) myLeaf.getBucket().get(i).get(clustKey)) - ((Integer) key.get(clustKey)) < minCurDiff) {
-					if(((Integer) myLeaf.getBucket().get(i).get(clustKey)) > ((Integer) key.get(clustKey))) {
-					minCurDiff = ((Integer) myLeaf.getBucket().get(i).get(clustKey)) - ((Integer) key.get(clustKey));
-					page = (String) myLeaf.getBucket().get(i).get("Page Name");
-					
+
+			if (closest instanceof java.lang.Integer) {
+				int closestInt = (Integer) closest;
+				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+					int curTuple = ((Integer) myLeaf.getBucket().get(i).get(clustKey));
+					if (((Integer) key.get(clustKey)) > curTuple)
+						continue;
+					int diff1 = curTuple - ((Integer) key.get(clustKey));
+					int diff2 = closestInt - ((Integer) key.get(clustKey));
+					if (diff1 < diff2) {
+						closestInt = diff1;
+						page = (String) myLeaf.getBucket().get(i).get("Page Name");
+
 					}
 				}
+				Hashtable<String, Object> hash = new Hashtable<>();
+				hash.put("closest", closestInt);
+				hash.put("Page Name", page);
+				return hash;
 			}
-		
-			Hashtable<String, Object> hash = new Hashtable<>();
-			hash.put("minDiff", minCurDiff);
-			hash.put("Page Name", page);
+			if (closest instanceof java.lang.Double) {
+				Double closestDouble = (Double) closest;
+				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+					Double curTuple = ((Double) myLeaf.getBucket().get(i).get(clustKey));
+					if (((Double) key.get(clustKey)) > curTuple)
+						continue;
+					Double diff1 = curTuple - ((Double) key.get(clustKey));
+					Double diff2 = closestDouble - ((Double) key.get(clustKey));
+					if (diff1 < diff2) {
+						closestDouble = diff1;
+						page = (String) myLeaf.getBucket().get(i).get("Page Name");
 
-			return hash;
+					}
+				}
+				Hashtable<String, Object> hash = new Hashtable<>();
+				hash.put("closest", closestDouble);
+				hash.put("Page Name", page);
+				return hash;
+			}
+			if (closest instanceof java.lang.String) {
+				String closestString = (String) closest;
+				
+				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+					String curTuple = ((String) myLeaf.getBucket().get(i).get(clustKey)).toString();
+					System.out.println(curTuple);
+					if (((String) key.get(clustKey)).compareTo(curTuple) > 0)
+						continue;
+					if (curTuple.compareTo(closestString) < 0) {
+						closestString = curTuple;
+						page = (String) myLeaf.getBucket().get(i).get("Page Name");
+					}
+
+				}
+				Hashtable<String, Object> hash = new Hashtable<>();
+				hash.put("closest", closestString);
+				hash.put("Page Name", page);
+				return hash;
+			}
+
+			if (closest instanceof java.util.Date) {
+				Date closestDate = (Date) closest;
+				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+					Date curTuple = ((Date) myLeaf.getBucket().get(i).get(clustKey));
+					if (((Date) key.get(clustKey)).after(curTuple))
+						continue;
+					if (curTuple.before(closestDate)) {
+						closestDate = curTuple;
+						page = (String) myLeaf.getBucket().get(i).get("Page Name");
+					}
+
+				}
+				Hashtable<String, Object> hash = new Hashtable<>();
+				hash.put("closest", closestDate);
+				hash.put("Page Name", page);
+				return hash;
+			}
+			return null;
+
 		} else {
 			NonLeaf curNonleaf = (NonLeaf) current;
 
 			if (this.getX().equals(clustKey)) {
 				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
 				if (!higherX) {
-					Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.left0, minDiff,
-							pageName);// 000
-					Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.left1, minDiff,
-							pageName);// 001
-					Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.left2, minDiff,
-							pageName);// 010
-					Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.left3, minDiff,
-							pageName);//
-					int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
-					int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
-					int min = Math.min(min1, min2);
-					if (min == ((Integer) hash1.get("minDiff"))) {
+					Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left0,
+							closest, pageName);// 000
+					Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left1,
+							closest, pageName);// 001
+					Hashtable<String, Object> hash3 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left2,
+							closest, pageName);// 010
+					Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left3,
+							closest, pageName);//
+					
+					Object val1=hash1.get("closest");
+					Object val2=hash2.get("closest");
+					Object val3=hash3.get("closest");
+					Object val4=hash4.get("closest");
+
+					Object closestObj=getClosest(val1,val2,val3,val4);
+					if (closestObj.equals (hash1.get("closest"))) {
 						return hash1;
 					}
-					if (min == ((Integer) hash2.get("minDiff"))) {
+					if (closestObj.equals (hash2.get("closest"))) {
 						return hash2;
 					}
-					if (min == ((Integer) hash3.get("minDiff"))) {
+
+					if (closestObj.equals (hash3.get("closest"))) {
 						return hash3;
 					}
-					if (min == ((Integer) hash4.get("minDiff"))) {
+
+					if (closestObj.equals (hash4.get("closest"))) {
 						return hash4;
 					}
 
+
 				} else {
-					Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.right3, minDiff,
-							pageName);// 100
-					Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.right2, minDiff,
-							pageName);// 101
-					Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.right1, minDiff,
-							pageName);// 110
-					Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.right0, minDiff,
-							pageName);// 111
-					int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
-					int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
-					int min = Math.min(min1, min2);
-					if (min == ((Integer) hash1.get("minDiff"))) {
+					Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right3,
+							closest, pageName);// 100
+					Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right2,
+							closest, pageName);// 101
+					Hashtable<String, Object> hash3 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right1,
+							closest, pageName);// 110
+					Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right0,
+							closest, pageName);// 111
+					Object val1=hash1.get("closest");
+					Object val2=hash2.get("closest");
+					Object val3=hash3.get("closest");
+					Object val4=hash4.get("closest");
+
+					Object closestObj=getClosest(val1,val2,val3,val4);
+					if (closestObj.equals (hash1.get("closest"))) {
 						return hash1;
 					}
-					if (min == ((Integer) hash2.get("minDiff"))) {
+					if (closestObj.equals (hash2.get("closest"))) {
 						return hash2;
 					}
-					if (min == ((Integer) hash3.get("minDiff"))) {
+
+					if (closestObj.equals (hash3.get("closest"))) {
 						return hash3;
 					}
-					if (min == ((Integer) hash4.get("minDiff"))) {
+
+					if (closestObj.equals (hash4.get("closest"))) {
 						return hash4;
 					}
 				}
@@ -1110,102 +1185,122 @@ public class Octree implements Serializable {
 				if (this.getY().equals(clustKey)) {
 					boolean higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
 					if (!higherY) {
-						Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.left0, minDiff,
-								pageName);
-						Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.left1, minDiff,
-								pageName);
-						Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.right3, minDiff,
-								pageName);
-						Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.right2, minDiff,
-								pageName);
-						int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
-						int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
-						int min = Math.min(min1, min2);
-						if (min == ((Integer) hash1.get("minDiff"))) {
+						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left0,
+								closest, pageName);
+						Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left1,
+								closest, pageName);
+						Hashtable<String, Object> hash3 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right3,
+								closest, pageName);
+						Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right2,
+								closest, pageName);
+						Object val1=hash1.get("closest");
+						Object val2=hash2.get("closest");
+						Object val3=hash3.get("closest");
+						Object val4=hash4.get("closest");
+
+						Object closestObj=getClosest(val1,val2,val3,val4);
+						if (closestObj.equals (hash1.get("closest"))) {
 							return hash1;
 						}
-						if (min == ((Integer) hash2.get("minDiff"))) {
+						if (closestObj.equals (hash2.get("closest"))) {
 							return hash2;
 						}
-						if (min == ((Integer) hash3.get("minDiff"))) {
+
+						if (closestObj.equals (hash3.get("closest"))) {
 							return hash3;
 						}
-						if (min == ((Integer) hash4.get("minDiff"))) {
+
+						if (closestObj.equals (hash4.get("closest"))) {
 							return hash4;
 						}
 					} else {
-						Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.left2, minDiff,
-								pageName);
-						Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.left3, minDiff,
-								pageName);
-						Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.right1, minDiff,
-								pageName);
-						Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.right0, minDiff,
-								pageName);
-						int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
-						int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
-						int min = Math.min(min1, min2);
-						if (min == ((Integer) hash1.get("minDiff"))) {
+						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left2,
+								closest, pageName);
+						Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left3,
+								closest, pageName);
+						Hashtable<String, Object> hash3 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right1,
+								closest, pageName);
+						Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right0,
+								closest, pageName);
+						Object val1=hash1.get("closest");
+						Object val2=hash2.get("closest");
+						Object val3=hash3.get("closest");
+						Object val4=hash4.get("closest");
+
+						Object closestObj=getClosest(val1,val2,val3,val4);
+						if (closestObj.equals (hash1.get("closest"))) {
 							return hash1;
 						}
-						if (min == ((Integer) hash2.get("minDiff"))) {
+						if (closestObj.equals (hash2.get("closest"))) {
 							return hash2;
 						}
-						if (min == ((Integer) hash3.get("minDiff"))) {
+
+						if (closestObj.equals (hash3.get("closest"))) {
 							return hash3;
 						}
-						if (min == ((Integer) hash4.get("minDiff"))) {
+
+						if (closestObj.equals (hash4.get("closest"))) {
 							return hash4;
 						}
 					}
 				} else {
 					boolean higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
 					if (!higherZ) {
-						Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.left0, minDiff,
-								pageName);// 000
-						Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.left2, minDiff,
-								pageName);// 010
-						Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.right3, minDiff,
-								pageName);// 100
-						Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.right1, minDiff,
-								pageName);// 110
-						int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
-						int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
-						int min = Math.min(min1, min2);
-						if (min == ((Integer) hash1.get("minDiff"))) {
+						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left0,
+								closest, pageName);// 000
+						Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left2,
+								closest, pageName);// 010
+						Hashtable<String, Object> hash3 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right3,
+								closest, pageName);// 100
+						Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right1,
+								closest, pageName);// 110
+						Object val1=hash1.get("closest");
+						Object val2=hash2.get("closest");
+						Object val3=hash3.get("closest");
+						Object val4=hash4.get("closest");
+
+						Object closestObj=getClosest(val1,val2,val3,val4);
+						if (closestObj.equals (hash1.get("closest"))) {
 							return hash1;
 						}
-						if (min == ((Integer) hash2.get("minDiff"))) {
+						if (closestObj.equals (hash2.get("closest"))) {
 							return hash2;
 						}
-						if (min == ((Integer) hash3.get("minDiff"))) {
+
+						if (closestObj.equals (hash3.get("closest"))) {
 							return hash3;
 						}
-						if (min == ((Integer) hash4.get("minDiff"))) {
+
+						if (closestObj.equals (hash4.get("closest"))) {
 							return hash4;
 						}
 					} else {
-						Hashtable<String, Object> hash1 = getPageNameToInsert(key, clustKey, curNonleaf.left1, minDiff,
-								pageName);
-						Hashtable<String, Object> hash2 = getPageNameToInsert(key, clustKey, curNonleaf.left3, minDiff,
-								pageName);
-						Hashtable<String, Object> hash3 = getPageNameToInsert(key, clustKey, curNonleaf.right2, minDiff,
-								pageName);
-						Hashtable<String, Object> hash4 = getPageNameToInsert(key, clustKey, curNonleaf.right0, minDiff,
-								pageName);
-						int min1 = Math.min(((Integer) hash1.get("minDiff")), (Integer) hash2.get("minDiff"));
-						int min2 = Math.min(((Integer) hash3.get("minDiff")), (Integer) hash4.get("minDiff"));
-						int min = Math.min(min1, min2);
-						if (min == ((Integer) hash1.get("minDiff"))) {
+						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left1,
+								closest, pageName);
+						Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left3,
+								closest, pageName);
+						Hashtable<String, Object> hash3 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right2,
+								closest, pageName);
+						Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right0,
+								closest, pageName);
+						Object val1=hash1.get("closest");
+						Object val2=hash2.get("closest");
+						Object val3=hash3.get("closest");
+						Object val4=hash4.get("closest");
+
+						Object closestObj=getClosest(val1,val2,val3,val4);
+						if (closestObj.equals (hash1.get("closest"))) {
 							return hash1;
 						}
-						if (min == ((Integer) hash2.get("minDiff"))) {
+						if (closestObj.equals (hash2.get("closest"))) {
 							return hash2;
 						}
-						if (min == ((Integer) hash3.get("minDiff"))) {
+
+						if (closestObj.equals (hash3.get("closest"))) {
 							return hash3;
 						}
-						if (min == ((Integer) hash4.get("minDiff"))) {
+
+						if (closestObj.equals (hash4.get("closest"))) {
 							return hash4;
 						}
 					}
@@ -1216,12 +1311,185 @@ public class Octree implements Serializable {
 
 	}
 
-	public String getPageNameToInsert(Hashtable<String, Object> key, String clustKey) {
-		Hashtable<String, Object> hash = getPageNameToInsert(key, clustKey, this.root, (int) 1e6, "");
-		String page=(String) hash.get("Page Name");
-		if(page=="") return "";
+	public String searchForPageNameUsingIndex(Hashtable<String, Object> key, String clustKey, String max) {
+		Hashtable<String, Object> hash=new Hashtable<>();
+		
+		if(key.get(clustKey)instanceof java.lang.Integer)
+			hash = searchForPageNameUsingIndex(key, clustKey, this.root, (int) 1e6, "");
+		if(key.get(clustKey)instanceof java.lang.Double)
+			hash = searchForPageNameUsingIndex(key, clustKey, this.root,  1e6, "");
+		if(key.get(clustKey)instanceof java.lang.String)
+			hash = searchForPageNameUsingIndex(key, clustKey, this.root, max, "");
+		if(key.get(clustKey)instanceof java.util.Date) {
+			Date date;
+			try {
+				date = new SimpleDateFormat("yyyy-MM-dd").parse(max);
+				hash = searchForPageNameUsingIndex(key, clustKey, this.root,  date,"");
+
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		String page = (String) hash.get("Page Name");
+		if (page == "")
+			return "";
 		else
-			return page.charAt(page.length()-1)+"";
+			return page.charAt(page.length() - 1) + "";
+	}
+
+	public String getExactPage(Hashtable<String, Object> key, Node current, Object clust) {
+		if (current == null)
+			return null;
+
+		if (current instanceof Leaf) {
+			Leaf myLeaf = (Leaf) current;
+
+			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
+
+				if (clust.equals(record.get("Clust key"))) {
+					return (String) record.get("Page Name");
+				}
+
+			}
+			for (int i = 0; i < myLeaf.getOverflow().size(); i++) {
+				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
+
+				if (clust.equals(record.get("Clust key"))) {
+					return (String) record.get("Page Name");
+				}
+			}
+			return "";
+		} else {
+			ArrayList<String> x = new ArrayList<String>();
+			ArrayList<String> nextNodes = new ArrayList<String>();
+			nextNodes.add("000");
+			nextNodes.add("001");
+			nextNodes.add("010");
+			nextNodes.add("011");
+			nextNodes.add("100");
+			nextNodes.add("101");
+			nextNodes.add("110");
+			nextNodes.add("111");
+
+			ArrayList<String> z = new ArrayList<String>();
+
+			if (key.get(this.getX()) != null) {
+				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
+				if (higherX) {
+					nextNodes.remove("000");
+					nextNodes.remove("001");
+					nextNodes.remove("010");
+					nextNodes.remove("011");
+				} else {
+					nextNodes.remove("100");
+					nextNodes.remove("101");
+					nextNodes.remove("110");
+					nextNodes.remove("111");
+				}
+
+			}
+			if (key.get(this.getY()) != null) {
+				boolean higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
+				if (higherY) {
+					nextNodes.remove("000");
+					nextNodes.remove("001");
+					nextNodes.remove("100");
+					nextNodes.remove("101");
+				} else {
+					nextNodes.remove("010");
+					nextNodes.remove("011");
+					nextNodes.remove("110");
+					nextNodes.remove("111");
+				}
+			}
+			if (key.get(this.getZ()) != null) {
+				boolean higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
+				if (higherZ) {
+					nextNodes.remove("000");
+					nextNodes.remove("010");
+					nextNodes.remove("100");
+					nextNodes.remove("110");
+				} else {
+					nextNodes.remove("001");
+					nextNodes.remove("011");
+					nextNodes.remove("101");
+					nextNodes.remove("111");
+				}
+
+			}
+			NonLeaf NonleafCur = (NonLeaf) current;
+			String res = "";
+			if (nextNodes.contains("000"))
+				res += getExactPage(key, NonleafCur.left0, clust);
+			if (nextNodes.contains("001"))
+				res += getExactPage(key, NonleafCur.left1, clust);
+			if (nextNodes.contains("010"))
+				res += getExactPage(key, NonleafCur.left2, clust);
+			if (nextNodes.contains("011"))
+				res += getExactPage(key, NonleafCur.left3, clust);
+			if (nextNodes.contains("100"))
+				res += getExactPage(key, NonleafCur.right3, clust);
+			if (nextNodes.contains("101"))
+				res += getExactPage(key, NonleafCur.right2, clust);
+			if (nextNodes.contains("110"))
+				res += getExactPage(key, NonleafCur.right1, clust);
+			if (nextNodes.contains("111"))
+				res += getExactPage(key, NonleafCur.right0, clust);
+			return res;
+
+		}
+
+	}
+	public static Object getClosest(Object obj1,Object obj2,Object obj3,Object obj4) {
+		if (obj1 instanceof java.lang.Integer){
+			int min1 = Math.min(((Integer) obj1), (Integer) obj2);
+			int min2 = Math.min(((Integer) obj3), (Integer) obj4);
+			int min = Math.min(min1, min2);
+			return min;
+		}
+		if (obj1 instanceof java.lang.Double){
+			Double min1 = Math.min(((Double) obj1), (Double) obj2);
+			Double min2 = Math.min(((Double) obj3), (Double) obj4);
+			Double min = Math.min(min1, min2);
+			return min;
+		}
+		if (obj1 instanceof java.lang.String){
+			String min1,min2,min;
+			if(((String)obj1).compareTo((String)obj2)<0)
+				min1=((String)obj1);
+			else
+				min1=((String)obj2);
+			if(((String)obj3).compareTo((String)obj4)<0)
+				min2=((String)obj3);
+			else
+				min2=((String)obj4);
+			if((min1).compareTo(min2)<0)
+				min=min1;
+			else
+				min=min2;
+			
+			return min;
+		}
+		if (obj1 instanceof java.util.Date){
+			Date min1,min2,min;
+			if(((Date)obj1).before((Date)obj2))
+				min1=((Date)obj1);
+			else
+				min1=((Date)obj2);
+			if(((Date)obj3).before((Date)obj4))
+				min2=((Date)obj3);
+			else
+				min2=((Date)obj4);
+			if((min1).before(min2))
+				min=min1;
+			else
+				min=min2;
+			
+			return min;
+		}
+		return null;
 	}
 
 	public static void main(String[] args) {
