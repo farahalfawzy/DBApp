@@ -87,15 +87,16 @@ public class Leaf extends Node {
 		for (int i = 0; i < Bucket.size(); i++) {
 			if (equals1(Bucket.get(i),htbl)) {
 				Bucket.remove(i);
-				i--;
+//				i--;
+				break;
 			}
 		}
-		for (int i = 0; i < overflow.size(); i++) {
-			if (equals1(overflow.get(i),htbl)) {
-				overflow.remove(i);
-				i--;
-			}
-		}
+//		for (int i = 0; i < overflow.size(); i++) {
+//			if (equals1(overflow.get(i),htbl)) {
+//				overflow.remove(i);
+//				break;
+//			}
+//		}
 	}
 	
 	private boolean equals1(Hashtable<String, Object> htbl1,Hashtable<String, Object> htbl2) {

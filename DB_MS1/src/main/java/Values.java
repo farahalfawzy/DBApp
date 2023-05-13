@@ -12,11 +12,11 @@ public class Values {
 	public static void main(String[] args) throws DBAppException {
 		String strTableName = "Student";
 		DBApp dbApp = new DBApp();
-		dbApp.init();
+//		dbApp.init();
 //		creating(strTableName, dbApp);
 //		dbApp.createIndex(strTableName, new String[] { "id", "gpa", "name" });
 
-	//	inserting(dbApp);
+//		inserting(dbApp);
 		//dbApp.displayTree(strTableName);
 //		Hashtable rec = new Hashtable();
 //		rec.put("name", new String("Seif"));
@@ -32,6 +32,7 @@ public class Values {
 		Hashtable rec = new Hashtable();
 		rec.put("gpa", new Double(1.29));
 		rec.put("name", "Nameee3");
+//		System.out.println("i am deleting");
 		deleting(strTableName,dbApp,rec);
 //		updating(strTableName, dbApp);
 //		dbApp.getPages("Student");
@@ -44,7 +45,7 @@ public class Values {
 	private static void deleting(String strTableName, DBApp dbApp, Hashtable rec) throws DBAppException {
 		// TODO Auto-generated method stub
 
-		//dbApp.deleteFromTable(strTableName, rec);
+		dbApp.deleteFromTable(strTableName, rec);
 		dbApp.getPages("Student");
 	}
 

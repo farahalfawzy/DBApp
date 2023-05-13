@@ -2,6 +2,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Hashtable;
+import java.util.Vector;
 
 import javax.xml.crypto.Data;
 
@@ -92,6 +94,39 @@ public class Test {
 		System.out.println(pageind);
 		String x= "operatorSeifra2asa";
 		System.out.println(x.substring(0,8));
+		Hashtable<String,Object> packedhash= new Hashtable<String,Object>();
+		
+		Vector<Hashtable<String,Object>> temp = new Vector<>();
+
+		// create a new Hashtable and add some key-value pairs
+		Hashtable<String, Object> hashtable1 = new Hashtable<>();
+		hashtable1.put("key1", "value1");
+		hashtable1.put("key2", 123);
+
+		// add the first Hashtable to the Vector
+		temp.add(hashtable1);
+
+		// create a second Hashtable and add some different key-value pairs
+		Hashtable<String, Object> hashtable2 = new Hashtable<>();
+		hashtable2.put("key3", true);
+		hashtable2.put("key4", 3.14);
+
+		// add the second Hashtable to the Vector
+		temp.add(hashtable2);
+
+		// create a third Hashtable and add some different key-value pairs
+		Hashtable<String, Object> hashtable3 = new Hashtable<>();
+		hashtable3.put("key5", "hello");
+		hashtable3.put("key6", 1.2);
+
+		// add the third Hashtable to the Vector
+		temp.add(hashtable3);
+
+		for(int i=0 ; i< temp.size();i++) {
+			packedhash.putAll(temp.get(i));
+		}
+		System.out.println(packedhash);
+		
 	}
 }
 
