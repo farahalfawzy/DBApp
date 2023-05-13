@@ -184,7 +184,7 @@ public class DBApp {
 				recInIndex.put(col2, tup.getRecord().get(col2));
 				recInIndex.put(col3, tup.getRecord().get(col3));
 				recInIndex.put("Page Name", pagename);
-				recInIndex.put("Clust key", tup.getRecord().get(t.getClusteringKey()));
+				//recInIndex.put("Clust key", tup.getRecord().get(t.getClusteringKey()));
 				newTree.insertTupleInIndex(recInIndex);
 
 			}
@@ -1441,7 +1441,7 @@ public class DBApp {
 				recInIndex.put(Octree.getY(), val2);
 				recInIndex.put(Octree.getZ(), val3);
 				recInIndex.put("Page Name", pagename);
-				recInIndex.put("Clust key", htblColNameValue.get(ClustKey));
+			//	recInIndex.put("Clust key", htblColNameValue.get(ClustKey));
 
 				Octree.insertTupleInIndex(recInIndex);
 				serializeIndex(Octree, TreeName);
@@ -1491,7 +1491,7 @@ public class DBApp {
 					recInIndex.put(Octree.getY(), val2);
 					recInIndex.put(Octree.getZ(), val3);
 					recInIndex.put("Page Name", pageName);
-					recInIndex.put("Clust key", oldRecord.get(ClustKey));
+				//	recInIndex.put("Clust key", oldRecord.get(ClustKey));
 					Octree.deleteTuple(recInIndex);
 					val1 = newRecord.get(Octree.getX());
 					val2 = newRecord.get(Octree.getY());
@@ -1501,7 +1501,7 @@ public class DBApp {
 					recInIndex.put(Octree.getY(), val2);
 					recInIndex.put(Octree.getZ(), val3);
 					recInIndex.put("Page Name", pageName);
-					recInIndex.put("Clust key", oldRecord.get(ClustKey));
+			//		recInIndex.put("Clust key", oldRecord.get(ClustKey));
 
 					Octree.insertTupleInIndex(recInIndex);
 					Octree = null;

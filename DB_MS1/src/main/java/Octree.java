@@ -1292,8 +1292,8 @@ public class Octree implements Serializable {
 
 			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
-				System.out.println(record.get("Clust key")+" "+clust);
-				if (clust.equals(record.get("Clust key"))) {
+				//System.out.println(record.get("Clust key")+" "+clust);
+				if (clust.equals(record.get(ClustCol))) {
 					return (String) record.get("Page Name");
 				}
 
@@ -1301,7 +1301,7 @@ public class Octree implements Serializable {
 			for (int i = 0; i < myLeaf.getOverflow().size(); i++) {
 				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
 
-				if (clust.equals(record.get("Clust key"))) {
+				if (clust.equals(record.get(ClustCol))) {
 					return (String) record.get("Page Name");
 				}
 			}
