@@ -14,10 +14,10 @@ public class Values {
 		DBApp dbApp = new DBApp();
 //		dbApp.init();
 //		creating(strTableName, dbApp);
-//		dbApp.createIndex(strTableName, new String[] { "id", "gpa", "name" });
-
+//		dbApp.createIndex(strTableName, new String[] { "Date of Birth", "gpa", "name" });
+//
 //		inserting(dbApp);
-		//dbApp.displayTree(strTableName);
+//		dbApp.displayTree(strTableName);
 //		Hashtable rec = new Hashtable();
 //		rec.put("name", new String("Seif"));
 //		rec.put("id", new Integer(67));
@@ -29,22 +29,27 @@ public class Values {
 		//dbApp.getPages(strTableName);
 	
 	//	dbApp.displayTree(strTableName);
-		Hashtable rec = new Hashtable();
-		rec.put("gpa", new Double(1.29));
-		rec.put("name", "Nameee3");
-//		System.out.println("i am deleting");
-		deleting(strTableName,dbApp,rec);
+//		Hashtable rec = new Hashtable();
+//		rec.put("gpa", new Double(1.29));
+//		rec.put("name", "Nameee3");
+		deleting(strTableName,dbApp);
 //		updating(strTableName, dbApp);
 //		dbApp.getPages("Student");
-		dbApp.getPages(strTableName);
+//		dbApp.getPages(strTableName);
 		dbApp.displayTree(strTableName);
 
 
 	}
 
-	private static void deleting(String strTableName, DBApp dbApp, Hashtable rec) throws DBAppException {
+	private static void deleting(String strTableName, DBApp dbApp) throws DBAppException {
 		// TODO Auto-generated method stub
 
+		Hashtable<String,Object> rec = new Hashtable<>();
+//		rec.put("name", new String("Nameee3"));
+//		rec.put("gpa", 1.29);
+//		rec.put("id", new Integer(8));
+//		dbApp.insertIntoTable(strTableName, rec);
+		rec.put("id", new Integer(2));
 		dbApp.deleteFromTable(strTableName, rec);
 		dbApp.getPages("Student");
 	}

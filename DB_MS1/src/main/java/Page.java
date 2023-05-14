@@ -238,6 +238,7 @@ public class Page extends Vector<Tuple> implements Serializable {
 	public int getIndexInPage(Tuple tuple) {
 		Object clustKey = tuple.getClusteringkey();
 		int index = 0;
+		System.out.println(clustKey.toString());
 		if (clustKey instanceof java.lang.Integer) {
 			index = this.binarySearchInt((Integer) clustKey);
 			if (((Integer) this.get(index).getClusteringkey()) < ((Integer) clustKey))

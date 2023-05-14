@@ -516,7 +516,6 @@ public class DBApp {
 
 	public void deleteFromTable(String strTableName, Hashtable<String, Object> htblColNameValue) throws DBAppException {
 		this.isDeletingMethod = true;
-		System.out.println("kkkk");
 		if (tableExits(strTableName)) {
 			htblColNameValue = convertKeysToLower(htblColNameValue);
 //			if(t.getPageInfo().size()==0)
@@ -537,7 +536,7 @@ public class DBApp {
 				int count = 0;
 				int minTemp = 9999999;
 				for (int i = 0; i < indexNameVector.size(); i++) {
-					for (int j = i+1; j < indexNameVector.size(); j++) {
+					for (int j = i + 1; j < indexNameVector.size(); j++) {
 						if (indexNameVector.get(i).equals(indexNameVector.get(j))) {
 							count++;
 							indexNameVector.remove(j);
@@ -548,47 +547,50 @@ public class DBApp {
 						indexName = indexNameVector.get(i);
 					}
 				}
-				System.out.println("I AM,HERE"+indexNameVector);
-				if (!indexName.equals("")) {
-					Octree myOct = deserializeOctree(t.getTableName()+""+indexName);
+				if (!indexName.equals("null")) {
+					Octree myOct = deserializeOctree(t.getTableName() + "" + indexName);
 					Hashtable<String, Object> key = new Hashtable<>();
-					key.put(myOct.getX(), htblColNameValue.get(myOct.getX()));
-					key.put(myOct.getY(), htblColNameValue.get(myOct.getY()));
-					System.out.println(htblColNameValue.get(myOct.getZ()));
-					key.put(myOct.getZ(), htblColNameValue.get(myOct.getZ()));
+					if (htblColNameValue.get(myOct.getX()) != null)
+						key.put(myOct.getX(), htblColNameValue.get(myOct.getX()));
+					if (htblColNameValue.get(myOct.getY()) != null)
+						key.put(myOct.getY(), htblColNameValue.get(myOct.getY()));
+					if (htblColNameValue.get(myOct.getZ()) != null)
+						key.put(myOct.getZ(), htblColNameValue.get(myOct.getZ()));
 					Vector<String> pageName = myOct.getPageName(key);
 					pageInfoVector = t.getPageInfo();
 					if (pageInfoVector.size() != 0) {
 						for (int i = 0; i < pageName.size(); i++) {
 							Page page = deserializePage(pageName.get(i));
-							for(int k=0;k<page.size();k++) {
+							for (int k = 0; k < page.size(); k++) {
 								// get all the columns that have indices
-								Tuple currTuple=page.get(k);
-								if(currTuple.equals(myTuple)) {
-									deleteFromOctree(myTuple, t);
+								Tuple currTuple = page.get(k);
+								if (currTuple.equals(myTuple)) {
+									deleteFromOctree(currTuple, t);
 									page.remove(k);
-								}
-								String res = "";
-								for (int j = pageName.get(i).length() - 1; j > (-1); j--) {
-									if ((pageName.get(i).charAt(j)) >= '0' && pageName.get(i).charAt(j) <= '9') {
-										res = pageName.get(i).charAt(j) + res;
-									} else
-										break;
-								}
-								int pageind = Integer.parseInt(res);
-								if (page.size() == 0) {
-									deletingFiles(pageind, pageInfoVector, t);
-								} else {
-
-									Object max = getMaxInPage(page);
-									Object min = getMinInPage(page);
-									((PageInfo) pageInfoVector.get(pageind)).setMax(max);
-									((PageInfo) pageInfoVector.get(pageind)).setMin(min);
-
-									serializePage(t, page, t.getTableName() + "" + pageind);
-									page = null;
+									k--;
 								}
 							}
+							String res = "";
+							for (int j = pageName.get(i).length() - 1; j > (-1); j--) {
+								if ((pageName.get(i).charAt(j)) >= '0' && pageName.get(i).charAt(j) <= '9') {
+									res = pageName.get(i).charAt(j) + res;
+								} else
+									break;
+							}
+							int pageind = Integer.parseInt(res);
+							if (page.size() == 0) {
+								deletingFiles(pageind, pageInfoVector, t);
+							} else {
+
+								Object max = getMaxInPage(page);
+								Object min = getMinInPage(page);
+								((PageInfo) pageInfoVector.get(pageind)).setMax(max);
+								((PageInfo) pageInfoVector.get(pageind)).setMin(min);
+
+								serializePage(t, page, t.getTableName() + "" + pageind);
+								page = null;
+							}
+
 						}
 					}
 					return;
@@ -620,7 +622,8 @@ public class DBApp {
 						if (page.contains(myTuple)) {
 //							System.out.println("after contains");
 							// System.out.println("was here111111");
-							deleteFromOctree(myTuple, t);
+							int currTupleIndex = page.getIndexInPageUsingClusteringKey(myClusterType);
+							deleteFromOctree(page.get(currTupleIndex), t);
 							page.removeBinary(myTuple);
 							if (page.size() == 0) {
 								deletingFiles(pageind, pageInfoVector, t);
@@ -639,8 +642,32 @@ public class DBApp {
 					}
 				} else {
 					pageInfoVector = t.getPageInfo();
-					removeFromAllPages(pageInfoVector, myTuple, 0, t, htblColNameValue);
-					deleteFromOctree(myTuple, t);
+//					removeFromAllPages(pageInfoVector, myTuple, 0, t, htblColNameValue);
+					for(int i=0;i<pageInfoVector.size();i++) {
+						String pagename = ((PageInfo) (pageInfoVector.get(i))).getPageName();
+						System.out.println("My page name is"+pagename);
+						Page page = deserializePage(pagename);
+						System.out.println(myTuple);
+						for (int k = 0; k < page.size(); k++) {
+							// get all the columns that have indices
+							Tuple currTuple = page.get(k);
+							if (currTuple.equals(myTuple)) {
+								deleteFromOctree(currTuple, t);
+								page.remove(k);
+								k--;
+							}
+						}
+						if (page.size() == 0) {
+							deletingFiles(i, pageInfoVector, t);
+						} else {
+							Object max = getMaxInPage(page);
+							Object min = getMinInPage(page);
+							((PageInfo) pageInfoVector.get(i)).setMax(max);
+							((PageInfo) pageInfoVector.get(i)).setMin(min);
+							serializePage(t, page, pagename);
+							page = null;
+						}
+					}
 				}
 				serializeTable(t, strTableName);
 				t = null;
@@ -666,6 +693,8 @@ public class DBApp {
 			String col3 = "";
 			int counter = 0;
 			for (String tableKey : t.getIndexOnCol().get(tableIndex).keySet()) {
+				if(tableKey.equals("Name of Index"))
+					continue;
 				if (counter == 0)
 					col1 = tableKey;
 				if (counter == 1)
@@ -675,18 +704,12 @@ public class DBApp {
 				counter++;
 			}
 			Hashtable<String, Object> tobedeleted = new Hashtable<>();
-			for (String myKey : myTuple.getRecord().keySet()) {
-				if (myTuple.getRecord().get(col1).equals(myKey)) {
-					tobedeleted.put(myKey, myTuple.getRecord().get(myKey).toString());
-				}
-				if (myTuple.getRecord().get(col2).equals(myKey)) {
-					tobedeleted.put(myKey, myTuple.getRecord().get(myKey).toString());
-				}
-				if (myTuple.getRecord().get(col3).equals(myKey)) {
-					tobedeleted.put(myKey, myTuple.getRecord().get(myKey).toString());
-				}
-			}
+			counter=0;
+			tobedeleted.put(col1, myTuple.getRecord().get(col1));
+			tobedeleted.put(col2, myTuple.getRecord().get(col2));
+			tobedeleted.put(col3, myTuple.getRecord().get(col3));
 			Octree currOctree = deserializeOctree(currIndex);
+			System.out.println("myHashtable"+tobedeleted);
 			currOctree.deleteTuple(tobedeleted);
 			serializeIndex(currOctree, currIndex);
 		}
@@ -730,6 +753,7 @@ public class DBApp {
 		String pagename = ((PageInfo) (pageInfoVector.get(i))).getPageName();
 		Page page = deserializePage(pagename);
 		page.removeNonBinary(myTuple);
+		deleteFromOctree(page.get((page.getIndexInPage(myTuple))), t);
 		if (page.size() == 0) {
 			deletingFiles(i, pageInfoVector, t);
 			removeFromAllPages(pageInfoVector, myTuple, i, t, htblColNameValue);
