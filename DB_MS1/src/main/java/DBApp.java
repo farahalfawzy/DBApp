@@ -1700,16 +1700,36 @@ public class DBApp {
 				String myIndexName = myHtbl.get("indxName").toString();
 				Octree myOct = deserializeOctree(myIndexName);
 				Vector<String> myPages = new Vector<>();
-				int tempCounter = 0;
-				for (String key : myHtbl.keySet()) {
-					Hashtable<String, Object> temp = new Hashtable<>();
-					temp.put(key, myHtbl.get(key));
-					if (tempCounter == 0) {
-						tempCounter++;
-						continue;
+				myPages = myOct.getAllPages(myHtbl);
+				Hashtable<String, Integer> Bitmask1 = new Hashtable<>();
+
+				for (int i = 0; i < myPages.size(); i++) {
+					Page page = deserializePage(myPages.get(i));
+					for (Tuple myTuple : page) {
+						boolean flag = true;
+						for (String key : Bitmask1.keySet()) {
+							switch (Bitmask1.get(key)) {
+							case 1:
+								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+								break;
+							case 2:
+								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+								break;
+							case 4:
+								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+								break;
+							case 8:
+								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+								break;
+							case 16:
+								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+								break;
+							case 32:
+								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
+								break;
+							}
+
 					}
-					Vector<Leaf> myLeaves = myOct.getAllPages(temp);
-					tempCounter = 0;
 				}
 			}
 		}

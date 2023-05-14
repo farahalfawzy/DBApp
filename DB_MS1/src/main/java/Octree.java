@@ -1501,7 +1501,7 @@ public class Octree implements Serializable {
 		return null;
 	}
 
-	public Vector<Leaf> getAllPages(Hashtable<String, Object> temp) {
+	public Vector<String> getAllPages(Hashtable<String, Object> temp) {
 		String operatorCol1 = "";
 		String operatorCol2 = "";
 		String operatorCol3 = "";
@@ -1513,25 +1513,27 @@ public class Octree implements Serializable {
 			if (key.equals("operator" + this.X)) {
 				operatorCol1 = temp.get(key).toString();
 				temp.remove(key);
-				col1 = key;
+				col1=X;
 			}
 			if (key.equals("operator" + this.Y)) {
 				operatorCol2 = temp.get(key).toString();
 				temp.remove(key);
-				col2 = key;
+				col2 = Y;
 			}
 			if (key.equals("operator" + this.Z)) {
 				operatorCol3 = temp.get(key).toString();
 				temp.remove(key);
-				col3 = key;
+				col3 = Z;
 			}
 		}
-		getAllPagesHelper(res, root, temp, operatorCol1, operatorCol2, operatorCol3, col1, col2, col3);
-		return null;
+		handlePageXOnly(res,root,temp,operatorCol1,col1,operatorCol2,col2,operatorCol3,col3);
+		handlePageYOnly(res,root,temp,operatorCol2,col2,operatorCol1,col1,operatorCol3,col3);
+		handlePageZOnly(res,root,temp,operatorCol3,col3,operatorCol2,col2,operatorCol1,col1);
+		return res;
 	}
 
 	private void handlePageXOnly(Vector<String> res, Node current, Hashtable<String, Object> myHtbl,
-			String operatorCol1,String col1) {
+			String operatorCol1,String col1 , String operatorCol2,String col2,String operatorCol3,String col3) {
 		if (current == null)
 			return;
 		if (current instanceof Leaf) {
@@ -1540,6 +1542,38 @@ public class Octree implements Serializable {
 			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
 				boolean flag = true;
+				switch (operatorCol2) {
+				case "=":
+					flag = record.get(col2).equals(myHtbl.get(col2));
+					break;
+				case ">":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col2).equals(myHtbl.get(col2));
+					break;
+				}
 				switch (operatorCol1) {
 				case "=":
 					flag = record.get(col1).equals(myHtbl.get(col1));
@@ -1572,12 +1606,76 @@ public class Octree implements Serializable {
 					flag = !record.get(col1).equals(myHtbl.get(col1));
 					break;
 				}
+				switch (operatorCol3) {
+				case "=":
+					flag = record.get(col3).equals(myHtbl.get(col3));
+					break;
+				case ">":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col3).equals(myHtbl.get(col3));
+					break;
+				}
 				if(flag)
 					res.add(record.get("Page Name").toString());
 			}
 			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 				Hashtable<String, Object> record = myLeaf.getOverflow().get(i);
 				boolean flag = true;
+				switch (operatorCol2) {
+				case "=":
+					flag = record.get(col2).equals(myHtbl.get(col2));
+					break;
+				case ">":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col2).equals(myHtbl.get(col2));
+					break;
+				}
 				switch (operatorCol1) {
 				case "=":
 					flag = record.get(col1).equals(myHtbl.get(col1));
@@ -1608,6 +1706,38 @@ public class Octree implements Serializable {
 					break;
 				case "!=":
 					flag = !record.get(col1).equals(myHtbl.get(col1));
+					break;
+				}
+				switch (operatorCol3) {
+				case "=":
+					flag = record.get(col3).equals(myHtbl.get(col3));
+					break;
+				case ">":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col3).equals(myHtbl.get(col3));
 					break;
 				}
 				if(flag)
@@ -1623,32 +1753,32 @@ public class Octree implements Serializable {
 				if (!higherX) {
 					if (compareTo1(myHtbl.get(col1), NonleafCur.left0.getMinX()) >= 0
 							&& compareTo1(NonleafCur.left0.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.left0, myHtbl,operatorCol1,col1);
+						handlePageXOnly(res, NonleafCur.left0, myHtbl,operatorCol1,col1,operatorCol2,col2,operatorCol3,col3);
 					if (compareTo1(myHtbl.get(col1), NonleafCur.left1.getMinX()) >= 0
 							&& compareTo1(NonleafCur.left1.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.left1, myHtbl,operatorCol1,col1);
+						handlePageXOnly(res, NonleafCur.left1, myHtbl,operatorCol1,col1,operatorCol2,col2,operatorCol3,col3);
 					if (compareTo1(myHtbl.get(col1), NonleafCur.left2.getMinX()) >= 0
 							&& compareTo1(NonleafCur.left2.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.left2, myHtbl,operatorCol1,col1);
+						handlePageXOnly(res, NonleafCur.left2, myHtbl,operatorCol1,col1,operatorCol2,col2,operatorCol3,col3);
 					if (compareTo1(myHtbl.get(col1), NonleafCur.left3.getMinX()) >= 0
 							&& compareTo1(NonleafCur.left3.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.left3, myHtbl,operatorCol1,col1);
+						handlePageXOnly(res, NonleafCur.left3, myHtbl,operatorCol1,col1,operatorCol2,col2,operatorCol3,col3);
 				} else {
 					if (compareTo1(myHtbl.get(col1), NonleafCur.right3.getMinX()) >= 0
 							&& compareTo1(NonleafCur.right3.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.right3, myHtbl,operatorCol1,col1);
+						handlePageXOnly(res, NonleafCur.right3, myHtbl,operatorCol1,col1,operatorCol2,col2,operatorCol3,col3);
 					
 					if (compareTo1(myHtbl.get(col1), NonleafCur.right2.getMinX()) >= 0
 							&& compareTo1(NonleafCur.right2.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.right2, myHtbl,operatorCol1,col1);
+						handlePageXOnly(res, NonleafCur.right2, myHtbl,operatorCol1,col1,operatorCol2,col2,operatorCol3,col3);
 					
 					if (compareTo1(myHtbl.get(col1), NonleafCur.right1.getMinX()) >= 0
 							&& compareTo1(NonleafCur.right1.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.right1, myHtbl,operatorCol1,col1);
+						handlePageXOnly(res, NonleafCur.right1, myHtbl,operatorCol1,col1,operatorCol2,col2,operatorCol3,col3);
 					
 					if (compareTo1(myHtbl.get(col1), NonleafCur.right0.getMinX()) >= 0
 							&& compareTo1(NonleafCur.right0.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.right0, myHtbl,operatorCol1,col1);
+						handlePageXOnly(res, NonleafCur.right0, myHtbl,operatorCol1,col1,operatorCol2,col2,operatorCol3,col3);
 				}
 
 			}
@@ -1656,7 +1786,7 @@ public class Octree implements Serializable {
 	}
 	
 	private void handlePageYOnly(Vector<String> res, Node current, Hashtable<String, Object> myHtbl,
-			String operatorCol2,String col2) {
+			String operatorCol2,String col2,String operatorCol1,String col1,String operatorCol3,String col3) {
 		if (current == null)
 			return;
 		if (current instanceof Leaf) {
@@ -1697,6 +1827,70 @@ public class Octree implements Serializable {
 					flag = !record.get(col2).equals(myHtbl.get(col2));
 					break;
 				}
+				switch (operatorCol1) {
+				case "=":
+					flag = record.get(col1).equals(myHtbl.get(col1));
+					break;
+				case ">":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col1).equals(myHtbl.get(col1));
+					break;
+				}
+				switch (operatorCol3) {
+				case "=":
+					flag = record.get(col3).equals(myHtbl.get(col3));
+					break;
+				case ">":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col3).equals(myHtbl.get(col3));
+					break;
+				}
 				if(flag)
 					res.add(record.get("Page Name").toString());
 			}
@@ -1733,6 +1927,70 @@ public class Octree implements Serializable {
 					break;
 				case "!=":
 					flag = !record.get(col2).equals(myHtbl.get(col2));
+					break;
+				}
+				switch (operatorCol1) {
+				case "=":
+					flag = record.get(col1).equals(myHtbl.get(col1));
+					break;
+				case ">":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col1).equals(myHtbl.get(col1));
+					break;
+				}
+				switch (operatorCol3) {
+				case "=":
+					flag = record.get(col3).equals(myHtbl.get(col3));
+					break;
+				case ">":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col3).equals(myHtbl.get(col3));
 					break;
 				}
 				if(flag)
@@ -1748,32 +2006,32 @@ public class Octree implements Serializable {
 				if (!higherX) {
 					if (compareTo1(myHtbl.get(col2), NonleafCur.left0.getMinX()) >= 0
 							&& compareTo1(NonleafCur.left0.getMaxX(), myHtbl.get(col2)) >= 0)
-						handlePageXOnly(res, NonleafCur.left0, myHtbl,operatorCol2,col2);
+						handlePageXOnly(res, NonleafCur.left0, myHtbl,operatorCol2,col2,operatorCol1,col1,operatorCol3,col3);
 					if (compareTo1(myHtbl.get(col2), NonleafCur.left1.getMinX()) >= 0
 							&& compareTo1(NonleafCur.left1.getMaxX(), myHtbl.get(col2)) >= 0)
-						handlePageXOnly(res, NonleafCur.left1, myHtbl,operatorCol2,col2);
+						handlePageXOnly(res, NonleafCur.left1, myHtbl,operatorCol2,col2,operatorCol1,col1,operatorCol3,col3);
 					if (compareTo1(myHtbl.get(col2), NonleafCur.left2.getMinX()) >= 0
 							&& compareTo1(NonleafCur.left2.getMaxX(), myHtbl.get(col2)) >= 0)
-						handlePageXOnly(res, NonleafCur.left2, myHtbl,operatorCol2,col2);
+						handlePageXOnly(res, NonleafCur.left2, myHtbl,operatorCol2,col2,operatorCol1,col1,operatorCol3,col3);
 					if (compareTo1(myHtbl.get(col2), NonleafCur.left3.getMinX()) >= 0
 							&& compareTo1(NonleafCur.left3.getMaxX(), myHtbl.get(col2)) >= 0)
-						handlePageXOnly(res, NonleafCur.left3, myHtbl,operatorCol2,col2);
+						handlePageXOnly(res, NonleafCur.left3, myHtbl,operatorCol2,col2,operatorCol1,col1,operatorCol3,col3);
 				} else {
 					if (compareTo1(myHtbl.get(col2), NonleafCur.right3.getMinX()) >= 0
 							&& compareTo1(NonleafCur.right3.getMaxX(), myHtbl.get(col2)) >= 0)
-						handlePageXOnly(res, NonleafCur.right3, myHtbl,operatorCol2,col2);
+						handlePageXOnly(res, NonleafCur.right3, myHtbl,operatorCol2,col2,operatorCol1,col1,operatorCol3,col3);
 					
 					if (compareTo1(myHtbl.get(col2), NonleafCur.right2.getMinX()) >= 0
 							&& compareTo1(NonleafCur.right2.getMaxX(), myHtbl.get(col2)) >= 0)
-						handlePageXOnly(res, NonleafCur.right2, myHtbl,operatorCol2,col2);
+						handlePageXOnly(res, NonleafCur.right2, myHtbl,operatorCol2,col2,operatorCol1,col1,operatorCol3,col3);
 					
 					if (compareTo1(myHtbl.get(col2), NonleafCur.right1.getMinX()) >= 0
 							&& compareTo1(NonleafCur.right1.getMaxX(), myHtbl.get(col2)) >= 0)
-						handlePageXOnly(res, NonleafCur.right1, myHtbl,operatorCol2,col2);
+						handlePageXOnly(res, NonleafCur.right1, myHtbl,operatorCol2,col2,operatorCol1,col1,operatorCol3,col3);
 					
 					if (compareTo1(myHtbl.get(col2), NonleafCur.right0.getMinX()) >= 0
 							&& compareTo1(NonleafCur.right0.getMaxX(), myHtbl.get(col2)) >= 0)
-						handlePageXOnly(res, NonleafCur.right0, myHtbl,operatorCol2,col2);
+						handlePageXOnly(res, NonleafCur.right0, myHtbl,operatorCol2,col2,operatorCol1,col1,operatorCol3,col3);
 				}
 
 			}
@@ -1781,7 +2039,7 @@ public class Octree implements Serializable {
 	}
 	
 	private void handlePageZOnly(Vector<String> res, Node current, Hashtable<String, Object> myHtbl,
-			String operatorCol1,String col1) {
+			String operatorCol3,String col3,String operatorCol2,String col2,String operatorCol1,String col1) {
 		if (current == null)
 			return;
 		if (current instanceof Leaf) {
@@ -1790,6 +2048,70 @@ public class Octree implements Serializable {
 			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
 				boolean flag = true;
+				switch (operatorCol3) {
+				case "=":
+					flag = record.get(col3).equals(myHtbl.get(col3));
+					break;
+				case ">":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col3).equals(myHtbl.get(col3));
+					break;
+				}
+				switch (operatorCol2) {
+				case "=":
+					flag = record.get(col2).equals(myHtbl.get(col2));
+					break;
+				case ">":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col2).equals(myHtbl.get(col2));
+					break;
+				}
 				switch (operatorCol1) {
 				case "=":
 					flag = record.get(col1).equals(myHtbl.get(col1));
@@ -1828,6 +2150,70 @@ public class Octree implements Serializable {
 			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 				Hashtable<String, Object> record = myLeaf.getOverflow().get(i);
 				boolean flag = true;
+				switch (operatorCol3) {
+				case "=":
+					flag = record.get(col3).equals(myHtbl.get(col3));
+					break;
+				case ">":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col3), (myHtbl.get(col3))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col3).equals(myHtbl.get(col3));
+					break;
+				}
+				switch (operatorCol2) {
+				case "=":
+					flag = record.get(col2).equals(myHtbl.get(col2));
+					break;
+				case ">":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col2).equals(myHtbl.get(col2));
+					break;
+				}
 				switch (operatorCol1) {
 				case "=":
 					flag = record.get(col1).equals(myHtbl.get(col1));
@@ -1865,52 +2251,46 @@ public class Octree implements Serializable {
 			}
 		}
 		else {
-			if (col1.toLowerCase().equals(getX())) {
+			if (col3.toLowerCase().equals(getX())) {
 				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
-				tmp.put(getX(), myHtbl.get(col1));
+				tmp.put(getX(), myHtbl.get(col3));
 				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), tmp);
 				NonLeaf NonleafCur = (NonLeaf) current;
 				if (!higherX) {
-					if (compareTo1(myHtbl.get(col1), NonleafCur.left0.getMinX()) >= 0
-							&& compareTo1(NonleafCur.left0.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.left0, myHtbl,operatorCol1,col1);
-					if (compareTo1(myHtbl.get(col1), NonleafCur.left1.getMinX()) >= 0
-							&& compareTo1(NonleafCur.left1.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.left1, myHtbl,operatorCol1,col1);
-					if (compareTo1(myHtbl.get(col1), NonleafCur.left2.getMinX()) >= 0
-							&& compareTo1(NonleafCur.left2.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.left2, myHtbl,operatorCol1,col1);
-					if (compareTo1(myHtbl.get(col1), NonleafCur.left3.getMinX()) >= 0
-							&& compareTo1(NonleafCur.left3.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.left3, myHtbl,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col3), NonleafCur.left0.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left0.getMaxX(), myHtbl.get(col3)) >= 0)
+						handlePageXOnly(res, NonleafCur.left0, myHtbl,operatorCol3,col3,operatorCol2,col2,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col3), NonleafCur.left1.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left1.getMaxX(), myHtbl.get(col3)) >= 0)
+						handlePageXOnly(res, NonleafCur.left1, myHtbl,operatorCol3,col3,operatorCol2,col2,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col3), NonleafCur.left2.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left2.getMaxX(), myHtbl.get(col3)) >= 0)
+						handlePageXOnly(res, NonleafCur.left2, myHtbl,operatorCol3,col3,operatorCol2,col2,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col3), NonleafCur.left3.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left3.getMaxX(), myHtbl.get(col3)) >= 0)
+						handlePageXOnly(res, NonleafCur.left3, myHtbl,operatorCol3,col3,operatorCol2,col2,operatorCol1,col1);
 				} else {
-					if (compareTo1(myHtbl.get(col1), NonleafCur.right3.getMinX()) >= 0
-							&& compareTo1(NonleafCur.right3.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.right3, myHtbl,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col3), NonleafCur.right3.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right3.getMaxX(), myHtbl.get(col3)) >= 0)
+						handlePageXOnly(res, NonleafCur.right3, myHtbl,operatorCol3,col3,operatorCol2,col2,operatorCol1,col1);
 					
-					if (compareTo1(myHtbl.get(col1), NonleafCur.right2.getMinX()) >= 0
-							&& compareTo1(NonleafCur.right2.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.right2, myHtbl,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col3), NonleafCur.right2.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right2.getMaxX(), myHtbl.get(col3)) >= 0)
+						handlePageXOnly(res, NonleafCur.right2, myHtbl,operatorCol3,col3,operatorCol2,col2,operatorCol1,col1);
 					
-					if (compareTo1(myHtbl.get(col1), NonleafCur.right1.getMinX()) >= 0
-							&& compareTo1(NonleafCur.right1.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.right1, myHtbl,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col3), NonleafCur.right1.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right1.getMaxX(), myHtbl.get(col3)) >= 0)
+						handlePageXOnly(res, NonleafCur.right1, myHtbl,operatorCol3,col3,operatorCol2,col2,operatorCol1,col1);
 					
-					if (compareTo1(myHtbl.get(col1), NonleafCur.right0.getMinX()) >= 0
-							&& compareTo1(NonleafCur.right0.getMaxX(), myHtbl.get(col1)) >= 0)
-						handlePageXOnly(res, NonleafCur.right0, myHtbl,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col3), NonleafCur.right0.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right0.getMaxX(), myHtbl.get(col3)) >= 0)
+						handlePageXOnly(res, NonleafCur.right0, myHtbl,operatorCol3,col3,operatorCol2,col2,operatorCol1,col1);
 				}
 
 			}
 		}
 	}
 	
-	private void getAllPagesHelper(Vector<String> res, Node current, Hashtable<String, Object> myHtbl,
-			String operatorCol1, String operatorCol2, String operatorCol3, String col1, String col2, String col3) {
-		handlePageXOnly(res,root,myHtbl,operatorCol1,col1);
-		handlePageYOnly(res,root,myHtbl,operatorCol2,col2);
-		handlePageZOnly(res,root,myHtbl,operatorCol3,col3);
-	}
 
 	private int compareTo1(Object x, Object y) {
 		int result = 0;
