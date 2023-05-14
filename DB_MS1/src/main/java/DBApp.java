@@ -1625,79 +1625,76 @@ public class DBApp {
 			throw new DBAppException("Coloumn is invalid");
 		indexName = getindexname(t, htblColValue);
 		Queue<String> operators = new LinkedList<String>();
-		int colCounter=0;
-		int operatorCounter=0;
-		boolean[] taken ; 
-		taken = new boolean[strarrOperators.length] ;
-		
+		int colCounter = 0;
+		int operatorCounter = 0;
+
 		for (int indexCounter = 0; indexCounter < indexName.size(); indexCounter++) {
 			Hashtable<String, Object> myHtbl = new Hashtable<String, Object>();
+			myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
+			myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._strOperator);
+			colCounter++;
+			for (int j = indexCounter + 1; j < indexName.size(); j++) {
+				if (myHtbl.size() == 6) {
+					break;
+				}
+				if (!strarrOperators[operatorCounter].equals("AND")) {
+					break;
+				}
+				if (indexName.get(indexCounter).equals(indexName.get(j)) && !indexName.get(j).equals("null")) {
 					myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
-					myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._strOperator);
-					colCounter++;
-					for (int j = indexCounter + 1; j < indexName.size(); j++) {
-						if (myHtbl.size() == 6) {
-							break;
-						}
-						if (!strarrOperators[operatorCounter].equals("AND")) {
-							break;
-						}
-						if (indexName.get(indexCounter).equals(indexName.get(j)) && !indexName.get(j).equals("null")) {
-							myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
-							myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName,arrSQLTerms[colCounter]._strOperator);
-							indexName.remove(j);
-							j--;
-					
-							}  else {
-								break;
-						}
-						operatorCounter++;
-						colCounter++;
+					myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName,
+							arrSQLTerms[colCounter]._strOperator);
+					indexName.remove(j);
+					j--;
+
+				} else {
+					break;
+				}
+				operatorCounter++;
+				colCounter++;
+			}
+//					boolean once = true;
+			if (myHtbl.size() == 6) {
+				myHtbl.put("indxName", indexName.get(indexCounter));
+				result.add(compute(myHtbl, operators, t, result));
+				for (int i = 0; i < 3; i++)
+					operators.add("A");
+
+			} else {
+				int outercounter = operators.size();
+				int tempCounter = 0;
+				Hashtable<String, Object> temp = new Hashtable<>();
+				for (String key : myHtbl.keySet()) {
+					temp.put(key, myHtbl.get(key));
+					if (tempCounter == 0) {
+						tempCounter++;
+						continue;
 					}
-					boolean once = true;
-					if (myHtbl.size() == 6) {
-						myHtbl.put("indxName", indexName.get(indexCounter));
+					temp.put("indxName", indexName.get(indexCounter));
 
-						result.add(compute(myHtbl, operators, t, result));
-
-					} else {
-						int outercounter=operators.size();
-						int tempCounter = 0;
-						Hashtable<String, Object> temp = new Hashtable<>();
-						for (String key : myHtbl.keySet()) {
-							temp.put(key, myHtbl.get(key));
-							if (tempCounter == 0) {
-								tempCounter++;
-								continue;
-							}
-							temp.put("indxName", indexName.get(indexCounter));
-
-							result.add(compute(temp, operators, t, result));
-								if (outercounter < strarrOperators.length) {
-									if(!taken[outercounter]) {
-								operators.add(strarrOperators[outercounter]);
-								taken[outercounter]=true;
-								}
-								outercounter++;
-								once = false;
-							}
-							
-							tempCounter = 0;
-							temp = new Hashtable<>();
-						}
-						operatorCounter=outercounter;
+					result.add(compute(temp, operators, t, result));
+					if (outercounter < strarrOperators.length) {
+						outercounter++;
+						// once = false;
 					}
+
+					tempCounter = 0;
+					temp = new Hashtable<>();
+				}
+				operatorCounter = outercounter;
+			}
 //					if (operatorCounter < strarrOperators.length && once) {
 //						operators.add(strarrOperators[operatorCounter]);
 //						operatorCounter++;
 //					}
-				}
+		}
 		return result.iterator();
 
 	}
 
 //es2l 3ala 7tt elcomplexity mohma wala la2?
-	public static void compute(Hashtable<String, Object> myHtbl, Queue<String> operators, Table t, Vector<Tuple> result) {
+	public static void compute(Hashtable<String, Object> myHtbl, Queue<String> operators, Table t,
+			Vector<Tuple> result) {
 		if (operators.isEmpty()) {
 			if (myHtbl.size() == 7) {
 				String myIndexName = myHtbl.get("indxName").toString();

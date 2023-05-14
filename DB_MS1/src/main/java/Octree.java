@@ -1508,182 +1508,446 @@ public class Octree implements Serializable {
 		String col1 = "";
 		String col2 = "";
 		String col3 = "";
-		Vector<String> res= new Vector<String>();
+		Vector<String> res = new Vector<String>();
 		for (String key : temp.keySet()) {
-			if (key.equals("operator"+this.X)) {
+			if (key.equals("operator" + this.X)) {
 				operatorCol1 = temp.get(key).toString();
 				temp.remove(key);
 				col1 = key;
 			}
-			if (key.equals("operator"+this.Y)) {
+			if (key.equals("operator" + this.Y)) {
 				operatorCol2 = temp.get(key).toString();
 				temp.remove(key);
 				col2 = key;
 			}
-			if (key.equals("operator"+this.Z)) {
+			if (key.equals("operator" + this.Z)) {
 				operatorCol3 = temp.get(key).toString();
 				temp.remove(key);
 				col3 = key;
 			}
 		}
-		getAllPagesHelper(res,root,temp,operatorCol1,operatorCol2,operatorCol3,col1,col2,col3);
+		getAllPagesHelper(res, root, temp, operatorCol1, operatorCol2, operatorCol3, col1, col2, col3);
 		return null;
 	}
 
-	private void getAllPagesHelper(Vector<String> res, Node current, Hashtable<String, Object> myHtbl, String operatorCol1, String operatorCol2,
-			String operatorCol3, String col1, String col2, String col3) {
+	private void handlePageXOnly(Vector<String> res, Node current, Hashtable<String, Object> myHtbl,
+			String operatorCol1,String col1) {
 		if (current == null)
 			return;
-
 		if (current instanceof Leaf) {
 			Leaf myLeaf = (Leaf) current;
 
 			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
-				boolean flag=true;
-				switch(operatorCol1) {
-					case "=":
-						flag = record.get(col1).equals(myHtbl.get(col1));break;
-					case ">":
-						if(compareTo1(record.get(col1),(myHtbl.get(col1)))>0)
-							flag=true;
-						else
-							flag=false;
-						break;
+				boolean flag = true;
+				switch (operatorCol1) {
+				case "=":
+					flag = record.get(col1).equals(myHtbl.get(col1));
+					break;
+				case ">":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col1).equals(myHtbl.get(col1));
+					break;
 				}
-
+				if(flag)
+					res.add(record.get("Page Name").toString());
 			}
-			for (int i = 0; i < myLeaf.getOverflow().size(); i++) {
+			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 				Hashtable<String, Object> record = myLeaf.getOverflow().get(i);
-				
-				
-			}
-			return;
-		} else {
-			ArrayList<String> nextNodes = new ArrayList<String>();
-			nextNodes.add("000");
-			nextNodes.add("001");
-			nextNodes.add("010");
-			nextNodes.add("011");
-			nextNodes.add("100");
-			nextNodes.add("101");
-			nextNodes.add("110");
-			nextNodes.add("111");
-
-			ArrayList<String> z = new ArrayList<String>();
-
-			if (ClustCol.toLowerCase().equals(getX())) {
-				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
-				tmp.put(getX(), clust);
-				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), tmp);
-				if (higherX) {
-					nextNodes.remove("000");
-					nextNodes.remove("001");
-					nextNodes.remove("010");
-					nextNodes.remove("011");
-				} else {
-					nextNodes.remove("100");
-					nextNodes.remove("101");
-					nextNodes.remove("110");
-					nextNodes.remove("111");
+				boolean flag = true;
+				switch (operatorCol1) {
+				case "=":
+					flag = record.get(col1).equals(myHtbl.get(col1));
+					break;
+				case ">":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col1).equals(myHtbl.get(col1));
+					break;
 				}
-
+				if(flag)
+					res.add(record.get("Page Name").toString());
 			}
-			if (ClustCol.toLowerCase().equals(getY())) {
-				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
-				tmp.put(getY(), clust);
-				boolean higherY = getHigherY(current.getMinY(), current.getMaxY(), tmp);
-				if (higherY) {
-					nextNodes.remove("000");
-					nextNodes.remove("001");
-					nextNodes.remove("100");
-					nextNodes.remove("101");
-				} else {
-					nextNodes.remove("010");
-					nextNodes.remove("011");
-					nextNodes.remove("110");
-					nextNodes.remove("111");
-				}
-			}
-
-			if (ClustCol.toLowerCase().equals(getZ())) {
-				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
-				tmp.put(getZ(), clust);
-				boolean higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), tmp);
-				if (higherZ) {
-					nextNodes.remove("000");
-					nextNodes.remove("010");
-					nextNodes.remove("100");
-					nextNodes.remove("110");
-				} else {
-					nextNodes.remove("001");
-					nextNodes.remove("011");
-					nextNodes.remove("101");
-					nextNodes.remove("111");
-				}
-
-			}
-			System.out.println(nextNodes.toString());
-			NonLeaf NonleafCur = (NonLeaf) current;
-			String res = "";
-			if (nextNodes.contains("000"))
-				res += getExactPage(ClustCol, NonleafCur.left0, clust);
-			if (nextNodes.contains("001"))
-				res += getExactPage(ClustCol, NonleafCur.left1, clust);
-			if (nextNodes.contains("010"))
-				res += getExactPage(ClustCol, NonleafCur.left2, clust);
-			if (nextNodes.contains("011"))
-				res += getExactPage(ClustCol, NonleafCur.left3, clust);
-			if (nextNodes.contains("100"))
-				res += getExactPage(ClustCol, NonleafCur.right3, clust);
-			if (nextNodes.contains("101"))
-				res += getExactPage(ClustCol, NonleafCur.right2, clust);
-			if (nextNodes.contains("110"))
-				res += getExactPage(ClustCol, NonleafCur.right1, clust);
-			if (nextNodes.contains("111"))
-				res += getExactPage(ClustCol, NonleafCur.right0, clust);
-			return res;
-
 		}
+		else {
+			if (col1.toLowerCase().equals(getX())) {
+				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
+				tmp.put(getX(), myHtbl.get(col1));
+				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), tmp);
+				NonLeaf NonleafCur = (NonLeaf) current;
+				if (!higherX) {
+					if (compareTo1(myHtbl.get(col1), NonleafCur.left0.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left0.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.left0, myHtbl,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col1), NonleafCur.left1.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left1.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.left1, myHtbl,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col1), NonleafCur.left2.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left2.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.left2, myHtbl,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col1), NonleafCur.left3.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left3.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.left3, myHtbl,operatorCol1,col1);
+				} else {
+					if (compareTo1(myHtbl.get(col1), NonleafCur.right3.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right3.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.right3, myHtbl,operatorCol1,col1);
+					
+					if (compareTo1(myHtbl.get(col1), NonleafCur.right2.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right2.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.right2, myHtbl,operatorCol1,col1);
+					
+					if (compareTo1(myHtbl.get(col1), NonleafCur.right1.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right1.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.right1, myHtbl,operatorCol1,col1);
+					
+					if (compareTo1(myHtbl.get(col1), NonleafCur.right0.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right0.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.right0, myHtbl,operatorCol1,col1);
+				}
 
+			}
+		}
+	}
+	
+	private void handlePageYOnly(Vector<String> res, Node current, Hashtable<String, Object> myHtbl,
+			String operatorCol2,String col2) {
+		if (current == null)
+			return;
+		if (current instanceof Leaf) {
+			Leaf myLeaf = (Leaf) current;
+
+			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
+				boolean flag = true;
+				switch (operatorCol2) {
+				case "=":
+					flag = record.get(col2).equals(myHtbl.get(col2));
+					break;
+				case ">":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col2).equals(myHtbl.get(col2));
+					break;
+				}
+				if(flag)
+					res.add(record.get("Page Name").toString());
+			}
+			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+				Hashtable<String, Object> record = myLeaf.getOverflow().get(i);
+				boolean flag = true;
+				switch (operatorCol2) {
+				case "=":
+					flag = record.get(col2).equals(myHtbl.get(col2));
+					break;
+				case ">":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col2), (myHtbl.get(col2))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col2).equals(myHtbl.get(col2));
+					break;
+				}
+				if(flag)
+					res.add(record.get("Page Name").toString());
+			}
+		}
+		else {
+			if (col2.toLowerCase().equals(getX())) {
+				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
+				tmp.put(getX(), myHtbl.get(col2));
+				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), tmp);
+				NonLeaf NonleafCur = (NonLeaf) current;
+				if (!higherX) {
+					if (compareTo1(myHtbl.get(col2), NonleafCur.left0.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left0.getMaxX(), myHtbl.get(col2)) >= 0)
+						handlePageXOnly(res, NonleafCur.left0, myHtbl,operatorCol2,col2);
+					if (compareTo1(myHtbl.get(col2), NonleafCur.left1.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left1.getMaxX(), myHtbl.get(col2)) >= 0)
+						handlePageXOnly(res, NonleafCur.left1, myHtbl,operatorCol2,col2);
+					if (compareTo1(myHtbl.get(col2), NonleafCur.left2.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left2.getMaxX(), myHtbl.get(col2)) >= 0)
+						handlePageXOnly(res, NonleafCur.left2, myHtbl,operatorCol2,col2);
+					if (compareTo1(myHtbl.get(col2), NonleafCur.left3.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left3.getMaxX(), myHtbl.get(col2)) >= 0)
+						handlePageXOnly(res, NonleafCur.left3, myHtbl,operatorCol2,col2);
+				} else {
+					if (compareTo1(myHtbl.get(col2), NonleafCur.right3.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right3.getMaxX(), myHtbl.get(col2)) >= 0)
+						handlePageXOnly(res, NonleafCur.right3, myHtbl,operatorCol2,col2);
+					
+					if (compareTo1(myHtbl.get(col2), NonleafCur.right2.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right2.getMaxX(), myHtbl.get(col2)) >= 0)
+						handlePageXOnly(res, NonleafCur.right2, myHtbl,operatorCol2,col2);
+					
+					if (compareTo1(myHtbl.get(col2), NonleafCur.right1.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right1.getMaxX(), myHtbl.get(col2)) >= 0)
+						handlePageXOnly(res, NonleafCur.right1, myHtbl,operatorCol2,col2);
+					
+					if (compareTo1(myHtbl.get(col2), NonleafCur.right0.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right0.getMaxX(), myHtbl.get(col2)) >= 0)
+						handlePageXOnly(res, NonleafCur.right0, myHtbl,operatorCol2,col2);
+				}
+
+			}
+		}
+	}
+	
+	private void handlePageZOnly(Vector<String> res, Node current, Hashtable<String, Object> myHtbl,
+			String operatorCol1,String col1) {
+		if (current == null)
+			return;
+		if (current instanceof Leaf) {
+			Leaf myLeaf = (Leaf) current;
+
+			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
+				boolean flag = true;
+				switch (operatorCol1) {
+				case "=":
+					flag = record.get(col1).equals(myHtbl.get(col1));
+					break;
+				case ">":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col1).equals(myHtbl.get(col1));
+					break;
+				}
+				if(flag)
+					res.add(record.get("Page Name").toString());
+			}
+			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+				Hashtable<String, Object> record = myLeaf.getOverflow().get(i);
+				boolean flag = true;
+				switch (operatorCol1) {
+				case "=":
+					flag = record.get(col1).equals(myHtbl.get(col1));
+					break;
+				case ">":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col1).equals(myHtbl.get(col1));
+					break;
+				}
+				if(flag)
+					res.add(record.get("Page Name").toString());
+			}
+		}
+		else {
+			if (col1.toLowerCase().equals(getX())) {
+				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
+				tmp.put(getX(), myHtbl.get(col1));
+				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), tmp);
+				NonLeaf NonleafCur = (NonLeaf) current;
+				if (!higherX) {
+					if (compareTo1(myHtbl.get(col1), NonleafCur.left0.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left0.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.left0, myHtbl,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col1), NonleafCur.left1.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left1.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.left1, myHtbl,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col1), NonleafCur.left2.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left2.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.left2, myHtbl,operatorCol1,col1);
+					if (compareTo1(myHtbl.get(col1), NonleafCur.left3.getMinX()) >= 0
+							&& compareTo1(NonleafCur.left3.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.left3, myHtbl,operatorCol1,col1);
+				} else {
+					if (compareTo1(myHtbl.get(col1), NonleafCur.right3.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right3.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.right3, myHtbl,operatorCol1,col1);
+					
+					if (compareTo1(myHtbl.get(col1), NonleafCur.right2.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right2.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.right2, myHtbl,operatorCol1,col1);
+					
+					if (compareTo1(myHtbl.get(col1), NonleafCur.right1.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right1.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.right1, myHtbl,operatorCol1,col1);
+					
+					if (compareTo1(myHtbl.get(col1), NonleafCur.right0.getMinX()) >= 0
+							&& compareTo1(NonleafCur.right0.getMaxX(), myHtbl.get(col1)) >= 0)
+						handlePageXOnly(res, NonleafCur.right0, myHtbl,operatorCol1,col1);
+				}
+
+			}
+		}
+	}
+	
+	private void getAllPagesHelper(Vector<String> res, Node current, Hashtable<String, Object> myHtbl,
+			String operatorCol1, String operatorCol2, String operatorCol3, String col1, String col2, String col3) {
+		handlePageXOnly(res,root,myHtbl,operatorCol1,col1);
+		handlePageYOnly(res,root,myHtbl,operatorCol2,col2);
+		handlePageZOnly(res,root,myHtbl,operatorCol3,col3);
 	}
 
-	private int compareTo1(Object x,Object y) {
+	private int compareTo1(Object x, Object y) {
 		int result = 0;
-		if(x instanceof Integer && y instanceof Integer) {
-			if(Integer.parseInt(x.toString())>Integer.parseInt(y.toString()))
-				result=1;
-			if(Integer.parseInt(x.toString())==Integer.parseInt(y.toString()))
-				result=0;
-			if(Integer.parseInt(x.toString())<Integer.parseInt(y.toString()))
-				result=-1;
+		if (x instanceof Integer && y instanceof Integer) {
+			if (Integer.parseInt(x.toString()) > Integer.parseInt(y.toString()))
+				result = 1;
+			if (Integer.parseInt(x.toString()) == Integer.parseInt(y.toString()))
+				result = 0;
+			if (Integer.parseInt(x.toString()) < Integer.parseInt(y.toString()))
+				result = -1;
 		}
-		if(x instanceof String && y instanceof String) {
-			if(x.toString().compareTo(y.toString())>0)
-				result=1;
-			if(x.toString().compareTo(y.toString())==0)
-				result=0;
-			if(x.toString().compareTo(y.toString())<0)
-				result=-1;
+		if (x instanceof String && y instanceof String) {
+			if (x.toString().compareTo(y.toString()) > 0)
+				result = 1;
+			if (x.toString().compareTo(y.toString()) == 0)
+				result = 0;
+			if (x.toString().compareTo(y.toString()) < 0)
+				result = -1;
 		}
-		if(x instanceof Double && y instanceof Double) {
-			if(Double.parseDouble(x.toString())>Double.parseDouble(y.toString()))
-				result=1;
-			if(x.toString().compareTo(y.toString())==0)
-				result=0;
-			if(x.toString().compareTo(y.toString())<0)
-				result=-1;
+		if (x instanceof Double && y instanceof Double) {
+			if (Double.parseDouble(x.toString()) > Double.parseDouble(y.toString()))
+				result = 1;
+			if (x.toString().compareTo(y.toString()) == 0)
+				result = 0;
+			if (x.toString().compareTo(y.toString()) < 0)
+				result = -1;
 		}
-		if(x instanceof java.util.Date && y instanceof java.util.Date) {
+		if (x instanceof java.util.Date && y instanceof java.util.Date) {
 			try {
 				Date date = new SimpleDateFormat("yyyy-MM-dd").parse(x.toString());
 				Date date1 = new SimpleDateFormat("yyyy-MM-dd").parse(y.toString());
-				if(date.after(date1))
-					result=1;
-				if(date.compareTo(date1)==0)
-					result=0;
-				if(date.before(date1))
-					result=-1;
+				if (date.after(date1))
+					result = 1;
+				if (date.compareTo(date1) == 0)
+					result = 0;
+				if (date.before(date1))
+					result = -1;
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1692,7 +1956,7 @@ public class Octree implements Serializable {
 		return result;
 
 	}
-	
+
 	public static void main(String[] args) {
 		Octree tree = new Octree("X", "Y", "Z", 0, 10, 0, 20, 0, 40);
 		Hashtable<String, Object> key = new Hashtable<>();
