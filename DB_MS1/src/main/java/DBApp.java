@@ -138,6 +138,10 @@ public class DBApp {
 	}
 
 	public void createIndex(String strTableName, String[] strarrColName) throws DBAppException {
+		if (!tableExits(strTableName)) {
+			throw new DBAppException("Table not found");
+
+		}
 		if (strarrColName.length != 3) {
 			throw new DBAppException("Have to Use 3 Columns");
 		}
@@ -1508,8 +1512,8 @@ public class DBApp {
 			for (int i = 0; i < indices.size(); i++) {
 				String TreeName = strTableName + indices.get(i);
 				Octree Octree = deserializeOctree(TreeName);
-				if (updated.get(Octree.getX()) != null && updated.get(Octree.getY()) != null
-						&& updated.get(Octree.getZ()) != null) {
+				if(! (updated.get(Octree.getX())== null && updated.get(Octree.getY()) == null
+						&& updated.get(Octree.getZ()) == null)) {
 					Object val1 = oldRecord.get(Octree.getX());
 					Object val2 = oldRecord.get(Octree.getY());
 					Object val3 = oldRecord.get(Octree.getZ());
@@ -1531,7 +1535,6 @@ public class DBApp {
 					// recInIndex.put("Clust key", oldRecord.get(ClustKey));
 
 					Octree.insertTupleInIndex(recInIndex);
-					Octree = null;
 				}
 				serializeIndex(Octree, TreeName);
 				Octree = null;
