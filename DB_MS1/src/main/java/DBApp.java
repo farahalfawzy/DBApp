@@ -1624,156 +1624,98 @@ public class DBApp {
 		if (!isValid(t.getTableName(), htblColValue))
 			throw new DBAppException("Coloumn is invalid");
 		indexName = getindexname(t, htblColValue);
-//		Queue<Hashtable<String, Object>> resIndex = new LinkedList<Hashtable<String, Object>>();
 		Queue<String> operators = new LinkedList<String>();
-//		boolean notIndex = false;
-//		int tempCounter = 0;
-		int colCounter = 0;
-		int operatorCounter = 0;
-//		int outerCounter = 0;
-//		Boolean[] taken = new Boolean[indexName.size()];
-//		boolean once = true;
-//		boolean flag = true;
+		int colCounter=0;
+		int operatorCounter=0;
+		boolean[] taken ; 
+		taken = new boolean[strarrOperators.length] ;
+		
 		for (int indexCounter = 0; indexCounter < indexName.size(); indexCounter++) {
 			Hashtable<String, Object> myHtbl = new Hashtable<String, Object>();
-			myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
-			myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName,arrSQLTerms[colCounter]._strOperator);
-//			if (taken[colCounter]) {
-//				colCounter++;
-//				indexCounter--;
-//				continue;
-//			}
-			colCounter++;
-			for (int j = indexCounter + 1; j < indexName.size(); j++) {
-				if (myHtbl.size() == 6) {
-					break;
-				}
-				if (!strarrOperators[operatorCounter].equals("AND")) {
-					break;
-				}
-				if (indexName.get(indexCounter).equals(indexName.get(j)) && !indexName.get(j).equals("null")) {
 					myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
-					myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName,
-							arrSQLTerms[colCounter]._strOperator);
-					indexName.remove(j);
-					j--;
-//				if(flag)
-//					outerCounter++;
-//					taken[colCounter] = true;
-				} else {
-//					if (once) {
-//						outerCounter = colCounter;
-//						once = false;
-//					}
-//					flag = false;
-					break;
-				}
-				operatorCounter++;
-				colCounter++;
-			}
-//			if (!flag) {
-//				colCounter = outerCounter;
-//				operatorCounter = outerCounter - 1;
-////			}
-//			once = true;
-//			flag = true;
-			myHtbl.put("indxName", indexName.get(indexCounter));
-			boolean once = true;
-			if(myHtbl.size()==7) {
-				result.add(compute(myHtbl, operators, t,result));
-			}
-			else {
-				for(String key:myHtbl.keySet()) {
-					Hashtable<String, Object> temp = new Hashtable<>();
-					temp.put(key, myHtbl.get(key));
-					result.add(compute(temp, operators, t,result));
-					if (operatorCounter < strarrOperators.length) {
-						operators.add(strarrOperators[operatorCounter]);
+					myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._strOperator);
+					colCounter++;
+					for (int j = indexCounter + 1; j < indexName.size(); j++) {
+						if (myHtbl.size() == 6) {
+							break;
+						}
+						if (!strarrOperators[operatorCounter].equals("AND")) {
+							break;
+						}
+						if (indexName.get(indexCounter).equals(indexName.get(j)) && !indexName.get(j).equals("null")) {
+							myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
+							myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName,arrSQLTerms[colCounter]._strOperator);
+							indexName.remove(j);
+							j--;
+					
+							}  else {
+								break;
+						}
 						operatorCounter++;
-						once = false;
+						colCounter++;
 					}
+					boolean once = true;
+					if (myHtbl.size() == 6) {
+						myHtbl.put("indxName", indexName.get(indexCounter));
+
+						result.add(compute(myHtbl, operators, t, result));
+
+					} else {
+						int outercounter=operators.size();
+						int tempCounter = 0;
+						Hashtable<String, Object> temp = new Hashtable<>();
+						for (String key : myHtbl.keySet()) {
+							temp.put(key, myHtbl.get(key));
+							if (tempCounter == 0) {
+								tempCounter++;
+								continue;
+							}
+							temp.put("indxName", indexName.get(indexCounter));
+
+							result.add(compute(temp, operators, t, result));
+								if (outercounter < strarrOperators.length) {
+									if(!taken[outercounter]) {
+								operators.add(strarrOperators[outercounter]);
+								taken[outercounter]=true;
+								}
+								outercounter++;
+								once = false;
+							}
+							
+							tempCounter = 0;
+							temp = new Hashtable<>();
+						}
+						operatorCounter=outercounter;
+					}
+//					if (operatorCounter < strarrOperators.length && once) {
+//						operators.add(strarrOperators[operatorCounter]);
+//						operatorCounter++;
+//					}
 				}
-			}
-//			resIndex.add(myHtbl);
-//			if (resIndex.size() == 2) {
-//				resIndex = compute(resIndex, operators, t);
-//			}
-			if (operatorCounter < strarrOperators.length && once) {
-				operators.add(strarrOperators[operatorCounter]);
-				operatorCounter++;
-			}
-		}
 		return result.iterator();
 
 	}
 
-//	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
-//		if (arrSQLTerms.length == 0)
-//			throw new DBAppException("Insert a valid select");
-//		if (!tableExits(arrSQLTerms[0]._strTableName))
-//			throw new DBAppException("Table doesn't exist!!");
-//		Vector result = new Vector<>();
-//		Table t = deserializeTable(arrSQLTerms[0]._strTableName);
-//		Hashtable<String, Object> htblColValue = new Hashtable<>();
-//		Vector<String> indexName = new Vector<>();
-//		for (int i = 0; i < arrSQLTerms.length; i++) {
-//			htblColValue.put(arrSQLTerms[i]._strColumnName, arrSQLTerms[i]._objValue);
-//		}
-//		if (!isValid(t.getTableName(), htblColValue))
-//			throw new DBAppException("Column is invalid");
-//		indexName = getindexname(t, htblColValue);
-//		Queue<Hashtable<String, Object>> resIndex = new LinkedList<Hashtable<String, Object>>();
-//		Queue<String> operators = new LinkedList<String>();
-//		Hashtable<String, Object> myHtbl = new Hashtable<String, Object>();
-//		int operatorcounter=0;
-//		for (int indexCounter = 0; indexCounter < indexName.size(); indexCounter++) {
-//			Vector<Hashtable<String, Object>> temp = new Vector<Hashtable<String, Object>>();
-//			myHtbl.put(arrSQLTerms[indexCounter]._strColumnName, arrSQLTerms[indexCounter]._objValue);
-//			myHtbl.put("operator" + arrSQLTerms[indexCounter]._strColumnName, arrSQLTerms[indexCounter]._strOperator);
-//			temp.add(myHtbl);
-//			if (indexCounter < indexName.size() - 1 && strarrOperators[operatorcounter].equals("AND")) {
-//				int j = indexCounter + 1;
-//				 
-//				for (; j < indexName.size(); j++) {
-//					myHtbl = new Hashtable<String, Object>();
-//					if (indexName.get(indexCounter).equals(indexName.get(j)) && strarrOperators[operatorcounter].equals("AND")) {
-//						myHtbl.put(arrSQLTerms[j]._strColumnName, arrSQLTerms[j]._objValue);
-//						myHtbl.put("operator" + arrSQLTerms[j]._strColumnName, arrSQLTerms[j]._strOperator);
-//						operatorcounter++;
-//						temp.add(myHtbl);
-//					} else {
-//						break;
-//					}
-//				}
-//				if (temp.size() == 6) {
-//					Hashtable<String, Object> packedhash = new Hashtable<String, Object>();
-//					for (int i = 0; i < temp.size(); i++) {
-//						packedhash.putAll(temp.get(i));
-//					}
-//					packedhash.put("indexName", indexName.get(indexCounter));
-//					result.add(compute(packedhash,result, strarrOperators[operatorcounter]));
-//
-//				} else {
-//					for (int i = 0; i < temp.size(); i++) {
-//						result.add(compute(temp.get(i),result,strarrOperators[operatorcounter]));	
-//					}
-//				}
-//				indexCounter = j-1;
-//			} else {
-//				result.add(compute(temp.get(indexCounter),result,strarrOperators[operatorcounter]));
-//			}
-////			result.add();
-//			operatorcounter++;
-//		}
-//		return result.iterator();
-//
-//	}
-
 //es2l 3ala 7tt elcomplexity mohma wala la2?
-	public static void compute(Queue<Hashtable<String, Object>> resIndex, Queue<String> operators, Table t) {
-		Hashtable<String, Object> htbloperand1 = resIndex.poll();
-		Hashtable<String, Object> htbloperand2 = resIndex.poll();
-		String strOperator = operators.poll();
+	public static void compute(Hashtable<String, Object> myHtbl, Queue<String> operators, Table t, Vector<Tuple> result) {
+		if (operators.isEmpty()) {
+			if (myHtbl.size() == 7) {
+				String myIndexName = myHtbl.get("indxName").toString();
+				Octree myOct = deserializeOctree(myIndexName);
+				Vector<String> myPages = new Vector<>();
+				int tempCounter = 0;
+				for (String key : myHtbl.keySet()) {
+					Hashtable<String, Object> temp = new Hashtable<>();
+					temp.put(key, myHtbl.get(key));
+					if (tempCounter == 0) {
+						tempCounter++;
+						continue;
+					}
+					Vector<Leaf> myLeaves = myOct.getAllPages(temp);
+					tempCounter = 0;
+				}
+			}
+		}
 		String value1, value2;
 		value1 = htbloperand1.get("indxName").toString();
 		value2 = htbloperand2.get("indxName").toString();

@@ -188,16 +188,16 @@ public class Octree implements Serializable {
 
 	}
 
-	public void getAllLeaves(Vector<Leaf> res,Node current,Hashtable<String, Object> htblColNameValue){
-		if(current == null) {
+	public void getAllLeaves(Vector<Leaf> res, Node current, Hashtable<String, Object> htblColNameValue) {
+		if (current == null) {
 			return;
 		}
 //		System.out.println(current.toString());
-		if(current instanceof Leaf) {
+		if (current instanceof Leaf) {
 			Leaf myLeaf = (Leaf) current;
-			for(int i=0;i<myLeaf.getBucket().size();i++) {
-				for(String key:htblColNameValue.keySet()) {
-					if(myLeaf.getBucket().get(i).contains(htblColNameValue.get(key))) {
+			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+				for (String key : htblColNameValue.keySet()) {
+					if (myLeaf.getBucket().get(i).contains(htblColNameValue.get(key))) {
 						res.add(myLeaf);
 					}
 				}
@@ -207,170 +207,161 @@ public class Octree implements Serializable {
 		}
 		boolean higherX = false, higherY = false, higherZ = false;
 		boolean inX = false, inY = false, inZ = false;
-		for(String myKey:htblColNameValue.keySet()) {
-			System.out.println(myKey+" "+this.X);
-			if(myKey.equals(this.X)) {
+		for (String myKey : htblColNameValue.keySet()) {
+			System.out.println(myKey + " " + this.X);
+			if (myKey.equals(this.X)) {
 				higherX = getHigherX(current.getMinX(), current.getMaxX(), htblColNameValue);
 				inX = true;
 			}
-			if(myKey.equals(Y)) {
+			if (myKey.equals(Y)) {
 				higherY = getHigherY(current.getMinY(), current.getMaxY(), htblColNameValue);
-				inY=true;
+				inY = true;
 			}
-			if(myKey.equals(Z)) {
+			if (myKey.equals(Z)) {
 				higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), htblColNameValue);
-				inZ=true;
+				inZ = true;
 			}
 		}
-		System.out.println(inX+" "+inY+" "+inZ);
-		if(inX && inY && inZ) {
+		System.out.println(inX + " " + inY + " " + inZ);
+		if (inX && inY && inZ) {
 			System.out.println("inx & y & z");
 			String r = get3BitString(higherX, higherY, higherZ);
 			switch (r) {
 			case "000":
-				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left0, htblColNameValue);
 				break;
 			case "001":
-				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left1, htblColNameValue);
 				break;
 			case "010":
-				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left2, htblColNameValue);
 				break;
 			case "011":
-				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left3, htblColNameValue);
 				break;
 			case "100":
-				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right3, htblColNameValue);
 				break;
 			case "101":
-				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right2, htblColNameValue);
 				break;
 			case "110":
-				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right1, htblColNameValue);
 				break;
 			case "111":
-				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right0, htblColNameValue);
 				break;
 			}
-		}
-		else if(inX && inY) {
+		} else if (inX && inY) {
 			System.out.println("inx & y");
-			if(higherX && higherY) {
-				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			if (higherX && higherY) {
+				getAllLeaves(res, ((NonLeaf) (current)).right1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right0, htblColNameValue);
 			}
-			if(higherX && !higherY) {
-				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
+			if (higherX && !higherY) {
+				getAllLeaves(res, ((NonLeaf) (current)).right3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right2, htblColNameValue);
 			}
-			if(!higherX && higherY) {
-				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
+			if (!higherX && higherY) {
+				getAllLeaves(res, ((NonLeaf) (current)).left2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left3, htblColNameValue);
 			}
-			if(!higherX && !higherY) {
-				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
+			if (!higherX && !higherY) {
+				getAllLeaves(res, ((NonLeaf) (current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left1, htblColNameValue);
 			}
-		}
-		else if(inX && inZ) {
+		} else if (inX && inZ) {
 			System.out.println("inx & z");
-			if(higherX && higherZ) {
-				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			if (higherX && higherZ) {
+				getAllLeaves(res, ((NonLeaf) (current)).right2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right0, htblColNameValue);
 			}
-			if(higherX && !higherZ) {
-				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
+			if (higherX && !higherZ) {
+				getAllLeaves(res, ((NonLeaf) (current)).right3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right1, htblColNameValue);
 			}
-			if(!higherX && higherZ) {
-				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
+			if (!higherX && higherZ) {
+				getAllLeaves(res, ((NonLeaf) (current)).left1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left3, htblColNameValue);
 			}
-			if(!higherX && !higherZ) {
-				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
+			if (!higherX && !higherZ) {
+				getAllLeaves(res, ((NonLeaf) (current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left2, htblColNameValue);
 			}
-		}
-		else if(inY && inZ) {
+		} else if (inY && inZ) {
 			System.out.println("iny & z");
-			if(higherY && higherZ) {
-				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			if (higherY && higherZ) {
+				getAllLeaves(res, ((NonLeaf) (current)).left3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right0, htblColNameValue);
 			}
-			if(higherY && !higherZ) {
-				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
+			if (higherY && !higherZ) {
+				getAllLeaves(res, ((NonLeaf) (current)).left2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right1, htblColNameValue);
 			}
-			if(!higherY && higherZ) {
-				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
+			if (!higherY && higherZ) {
+				getAllLeaves(res, ((NonLeaf) (current)).left1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right2, htblColNameValue);
 			}
-			if(!higherY && !higherZ) {
-				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
+			if (!higherY && !higherZ) {
+				getAllLeaves(res, ((NonLeaf) (current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right3, htblColNameValue);
 			}
-		}
-		else if(inX) {
+		} else if (inX) {
 			System.out.println("inx");
-			if(higherX) {
-				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			if (higherX) {
+				getAllLeaves(res, ((NonLeaf) (current)).right3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right0, htblColNameValue);
+			} else {
+				getAllLeaves(res, ((NonLeaf) (current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left3, htblColNameValue);
 			}
-			else {
-				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
-			}
-		}
-		else if(inY) {
+		} else if (inY) {
 			System.out.println("iny");
-			if(higherY) {
-				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			if (higherY) {
+				getAllLeaves(res, ((NonLeaf) (current)).left2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right0, htblColNameValue);
+			} else {
+				getAllLeaves(res, ((NonLeaf) (current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right2, htblColNameValue);
 			}
-			else {
-				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
-			}
-		}
-		else if(inZ) {
+		} else if (inZ) {
 			System.out.println("inz");
-			if(!higherZ) {
-				getAllLeaves(res, ((NonLeaf)(current)).left0, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).left2, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right3, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right1, htblColNameValue);
-			}
-			else {
-				getAllLeaves(res, ((NonLeaf)(current)).left1, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).left3, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right2, htblColNameValue);
-				getAllLeaves(res, ((NonLeaf)(current)).right0, htblColNameValue);
+			if (!higherZ) {
+				getAllLeaves(res, ((NonLeaf) (current)).left0, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right1, htblColNameValue);
+			} else {
+				getAllLeaves(res, ((NonLeaf) (current)).left1, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).left3, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right2, htblColNameValue);
+				getAllLeaves(res, ((NonLeaf) (current)).right0, htblColNameValue);
 			}
 		}
 		System.out.println("fel return 1");
 		return;
 	}
-	
+
 	public void deleteTuple(Hashtable<String, Object> key) {
 		Node current = root;
 		NonLeaf parent = null;
 		Vector<Leaf> res = new Vector<>();
-		getAllLeaves(res,current,key);
-		System.out.println("my res"+res);
-		for(int i=0;i<res.size();i++) {
+		getAllLeaves(res, current, key);
+		System.out.println("my res" + res);
+		for (int i = 0; i < res.size(); i++) {
 			System.out.println("was here");
 			res.get(i).removeFromBucket(key);
-			if(res.get(i).getSize()<MaxRowsinNode) {
+			if (res.get(i).getSize() < MaxRowsinNode) {
 				Vector<Hashtable<String, Object>> overflow = res.get(i).getOverflow();
-				for(int j=0;j<overflow.size();j++){
+				for (int j = 0; j < overflow.size(); j++) {
 					res.get(i).getBucket().add(overflow.get(j));
 					overflow.remove(j);
 					j--;
@@ -805,13 +796,13 @@ public class Octree implements Serializable {
 		getAllLeaves(allLeaves, current, key);
 		Vector<String> result = new Vector<>();
 		System.out.println(allLeaves.toString());
-		for(int i=0;i<allLeaves.size();i++) {
-			for(int j=0;j<allLeaves.get(i).getBucket().size();j++) {
-				if(!result.contains(allLeaves.get(i).getBucket().get(j).get("Page Name").toString()))
+		for (int i = 0; i < allLeaves.size(); i++) {
+			for (int j = 0; j < allLeaves.get(i).getBucket().size(); j++) {
+				if (!result.contains(allLeaves.get(i).getBucket().get(j).get("Page Name").toString()))
 					result.add(allLeaves.get(i).getBucket().get(j).get("Page Name").toString());
 			}
-			for(int j=0;j<allLeaves.get(i).getOverflow().size();j++) {
-				if(!result.contains(allLeaves.get(i).getOverflow().get(j).get("Page Name").toString()))
+			for (int j = 0; j < allLeaves.get(i).getOverflow().size(); j++) {
+				if (!result.contains(allLeaves.get(i).getOverflow().get(j).get("Page Name").toString()))
 					result.add(allLeaves.get(i).getOverflow().get(j).get("Page Name").toString());
 			}
 		}
@@ -819,7 +810,7 @@ public class Octree implements Serializable {
 	}
 
 	public Hashtable<String, Object> searchForPageNameUsingIndex(Hashtable<String, Object> key, String clustKey,
-			Node current,  Object closest, String pageName) {
+			Node current, Object closest, String pageName) {
 		if (current == null)
 			return null;
 
@@ -828,18 +819,17 @@ public class Octree implements Serializable {
 			String page = pageName;
 
 			if (closest instanceof java.lang.Integer) {
-				Integer  closestInt = (Integer) closest;
-				
+				Integer closestInt = (Integer) closest;
+
 				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 					Integer curTuple = ((Integer) myLeaf.getBucket().get(i).get(clustKey));
-					if(!closestInt.equals((int)1e6)) {
-						if(closestInt.compareTo(((Integer) key.get(clustKey)))<0) {
+					if (!closestInt.equals((int) 1e6)) {
+						if (closestInt.compareTo(((Integer) key.get(clustKey))) < 0) {
 							if (curTuple.compareTo(closestInt) > 0) {
 								closestInt = curTuple;
 								page = (String) myLeaf.getBucket().get(i).get("Page Name");
 							}
-						}
-						else {
+						} else {
 							if ((((Integer) key.get(clustKey))).compareTo(curTuple) > 0)
 								continue;
 							if (curTuple.compareTo(closestInt) < 0) {
@@ -847,8 +837,7 @@ public class Octree implements Serializable {
 								page = (String) myLeaf.getBucket().get(i).get("Page Name");
 							}
 						}
-					}
-					else {
+					} else {
 						closestInt = curTuple;
 						page = (String) myLeaf.getBucket().get(i).get("Page Name");
 					}
@@ -861,17 +850,16 @@ public class Octree implements Serializable {
 			}
 			if (closest instanceof java.lang.Double) {
 				Double closestDouble = (Double) closest;
-				
+
 				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 					Double curTuple = ((Double) myLeaf.getBucket().get(i).get(clustKey));
-					if(!closestDouble.equals(1e6)) {
-						if(closestDouble.compareTo(((Double) key.get(clustKey)))<0) {
+					if (!closestDouble.equals(1e6)) {
+						if (closestDouble.compareTo(((Double) key.get(clustKey))) < 0) {
 							if (curTuple.compareTo(closestDouble) > 0) {
 								closestDouble = curTuple;
 								page = (String) myLeaf.getBucket().get(i).get("Page Name");
 							}
-						}
-						else {
+						} else {
 							if ((((Double) key.get(clustKey))).compareTo(curTuple) > 0)
 								continue;
 							if (curTuple.compareTo(closestDouble) < 0) {
@@ -879,8 +867,7 @@ public class Octree implements Serializable {
 								page = (String) myLeaf.getBucket().get(i).get("Page Name");
 							}
 						}
-					}
-					else {
+					} else {
 						closestDouble = curTuple;
 						page = (String) myLeaf.getBucket().get(i).get("Page Name");
 					}
@@ -892,20 +879,19 @@ public class Octree implements Serializable {
 				return hash;
 			}
 			if (closest instanceof java.lang.String) {
-				String  closestString = (String) closest;
-			
+				String closestString = (String) closest;
+
 				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 					String curTuple = ((String) myLeaf.getBucket().get(i).get(clustKey)).toString().toLowerCase();
-					if(!closest.equals("ZZZZZZZZZZZ")) {
-						closestString=closestString.toLowerCase();
-						System.out.println(closest.toString()+" "+key.get(clustKey));
-						if(closestString.compareTo(((String) key.get(clustKey)).toLowerCase())<0) {
+					if (!closest.equals("ZZZZZZZZZZZ")) {
+						closestString = closestString.toLowerCase();
+						System.out.println(closest.toString() + " " + key.get(clustKey));
+						if (closestString.compareTo(((String) key.get(clustKey)).toLowerCase()) < 0) {
 							if (curTuple.compareTo(closestString) > 0) {
 								closestString = curTuple;
 								page = (String) myLeaf.getBucket().get(i).get("Page Name");
 							}
-						}
-						else {
+						} else {
 							if ((((String) key.get(clustKey)).toLowerCase()).compareTo(curTuple) > 0)
 								continue;
 							if (curTuple.compareTo(closestString) < 0) {
@@ -913,8 +899,7 @@ public class Octree implements Serializable {
 								page = (String) myLeaf.getBucket().get(i).get("Page Name");
 							}
 						}
-					}
-					else {
+					} else {
 						closestString = curTuple;
 						page = (String) myLeaf.getBucket().get(i).get("Page Name");
 					}
@@ -928,18 +913,17 @@ public class Octree implements Serializable {
 
 			if (closest instanceof java.util.Date) {
 				Date closestDate = (Date) closest;
-				
+
 				for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 					Date curTuple = ((Date) myLeaf.getBucket().get(i).get(clustKey));
-					Date date=new Date(9999-1900,12-1,31);
-					if(!closestDate.equals(date)) {
-						if(closestDate.compareTo(((Date) key.get(clustKey)))<0) {
+					Date date = new Date(9999 - 1900, 12 - 1, 31);
+					if (!closestDate.equals(date)) {
+						if (closestDate.compareTo(((Date) key.get(clustKey))) < 0) {
 							if (curTuple.compareTo(closestDate) > 0) {
 								closestDate = curTuple;
 								page = (String) myLeaf.getBucket().get(i).get("Page Name");
 							}
-						}
-						else {
+						} else {
 							if ((((Date) key.get(clustKey))).compareTo(curTuple) > 0)
 								continue;
 							if (curTuple.compareTo(closestDate) < 0) {
@@ -947,8 +931,7 @@ public class Octree implements Serializable {
 								page = (String) myLeaf.getBucket().get(i).get("Page Name");
 							}
 						}
-					}
-					else {
+					} else {
 						closestDate = curTuple;
 						page = (String) myLeaf.getBucket().get(i).get("Page Name");
 					}
@@ -967,15 +950,15 @@ public class Octree implements Serializable {
 			if (this.getX().equals(clustKey)) {
 				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), key);
 				if (!higherX) {
-					if(curNonleaf.left0 instanceof Leaf && ((Leaf)curNonleaf.left0).getBucket().size()==0
-							&& curNonleaf.left1 instanceof Leaf && ((Leaf)curNonleaf.left1).getBucket().size()==0
-							&& curNonleaf.left2 instanceof Leaf && ((Leaf)curNonleaf.left2).getBucket().size()==0
-							&& curNonleaf.left3 instanceof Leaf && ((Leaf)curNonleaf.left3).getBucket().size()==0) {
+					if (curNonleaf.left0 instanceof Leaf && ((Leaf) curNonleaf.left0).getBucket().size() == 0
+							&& curNonleaf.left1 instanceof Leaf && ((Leaf) curNonleaf.left1).getBucket().size() == 0
+							&& curNonleaf.left2 instanceof Leaf && ((Leaf) curNonleaf.left2).getBucket().size() == 0
+							&& curNonleaf.left3 instanceof Leaf && ((Leaf) curNonleaf.left3).getBucket().size() == 0) {
 						Hashtable<String, Object> hash = new Hashtable<>();
 						hash.put("closest", closest);
 						hash.put("Page Name", "0");
 						return hash;
-						
+
 					}
 					Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left0,
 							closest, pageName);// 000
@@ -985,39 +968,39 @@ public class Octree implements Serializable {
 							closest, pageName);// 010
 					Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left3,
 							closest, pageName);//
-					
-					Object val1=hash1.get("closest");
-					Object val2=hash2.get("closest");
-					Object val3=hash3.get("closest");
-					Object val4=hash4.get("closest");
 
-					Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
-					if (closestObj.equals (hash1.get("closest"))) {
+					Object val1 = hash1.get("closest");
+					Object val2 = hash2.get("closest");
+					Object val3 = hash3.get("closest");
+					Object val4 = hash4.get("closest");
+
+					Object closestObj = getClosest(val1, val2, val3, val4, key.get(clustKey));
+					if (closestObj.equals(hash1.get("closest"))) {
 						return hash1;
 					}
-					if (closestObj.equals (hash2.get("closest"))) {
+					if (closestObj.equals(hash2.get("closest"))) {
 						return hash2;
 					}
 
-					if (closestObj.equals (hash3.get("closest"))) {
+					if (closestObj.equals(hash3.get("closest"))) {
 						return hash3;
 					}
 
-					if (closestObj.equals (hash4.get("closest"))) {
+					if (closestObj.equals(hash4.get("closest"))) {
 						return hash4;
 					}
 
-
 				} else {
-					if(curNonleaf.right3 instanceof Leaf && ((Leaf)curNonleaf.right3).getBucket().size()==0
-							&& curNonleaf.right2 instanceof Leaf && ((Leaf)curNonleaf.right2).getBucket().size()==0
-							&& curNonleaf.right1 instanceof Leaf && ((Leaf)curNonleaf.right1).getBucket().size()==0
-							&& curNonleaf.right0 instanceof Leaf && ((Leaf)curNonleaf.right0).getBucket().size()==0) {
+					if (curNonleaf.right3 instanceof Leaf && ((Leaf) curNonleaf.right3).getBucket().size() == 0
+							&& curNonleaf.right2 instanceof Leaf && ((Leaf) curNonleaf.right2).getBucket().size() == 0
+							&& curNonleaf.right1 instanceof Leaf && ((Leaf) curNonleaf.right1).getBucket().size() == 0
+							&& curNonleaf.right0 instanceof Leaf
+							&& ((Leaf) curNonleaf.right0).getBucket().size() == 0) {
 						Hashtable<String, Object> hash = new Hashtable<>();
 						hash.put("closest", closest);
 						hash.put("Page Name", "0");
 						return hash;
-						
+
 					}
 					Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right3,
 							closest, pageName);// 100
@@ -1027,24 +1010,24 @@ public class Octree implements Serializable {
 							closest, pageName);// 110
 					Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right0,
 							closest, pageName);// 111
-					Object val1=hash1.get("closest");
-					Object val2=hash2.get("closest");
-					Object val3=hash3.get("closest");
-					Object val4=hash4.get("closest");
+					Object val1 = hash1.get("closest");
+					Object val2 = hash2.get("closest");
+					Object val3 = hash3.get("closest");
+					Object val4 = hash4.get("closest");
 
-					Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
-					if (closestObj.equals (hash1.get("closest"))) {
+					Object closestObj = getClosest(val1, val2, val3, val4, key.get(clustKey));
+					if (closestObj.equals(hash1.get("closest"))) {
 						return hash1;
 					}
-					if (closestObj.equals (hash2.get("closest"))) {
+					if (closestObj.equals(hash2.get("closest"))) {
 						return hash2;
 					}
 
-					if (closestObj.equals (hash3.get("closest"))) {
+					if (closestObj.equals(hash3.get("closest"))) {
 						return hash3;
 					}
 
-					if (closestObj.equals (hash4.get("closest"))) {
+					if (closestObj.equals(hash4.get("closest"))) {
 						return hash4;
 					}
 				}
@@ -1053,57 +1036,61 @@ public class Octree implements Serializable {
 				if (this.getY().equals(clustKey)) {
 					boolean higherY = getHigherY(current.getMinY(), current.getMaxY(), key);
 					if (!higherY) {
-						if(curNonleaf.left0 instanceof Leaf && ((Leaf)curNonleaf.left0).getBucket().size()==0
-								&& curNonleaf.left1 instanceof Leaf && ((Leaf)curNonleaf.left1).getBucket().size()==0
-								&& curNonleaf.right3 instanceof Leaf && ((Leaf)curNonleaf.right3).getBucket().size()==0
-								&& curNonleaf.right2 instanceof Leaf && ((Leaf)curNonleaf.right2).getBucket().size()==0) {
+						if (curNonleaf.left0 instanceof Leaf && ((Leaf) curNonleaf.left0).getBucket().size() == 0
+								&& curNonleaf.left1 instanceof Leaf && ((Leaf) curNonleaf.left1).getBucket().size() == 0
+								&& curNonleaf.right3 instanceof Leaf
+								&& ((Leaf) curNonleaf.right3).getBucket().size() == 0
+								&& curNonleaf.right2 instanceof Leaf
+								&& ((Leaf) curNonleaf.right2).getBucket().size() == 0) {
 							Hashtable<String, Object> hash = new Hashtable<>();
 							hash.put("closest", closest);
 							hash.put("Page Name", "0");
 							return hash;
-							
+
 						}
 						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left0,
-								closest, pageName);//000
+								closest, pageName);// 000
 						Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left1,
-								closest, pageName);//001
+								closest, pageName);// 001
 						Hashtable<String, Object> hash3 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right3,
-								closest, pageName);//100
+								closest, pageName);// 100
 						Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right2,
-								closest, pageName);//101
-						Object val1=hash1.get("closest");
-						Object val2=hash2.get("closest");
-						Object val3=hash3.get("closest");
-						Object val4=hash4.get("closest");
+								closest, pageName);// 101
+						Object val1 = hash1.get("closest");
+						Object val2 = hash2.get("closest");
+						Object val3 = hash3.get("closest");
+						Object val4 = hash4.get("closest");
 
-						Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
+						Object closestObj = getClosest(val1, val2, val3, val4, key.get(clustKey));
 //						System.out.println(hash1.toString()+" "+hash2.toString()+" "+hash3.toString()+" "+hash4.toString());
 //						System.out.println(closestObj+"    closestObj");
 
-						if (closestObj.equals (hash1.get("closest"))) {
+						if (closestObj.equals(hash1.get("closest"))) {
 							return hash1;
 						}
-						if (closestObj.equals (hash2.get("closest"))) {
+						if (closestObj.equals(hash2.get("closest"))) {
 							return hash2;
 						}
 
-						if (closestObj.equals (hash3.get("closest"))) {
+						if (closestObj.equals(hash3.get("closest"))) {
 							return hash3;
 						}
 
-						if (closestObj.equals (hash4.get("closest"))) {
+						if (closestObj.equals(hash4.get("closest"))) {
 							return hash4;
 						}
 					} else {
-						if(curNonleaf.left2 instanceof Leaf && ((Leaf)curNonleaf.left2).getBucket().size()==0
-								&& curNonleaf.left3 instanceof Leaf && ((Leaf)curNonleaf.left3).getBucket().size()==0
-								&& curNonleaf.right1 instanceof Leaf && ((Leaf)curNonleaf.right1).getBucket().size()==0
-								&& curNonleaf.right0 instanceof Leaf && ((Leaf)curNonleaf.right0).getBucket().size()==0) {
+						if (curNonleaf.left2 instanceof Leaf && ((Leaf) curNonleaf.left2).getBucket().size() == 0
+								&& curNonleaf.left3 instanceof Leaf && ((Leaf) curNonleaf.left3).getBucket().size() == 0
+								&& curNonleaf.right1 instanceof Leaf
+								&& ((Leaf) curNonleaf.right1).getBucket().size() == 0
+								&& curNonleaf.right0 instanceof Leaf
+								&& ((Leaf) curNonleaf.right0).getBucket().size() == 0) {
 							Hashtable<String, Object> hash = new Hashtable<>();
 							hash.put("closest", closest);
 							hash.put("Page Name", "0");
 							return hash;
-							
+
 						}
 						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left2,
 								closest, pageName);
@@ -1113,44 +1100,46 @@ public class Octree implements Serializable {
 								closest, pageName);
 						Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right0,
 								closest, pageName);
-						Object val1=hash1.get("closest");
-						Object val2=hash2.get("closest");
-						Object val3=hash3.get("closest");
-						Object val4=hash4.get("closest");
+						Object val1 = hash1.get("closest");
+						Object val2 = hash2.get("closest");
+						Object val3 = hash3.get("closest");
+						Object val4 = hash4.get("closest");
 
-						Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
+						Object closestObj = getClosest(val1, val2, val3, val4, key.get(clustKey));
 //						System.out.println(closestObj+"    closestObj");
 //						System.out.println(hash1.toString()+" "+hash2.toString()+" "+hash3.toString()+" "+hash4.toString());
 
-						if (closestObj.equals (hash1.get("closest"))) {
+						if (closestObj.equals(hash1.get("closest"))) {
 							return hash1;
 						}
-						if (closestObj.equals (hash2.get("closest"))) {
+						if (closestObj.equals(hash2.get("closest"))) {
 							return hash2;
 						}
 
-						if (closestObj.equals (hash3.get("closest"))) {
+						if (closestObj.equals(hash3.get("closest"))) {
 							return hash3;
 						}
 
-						if (closestObj.equals (hash4.get("closest"))) {
+						if (closestObj.equals(hash4.get("closest"))) {
 							return hash4;
 						}
 					}
 				} else {
 					boolean higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), key);
 					if (!higherZ) {
-						if(curNonleaf.left0 instanceof Leaf && ((Leaf)curNonleaf.left0).getBucket().size()==0
-								&& curNonleaf.left2 instanceof Leaf && ((Leaf)curNonleaf.left2).getBucket().size()==0
-								&& curNonleaf.right3 instanceof Leaf && ((Leaf)curNonleaf.right3).getBucket().size()==0
-								&& curNonleaf.right1 instanceof Leaf && ((Leaf)curNonleaf.right1).getBucket().size()==0) {
+						if (curNonleaf.left0 instanceof Leaf && ((Leaf) curNonleaf.left0).getBucket().size() == 0
+								&& curNonleaf.left2 instanceof Leaf && ((Leaf) curNonleaf.left2).getBucket().size() == 0
+								&& curNonleaf.right3 instanceof Leaf
+								&& ((Leaf) curNonleaf.right3).getBucket().size() == 0
+								&& curNonleaf.right1 instanceof Leaf
+								&& ((Leaf) curNonleaf.right1).getBucket().size() == 0) {
 							Hashtable<String, Object> hash = new Hashtable<>();
 							hash.put("closest", closest);
 							hash.put("Page Name", "0");
 							return hash;
-							
+
 						}
-					
+
 						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left0,
 								closest, pageName);// 000
 						Hashtable<String, Object> hash2 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left2,
@@ -1159,36 +1148,38 @@ public class Octree implements Serializable {
 								closest, pageName);// 100
 						Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right1,
 								closest, pageName);// 110
-						Object val1=hash1.get("closest");
-						Object val2=hash2.get("closest");
-						Object val3=hash3.get("closest");
-						Object val4=hash4.get("closest");
+						Object val1 = hash1.get("closest");
+						Object val2 = hash2.get("closest");
+						Object val3 = hash3.get("closest");
+						Object val4 = hash4.get("closest");
 
-						Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
-						if (closestObj.equals (hash1.get("closest"))) {
+						Object closestObj = getClosest(val1, val2, val3, val4, key.get(clustKey));
+						if (closestObj.equals(hash1.get("closest"))) {
 							return hash1;
 						}
-						if (closestObj.equals (hash2.get("closest"))) {
+						if (closestObj.equals(hash2.get("closest"))) {
 							return hash2;
 						}
 
-						if (closestObj.equals (hash3.get("closest"))) {
+						if (closestObj.equals(hash3.get("closest"))) {
 							return hash3;
 						}
 
-						if (closestObj.equals (hash4.get("closest"))) {
+						if (closestObj.equals(hash4.get("closest"))) {
 							return hash4;
 						}
 					} else {
-						if(curNonleaf.left1 instanceof Leaf && ((Leaf)curNonleaf.left1).getBucket().size()==0
-								&& curNonleaf.left3 instanceof Leaf && ((Leaf)curNonleaf.left3).getBucket().size()==0
-								&& curNonleaf.right2 instanceof Leaf && ((Leaf)curNonleaf.right2).getBucket().size()==0
-								&& curNonleaf.right0 instanceof Leaf && ((Leaf)curNonleaf.right0).getBucket().size()==0) {
+						if (curNonleaf.left1 instanceof Leaf && ((Leaf) curNonleaf.left1).getBucket().size() == 0
+								&& curNonleaf.left3 instanceof Leaf && ((Leaf) curNonleaf.left3).getBucket().size() == 0
+								&& curNonleaf.right2 instanceof Leaf
+								&& ((Leaf) curNonleaf.right2).getBucket().size() == 0
+								&& curNonleaf.right0 instanceof Leaf
+								&& ((Leaf) curNonleaf.right0).getBucket().size() == 0) {
 							Hashtable<String, Object> hash = new Hashtable<>();
 							hash.put("closest", closest);
 							hash.put("Page Name", "0");
 							return hash;
-							
+
 						}
 						Hashtable<String, Object> hash1 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.left1,
 								closest, pageName);
@@ -1198,24 +1189,24 @@ public class Octree implements Serializable {
 								closest, pageName);
 						Hashtable<String, Object> hash4 = searchForPageNameUsingIndex(key, clustKey, curNonleaf.right0,
 								closest, pageName);
-						Object val1=hash1.get("closest");
-						Object val2=hash2.get("closest");
-						Object val3=hash3.get("closest");
-						Object val4=hash4.get("closest");
+						Object val1 = hash1.get("closest");
+						Object val2 = hash2.get("closest");
+						Object val3 = hash3.get("closest");
+						Object val4 = hash4.get("closest");
 
-						Object closestObj=getClosest(val1,val2,val3,val4,key.get(clustKey));
-						if (closestObj.equals (hash1.get("closest"))) {
+						Object closestObj = getClosest(val1, val2, val3, val4, key.get(clustKey));
+						if (closestObj.equals(hash1.get("closest"))) {
 							return hash1;
 						}
-						if (closestObj.equals (hash2.get("closest"))) {
+						if (closestObj.equals(hash2.get("closest"))) {
 							return hash2;
 						}
 
-						if (closestObj.equals (hash3.get("closest"))) {
+						if (closestObj.equals(hash3.get("closest"))) {
 							return hash3;
 						}
 
-						if (closestObj.equals (hash4.get("closest"))) {
+						if (closestObj.equals(hash4.get("closest"))) {
 							return hash4;
 						}
 					}
@@ -1227,19 +1218,19 @@ public class Octree implements Serializable {
 	}
 
 	public String searchForPageNameUsingIndex(Hashtable<String, Object> key, String clustKey, String max) {
-		Hashtable<String, Object> hash=new Hashtable<>();
-		
-		if(key.get(clustKey)instanceof java.lang.Integer)
+		Hashtable<String, Object> hash = new Hashtable<>();
+
+		if (key.get(clustKey) instanceof java.lang.Integer)
 			hash = searchForPageNameUsingIndex(key, clustKey, this.root, (int) 1e6, "");
-		if(key.get(clustKey)instanceof java.lang.Double)
-			hash = searchForPageNameUsingIndex(key, clustKey, this.root,  1e6, "");
-		if(key.get(clustKey)instanceof java.lang.String)
+		if (key.get(clustKey) instanceof java.lang.Double)
+			hash = searchForPageNameUsingIndex(key, clustKey, this.root, 1e6, "");
+		if (key.get(clustKey) instanceof java.lang.String)
 			hash = searchForPageNameUsingIndex(key, clustKey, this.root, "ZZZZZZZZZZZ", "");
-		if(key.get(clustKey)instanceof java.util.Date) {
+		if (key.get(clustKey) instanceof java.util.Date) {
 			Date date;
 			try {
 				date = new SimpleDateFormat("yyyy-MM-dd").parse("9999-12-31");
-				hash = searchForPageNameUsingIndex(key, clustKey, this.root,  date,"");
+				hash = searchForPageNameUsingIndex(key, clustKey, this.root, date, "");
 
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
@@ -1262,14 +1253,14 @@ public class Octree implements Serializable {
 
 			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
 				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
-				//System.out.println(record.get("Clust key")+" "+clust);
+				// System.out.println(record.get("Clust key")+" "+clust);
 				if (clust.equals(record.get(ClustCol))) {
 					return (String) record.get("Page Name");
 				}
 
 			}
 			for (int i = 0; i < myLeaf.getOverflow().size(); i++) {
-				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
+				Hashtable<String, Object> record = myLeaf.getOverflow().get(i);
 
 				if (clust.equals(record.get(ClustCol))) {
 					return (String) record.get("Page Name");
@@ -1290,8 +1281,8 @@ public class Octree implements Serializable {
 			ArrayList<String> z = new ArrayList<String>();
 
 			if (ClustCol.toLowerCase().equals(getX())) {
-				Hashtable<String,Object>tmp=new Hashtable<String,Object>();
-				tmp.put(getX(),clust);
+				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
+				tmp.put(getX(), clust);
 				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), tmp);
 				if (higherX) {
 					nextNodes.remove("000");
@@ -1307,8 +1298,8 @@ public class Octree implements Serializable {
 
 			}
 			if (ClustCol.toLowerCase().equals(getY())) {
-				Hashtable<String,Object>tmp=new Hashtable<String,Object>();
-				tmp.put(getY(),clust);
+				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
+				tmp.put(getY(), clust);
 				boolean higherY = getHigherY(current.getMinY(), current.getMaxY(), tmp);
 				if (higherY) {
 					nextNodes.remove("000");
@@ -1322,10 +1313,10 @@ public class Octree implements Serializable {
 					nextNodes.remove("111");
 				}
 			}
-			
+
 			if (ClustCol.toLowerCase().equals(getZ())) {
-				Hashtable<String,Object>tmp=new Hashtable<String,Object>();
-				tmp.put(getZ(),clust);
+				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
+				tmp.put(getZ(), clust);
 				boolean higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), tmp);
 				if (higherZ) {
 					nextNodes.remove("000");
@@ -1364,135 +1355,344 @@ public class Octree implements Serializable {
 		}
 
 	}
-	public static Object getClosest(Object obj1,Object obj2,Object obj3,Object obj4,Object Clustkey) {
-		if (obj1 instanceof java.lang.Integer){
-			Integer min1,min2,min;
-			ArrayList<Integer>toCompare=new ArrayList<>();
-			//System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+" "+obj4.toString());
-			if(!((Integer)obj1).equals((int)1e6)) toCompare.add(((Integer)obj1));
-			if(!((Integer)obj2).equals((int)1e6)) toCompare.add(((Integer)obj2));
-			if(!((Integer)obj3).equals((int)1e6)) toCompare.add(((Integer)obj3));
-			if(!((Integer)obj4).equals((int)1e6)) toCompare.add(((Integer)obj4));
-			if(toCompare.size()==0)return ((Integer)obj1);
-			min=toCompare.remove(0);
-			while(toCompare.size()>0) {
-				min2=toCompare.remove(0);
-				if(min.compareTo(((Integer)Clustkey))<0) {
-					if(min2.compareTo(((Integer)Clustkey))<0) {
-						if(min.compareTo(min2)<0)
-							min=min2;
-						}
-					else
-						min=min2;
-				}
-				else {
-					if(min2.compareTo(((Integer)Clustkey))>0) {
-						if(min.compareTo(min2)>0)
-							min=min2;
+
+	public static Object getClosest(Object obj1, Object obj2, Object obj3, Object obj4, Object Clustkey) {
+		if (obj1 instanceof java.lang.Integer) {
+			Integer min1, min2, min;
+			ArrayList<Integer> toCompare = new ArrayList<>();
+			// System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+"
+			// "+obj4.toString());
+			if (!((Integer) obj1).equals((int) 1e6))
+				toCompare.add(((Integer) obj1));
+			if (!((Integer) obj2).equals((int) 1e6))
+				toCompare.add(((Integer) obj2));
+			if (!((Integer) obj3).equals((int) 1e6))
+				toCompare.add(((Integer) obj3));
+			if (!((Integer) obj4).equals((int) 1e6))
+				toCompare.add(((Integer) obj4));
+			if (toCompare.size() == 0)
+				return ((Integer) obj1);
+			min = toCompare.remove(0);
+			while (toCompare.size() > 0) {
+				min2 = toCompare.remove(0);
+				if (min.compareTo(((Integer) Clustkey)) < 0) {
+					if (min2.compareTo(((Integer) Clustkey)) < 0) {
+						if (min.compareTo(min2) < 0)
+							min = min2;
+					} else
+						min = min2;
+				} else {
+					if (min2.compareTo(((Integer) Clustkey)) > 0) {
+						if (min.compareTo(min2) > 0)
+							min = min2;
 					}
 				}
-				
+
 			}
-			return min;			
-							
-			}
-		if (obj1 instanceof java.lang.Double){
-			Double min1,min2,min;
-			ArrayList<Double>toCompare=new ArrayList<>();
-			//System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+" "+obj4.toString());
-			if(!((Double)obj1).equals(1e6)) toCompare.add(((Double)obj1));
-			if(!((Double)obj2).equals(1e6)) toCompare.add(((Double)obj2));
-			if(!((Double)obj3).equals(1e6)) toCompare.add(((Double)obj3));
-			if(!((Double)obj4).equals(1e6)) toCompare.add(((Double)obj4));
-			if(toCompare.size()==0)return ((Double)obj1);
-			min=toCompare.remove(0);
-			while(toCompare.size()>0) {
-				min2=toCompare.remove(0);
-				if(min.compareTo(((Double)Clustkey))<0) {
-					if(min2.compareTo(((Double)Clustkey))<0) {
-						if(min.compareTo(min2)<0)
-							min=min2;
-						}
-					else
-						min=min2;
-				}
-				else {
-					if(min2.compareTo(((Double)Clustkey))>0) {
-						if(min.compareTo(min2)>0)
-							min=min2;
-					}
-				}
-				
-			}
-			return min;			
-							
-			
+			return min;
+
 		}
-		if (obj1 instanceof java.lang.String){
-			String min1,min2,min;
-			ArrayList<String>toCompare=new ArrayList<>();
-			//System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+" "+obj4.toString());
-			if(!((String)obj1).equals("ZZZZZZZZZZZ")) toCompare.add(((String)obj1).toLowerCase());
-			if(!((String)obj2).equals("ZZZZZZZZZZZ")) toCompare.add(((String)obj2).toLowerCase());
-			if(!((String)obj3).equals("ZZZZZZZZZZZ")) toCompare.add(((String)obj3).toLowerCase());
-			if(!((String)obj4).equals("ZZZZZZZZZZZ")) toCompare.add(((String)obj4).toLowerCase());
-			if(toCompare.size()==0)return ((String)obj1);
-			min=toCompare.remove(0);
-			while(toCompare.size()>0) {
-				min2=toCompare.remove(0);
-				if(min.compareTo(((String)Clustkey).toLowerCase())<0) {
-					if(min2.compareTo(((String)Clustkey).toLowerCase())<0) {
-						if(min.compareTo(min2)<0)
-							min=min2;
-						}
-					else
-						min=min2;
-				}
-				else {
-					if(min2.compareTo(((String)Clustkey).toLowerCase())>0) {
-						if(min.compareTo(min2)>0)
-							min=min2;
+		if (obj1 instanceof java.lang.Double) {
+			Double min1, min2, min;
+			ArrayList<Double> toCompare = new ArrayList<>();
+			// System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+"
+			// "+obj4.toString());
+			if (!((Double) obj1).equals(1e6))
+				toCompare.add(((Double) obj1));
+			if (!((Double) obj2).equals(1e6))
+				toCompare.add(((Double) obj2));
+			if (!((Double) obj3).equals(1e6))
+				toCompare.add(((Double) obj3));
+			if (!((Double) obj4).equals(1e6))
+				toCompare.add(((Double) obj4));
+			if (toCompare.size() == 0)
+				return ((Double) obj1);
+			min = toCompare.remove(0);
+			while (toCompare.size() > 0) {
+				min2 = toCompare.remove(0);
+				if (min.compareTo(((Double) Clustkey)) < 0) {
+					if (min2.compareTo(((Double) Clustkey)) < 0) {
+						if (min.compareTo(min2) < 0)
+							min = min2;
+					} else
+						min = min2;
+				} else {
+					if (min2.compareTo(((Double) Clustkey)) > 0) {
+						if (min.compareTo(min2) > 0)
+							min = min2;
 					}
 				}
-				
+
 			}
-			return min;			
-							
-			}
-		if (obj1 instanceof java.util.Date){
-			Date min1,min2,min;
-			ArrayList<Date>toCompare=new ArrayList<>();
-			Date d=new Date(9999-1900,12-1,31);
-			//System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+" "+obj4.toString());
-			if(!((Date)obj1).equals(d)) toCompare.add(((Date)obj1));
-			if(!((Date)obj2).equals(d)) toCompare.add(((Date)obj2));
-			if(!((Date)obj3).equals(d)) toCompare.add(((Date)obj3));
-			if(!((Date)obj4).equals(d)) toCompare.add(((Date)obj4));
-			if(toCompare.size()==0)return ((Integer)obj1);
-			min=toCompare.remove(0);
-			while(toCompare.size()>0) {
-				min2=toCompare.remove(0);
-				if(min.compareTo(((Date)Clustkey))<0) {
-					if(min2.compareTo(((Date)Clustkey))<0) {
-						if(min.compareTo(min2)<0)
-							min=min2;
-						}
-					else
-						min=min2;
-				}
-				else {
-					if(min2.compareTo(((Date)Clustkey))>0) {
-						if(min.compareTo(min2)>0)
-							min=min2;
+			return min;
+
+		}
+		if (obj1 instanceof java.lang.String) {
+			String min1, min2, min;
+			ArrayList<String> toCompare = new ArrayList<>();
+			// System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+"
+			// "+obj4.toString());
+			if (!((String) obj1).equals("ZZZZZZZZZZZ"))
+				toCompare.add(((String) obj1).toLowerCase());
+			if (!((String) obj2).equals("ZZZZZZZZZZZ"))
+				toCompare.add(((String) obj2).toLowerCase());
+			if (!((String) obj3).equals("ZZZZZZZZZZZ"))
+				toCompare.add(((String) obj3).toLowerCase());
+			if (!((String) obj4).equals("ZZZZZZZZZZZ"))
+				toCompare.add(((String) obj4).toLowerCase());
+			if (toCompare.size() == 0)
+				return ((String) obj1);
+			min = toCompare.remove(0);
+			while (toCompare.size() > 0) {
+				min2 = toCompare.remove(0);
+				if (min.compareTo(((String) Clustkey).toLowerCase()) < 0) {
+					if (min2.compareTo(((String) Clustkey).toLowerCase()) < 0) {
+						if (min.compareTo(min2) < 0)
+							min = min2;
+					} else
+						min = min2;
+				} else {
+					if (min2.compareTo(((String) Clustkey).toLowerCase()) > 0) {
+						if (min.compareTo(min2) > 0)
+							min = min2;
 					}
 				}
-				
+
 			}
-			return min;			
-							
+			return min;
+
+		}
+		if (obj1 instanceof java.util.Date) {
+			Date min1, min2, min;
+			ArrayList<Date> toCompare = new ArrayList<>();
+			Date d = new Date(9999 - 1900, 12 - 1, 31);
+			// System.out.println(obj1.toString()+" "+obj2.toString()+" "+obj3.toString()+"
+			// "+obj4.toString());
+			if (!((Date) obj1).equals(d))
+				toCompare.add(((Date) obj1));
+			if (!((Date) obj2).equals(d))
+				toCompare.add(((Date) obj2));
+			if (!((Date) obj3).equals(d))
+				toCompare.add(((Date) obj3));
+			if (!((Date) obj4).equals(d))
+				toCompare.add(((Date) obj4));
+			if (toCompare.size() == 0)
+				return ((Integer) obj1);
+			min = toCompare.remove(0);
+			while (toCompare.size() > 0) {
+				min2 = toCompare.remove(0);
+				if (min.compareTo(((Date) Clustkey)) < 0) {
+					if (min2.compareTo(((Date) Clustkey)) < 0) {
+						if (min.compareTo(min2) < 0)
+							min = min2;
+					} else
+						min = min2;
+				} else {
+					if (min2.compareTo(((Date) Clustkey)) > 0) {
+						if (min.compareTo(min2) > 0)
+							min = min2;
+					}
+				}
+
 			}
+			return min;
+
+		}
 		return null;
 	}
+
+	public Vector<Leaf> getAllPages(Hashtable<String, Object> temp) {
+		String operatorCol1 = "";
+		String operatorCol2 = "";
+		String operatorCol3 = "";
+		String col1 = "";
+		String col2 = "";
+		String col3 = "";
+		Vector<String> res= new Vector<String>();
+		for (String key : temp.keySet()) {
+			if (key.equals("operator"+this.X)) {
+				operatorCol1 = temp.get(key).toString();
+				temp.remove(key);
+				col1 = key;
+			}
+			if (key.equals("operator"+this.Y)) {
+				operatorCol2 = temp.get(key).toString();
+				temp.remove(key);
+				col2 = key;
+			}
+			if (key.equals("operator"+this.Z)) {
+				operatorCol3 = temp.get(key).toString();
+				temp.remove(key);
+				col3 = key;
+			}
+		}
+		getAllPagesHelper(res,root,temp,operatorCol1,operatorCol2,operatorCol3,col1,col2,col3);
+		return null;
+	}
+
+	private void getAllPagesHelper(Vector<String> res, Node current, Hashtable<String, Object> myHtbl, String operatorCol1, String operatorCol2,
+			String operatorCol3, String col1, String col2, String col3) {
+		if (current == null)
+			return;
+
+		if (current instanceof Leaf) {
+			Leaf myLeaf = (Leaf) current;
+
+			for (int i = 0; i < myLeaf.getBucket().size(); i++) {
+				Hashtable<String, Object> record = myLeaf.getBucket().get(i);
+				boolean flag=true;
+				switch(operatorCol1) {
+					case "=":
+						flag = record.get(col1).equals(myHtbl.get(col1));break;
+					case ">":
+						if(compareTo1(record.get(col1),(myHtbl.get(col1)))>0)
+							flag=true;
+						else
+							flag=false;
+						break;
+				}
+
+			}
+			for (int i = 0; i < myLeaf.getOverflow().size(); i++) {
+				Hashtable<String, Object> record = myLeaf.getOverflow().get(i);
+				
+				
+			}
+			return;
+		} else {
+			ArrayList<String> nextNodes = new ArrayList<String>();
+			nextNodes.add("000");
+			nextNodes.add("001");
+			nextNodes.add("010");
+			nextNodes.add("011");
+			nextNodes.add("100");
+			nextNodes.add("101");
+			nextNodes.add("110");
+			nextNodes.add("111");
+
+			ArrayList<String> z = new ArrayList<String>();
+
+			if (ClustCol.toLowerCase().equals(getX())) {
+				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
+				tmp.put(getX(), clust);
+				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), tmp);
+				if (higherX) {
+					nextNodes.remove("000");
+					nextNodes.remove("001");
+					nextNodes.remove("010");
+					nextNodes.remove("011");
+				} else {
+					nextNodes.remove("100");
+					nextNodes.remove("101");
+					nextNodes.remove("110");
+					nextNodes.remove("111");
+				}
+
+			}
+			if (ClustCol.toLowerCase().equals(getY())) {
+				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
+				tmp.put(getY(), clust);
+				boolean higherY = getHigherY(current.getMinY(), current.getMaxY(), tmp);
+				if (higherY) {
+					nextNodes.remove("000");
+					nextNodes.remove("001");
+					nextNodes.remove("100");
+					nextNodes.remove("101");
+				} else {
+					nextNodes.remove("010");
+					nextNodes.remove("011");
+					nextNodes.remove("110");
+					nextNodes.remove("111");
+				}
+			}
+
+			if (ClustCol.toLowerCase().equals(getZ())) {
+				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
+				tmp.put(getZ(), clust);
+				boolean higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), tmp);
+				if (higherZ) {
+					nextNodes.remove("000");
+					nextNodes.remove("010");
+					nextNodes.remove("100");
+					nextNodes.remove("110");
+				} else {
+					nextNodes.remove("001");
+					nextNodes.remove("011");
+					nextNodes.remove("101");
+					nextNodes.remove("111");
+				}
+
+			}
+			System.out.println(nextNodes.toString());
+			NonLeaf NonleafCur = (NonLeaf) current;
+			String res = "";
+			if (nextNodes.contains("000"))
+				res += getExactPage(ClustCol, NonleafCur.left0, clust);
+			if (nextNodes.contains("001"))
+				res += getExactPage(ClustCol, NonleafCur.left1, clust);
+			if (nextNodes.contains("010"))
+				res += getExactPage(ClustCol, NonleafCur.left2, clust);
+			if (nextNodes.contains("011"))
+				res += getExactPage(ClustCol, NonleafCur.left3, clust);
+			if (nextNodes.contains("100"))
+				res += getExactPage(ClustCol, NonleafCur.right3, clust);
+			if (nextNodes.contains("101"))
+				res += getExactPage(ClustCol, NonleafCur.right2, clust);
+			if (nextNodes.contains("110"))
+				res += getExactPage(ClustCol, NonleafCur.right1, clust);
+			if (nextNodes.contains("111"))
+				res += getExactPage(ClustCol, NonleafCur.right0, clust);
+			return res;
+
+		}
+
+	}
+
+	private int compareTo1(Object x,Object y) {
+		int result = 0;
+		if(x instanceof Integer && y instanceof Integer) {
+			if(Integer.parseInt(x.toString())>Integer.parseInt(y.toString()))
+				result=1;
+			if(Integer.parseInt(x.toString())==Integer.parseInt(y.toString()))
+				result=0;
+			if(Integer.parseInt(x.toString())<Integer.parseInt(y.toString()))
+				result=-1;
+		}
+		if(x instanceof String && y instanceof String) {
+			if(x.toString().compareTo(y.toString())>0)
+				result=1;
+			if(x.toString().compareTo(y.toString())==0)
+				result=0;
+			if(x.toString().compareTo(y.toString())<0)
+				result=-1;
+		}
+		if(x instanceof Double && y instanceof Double) {
+			if(Double.parseDouble(x.toString())>Double.parseDouble(y.toString()))
+				result=1;
+			if(x.toString().compareTo(y.toString())==0)
+				result=0;
+			if(x.toString().compareTo(y.toString())<0)
+				result=-1;
+		}
+		if(x instanceof java.util.Date && y instanceof java.util.Date) {
+			try {
+				Date date = new SimpleDateFormat("yyyy-MM-dd").parse(x.toString());
+				Date date1 = new SimpleDateFormat("yyyy-MM-dd").parse(y.toString());
+				if(date.after(date1))
+					result=1;
+				if(date.compareTo(date1)==0)
+					result=0;
+				if(date.before(date1))
+					result=-1;
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
+
+	}
+	
 	public static void main(String[] args) {
 		Octree tree = new Octree("X", "Y", "Z", 0, 10, 0, 20, 0, 40);
 		Hashtable<String, Object> key = new Hashtable<>();
@@ -1563,14 +1763,14 @@ public class Octree implements Serializable {
 //			tree.deleteTuple(key3);
 //			tree.deleteTuple(key4);
 //		tree.displayTree2();
-			Hashtable<String, Object> key9 = new Hashtable<>();
-			key9.put("x", 4);
-			key9.put("y", 9);
-			key9.put("z", 18);
+		Hashtable<String, Object> key9 = new Hashtable<>();
+		key9.put("x", 4);
+		key9.put("y", 9);
+		key9.put("z", 18);
 //			key9.put("Page Name", "Student0");
 //			tree.deleteTuple(key9);// 000
 //			tree.displayTree2();
-			System.out.println(tree.getPageName(key9));
+		System.out.println(tree.getPageName(key9));
 
 	}
 }
