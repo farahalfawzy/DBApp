@@ -643,9 +643,9 @@ public class DBApp {
 				} else {
 					pageInfoVector = t.getPageInfo();
 //					removeFromAllPages(pageInfoVector, myTuple, 0, t, htblColNameValue);
-					for(int i=0;i<pageInfoVector.size();i++) {
+					for (int i = 0; i < pageInfoVector.size(); i++) {
 						String pagename = ((PageInfo) (pageInfoVector.get(i))).getPageName();
-						System.out.println("My page name is"+pagename);
+						System.out.println("My page name is" + pagename);
 						Page page = deserializePage(pagename);
 						System.out.println(myTuple);
 						for (int k = 0; k < page.size(); k++) {
@@ -693,7 +693,7 @@ public class DBApp {
 			String col3 = "";
 			int counter = 0;
 			for (String tableKey : t.getIndexOnCol().get(tableIndex).keySet()) {
-				if(tableKey.equals("Name of Index"))
+				if (tableKey.equals("Name of Index"))
 					continue;
 				if (counter == 0)
 					col1 = tableKey;
@@ -704,12 +704,12 @@ public class DBApp {
 				counter++;
 			}
 			Hashtable<String, Object> tobedeleted = new Hashtable<>();
-			counter=0;
+			counter = 0;
 			tobedeleted.put(col1, myTuple.getRecord().get(col1));
 			tobedeleted.put(col2, myTuple.getRecord().get(col2));
 			tobedeleted.put(col3, myTuple.getRecord().get(col3));
 			Octree currOctree = deserializeOctree(currIndex);
-			System.out.println("myHashtable"+tobedeleted);
+			System.out.println("myHashtable" + tobedeleted);
 			currOctree.deleteTuple(tobedeleted);
 			serializeIndex(currOctree, currIndex);
 		}
@@ -1605,6 +1605,105 @@ public class DBApp {
 		} catch (IOException e) {
 			throw new DBAppException("CSV doesn't exist");
 		}
+
+	}
+
+	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
+		String indxName;
+		if (arrSQLTerms.length == 0)
+			throw new DBAppException("Insert a valid select");
+		if (!tableExits(arrSQLTerms[0]._strTableName))
+			throw new DBAppException("Table doesn't exist!!");
+		Vector<Tuple> result = new Vector<>();
+		Table t = deserializeTable(arrSQLTerms[0]._strTableName);
+		Hashtable<String, Object> htblColValue = new Hashtable<>();
+		Vector<String> indexName = new Vector<>();
+		for (int i = 0; i < arrSQLTerms.length; i++) {
+			htblColValue.put(arrSQLTerms[i]._strColumnName, arrSQLTerms[i]._objValue);
+		}
+		if (!isValid(t.getTableName(), htblColValue))
+			throw new DBAppException("Coloumn is invalid");
+		indexName = getindexname(t, htblColValue);
+//		Queue<Hashtable<String, Object>> resIndex = new LinkedList<Hashtable<String, Object>>();
+		Queue<String> operators = new LinkedList<String>();
+//		boolean notIndex = false;
+//		int tempCounter = 0;
+		int colCounter = 0;
+		int operatorCounter = 0;
+//		int outerCounter = 0;
+//		Boolean[] taken = new Boolean[indexName.size()];
+//		boolean once = true;
+//		boolean flag = true;
+		for (int indexCounter = 0; indexCounter < indexName.size(); indexCounter++) {
+			Hashtable<String, Object> myHtbl = new Hashtable<String, Object>();
+			myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
+			myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName,arrSQLTerms[colCounter]._strOperator);
+//			if (taken[colCounter]) {
+//				colCounter++;
+//				indexCounter--;
+//				continue;
+//			}
+			colCounter++;
+			for (int j = indexCounter + 1; j < indexName.size(); j++) {
+				if (myHtbl.size() == 6) {
+					break;
+				}
+				if (!strarrOperators[operatorCounter].equals("AND")) {
+					break;
+				}
+				if (indexName.get(indexCounter).equals(indexName.get(j)) && !indexName.get(j).equals("null")) {
+					myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
+					myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName,
+							arrSQLTerms[colCounter]._strOperator);
+					indexName.remove(j);
+					j--;
+//				if(flag)
+//					outerCounter++;
+//					taken[colCounter] = true;
+				} else {
+//					if (once) {
+//						outerCounter = colCounter;
+//						once = false;
+//					}
+//					flag = false;
+					break;
+				}
+				operatorCounter++;
+				colCounter++;
+			}
+//			if (!flag) {
+//				colCounter = outerCounter;
+//				operatorCounter = outerCounter - 1;
+////			}
+//			once = true;
+//			flag = true;
+			myHtbl.put("indxName", indexName.get(indexCounter));
+			boolean once = true;
+			if(myHtbl.size()==7) {
+				result.add(compute(myHtbl, operators, t,result));
+			}
+			else {
+				for(String key:myHtbl.keySet()) {
+					Hashtable<String, Object> temp = new Hashtable<>();
+					temp.put(key, myHtbl.get(key));
+					result.add(compute(temp, operators, t,result));
+					if (operatorCounter < strarrOperators.length) {
+						operators.add(strarrOperators[operatorCounter]);
+						operatorCounter++;
+						once = false;
+					}
+				}
+			}
+//			resIndex.add(myHtbl);
+//			if (resIndex.size() == 2) {
+//				resIndex = compute(resIndex, operators, t);
+//			}
+			if (operatorCounter < strarrOperators.length && once) {
+				operators.add(strarrOperators[operatorCounter]);
+				operatorCounter++;
+			}
+		}
+		return result.iterator();
 
 	}
 
