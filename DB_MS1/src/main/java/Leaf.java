@@ -84,19 +84,25 @@ public class Leaf extends Node {
 	}
 
 	public void removeFromBucket(Hashtable<String, Object> htbl) {
+		boolean flag=false;
 		for (int i = 0; i < Bucket.size(); i++) {
 			if (equals1(Bucket.get(i),htbl)) {
 				Bucket.remove(i);
+				flag=true;
 //				i--;
 				break;
 			}
 		}
-//		for (int i = 0; i < overflow.size(); i++) {
-//			if (equals1(overflow.get(i),htbl)) {
-//				overflow.remove(i);
-//				break;
-//			}
-//		}
+		if(!flag) {
+			
+		
+		for (int i = 0; i < overflow.size(); i++) {
+			if (equals1(overflow.get(i),htbl)) {
+				overflow.remove(i);
+				break;
+			}
+		}
+		}
 	}
 	
 	private boolean equals1(Hashtable<String, Object> htbl1,Hashtable<String, Object> htbl2) {

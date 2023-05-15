@@ -569,7 +569,7 @@ public class DBApp {
 								// get all the columns that have indices
 								Tuple currTuple = page.get(k);
 								if (currTuple.equals(myTuple)) {
-									deleteFromOctree(currTuple, t);
+									deleteFromOctree(currTuple, t,pageName.get(i));
 									page.remove(k);
 									k--;
 								}
@@ -627,7 +627,7 @@ public class DBApp {
 //							System.out.println("after contains");
 							// System.out.println("was here111111");
 							int currTupleIndex = page.getIndexInPageUsingClusteringKey(myClusterType);
-							deleteFromOctree(page.get(currTupleIndex), t);
+							deleteFromOctree(page.get(currTupleIndex), t,pagename);
 							page.removeBinary(myTuple);
 							if (page.size() == 0) {
 								deletingFiles(pageind, pageInfoVector, t);
@@ -656,7 +656,7 @@ public class DBApp {
 							// get all the columns that have indices
 							Tuple currTuple = page.get(k);
 							if (currTuple.equals(myTuple)) {
-								deleteFromOctree(currTuple, t);
+								deleteFromOctree(currTuple, t,pagename);
 								page.remove(k);
 								k--;
 							}
@@ -689,7 +689,7 @@ public class DBApp {
 		}
 	}
 
-	private void deleteFromOctree(Tuple myTuple, Table t) {
+	private void deleteFromOctree(Tuple myTuple, Table t , String page) {
 		for (int tableIndex = 0; tableIndex < t.getIndexOnCol().size(); tableIndex++) {
 			String currIndex = t.getIndexOnCol().get(tableIndex).get("Name of Index").toString();
 			String col1 = "";
@@ -712,6 +712,8 @@ public class DBApp {
 			tobedeleted.put(col1, myTuple.getRecord().get(col1));
 			tobedeleted.put(col2, myTuple.getRecord().get(col2));
 			tobedeleted.put(col3, myTuple.getRecord().get(col3));
+			tobedeleted.put("Page Name", page);
+
 			Octree currOctree = deserializeOctree(currIndex);
 			System.out.println("myHashtable" + tobedeleted);
 			currOctree.deleteTuple(tobedeleted);
@@ -757,7 +759,7 @@ public class DBApp {
 		String pagename = ((PageInfo) (pageInfoVector.get(i))).getPageName();
 		Page page = deserializePage(pagename);
 		page.removeNonBinary(myTuple);
-		deleteFromOctree(page.get((page.getIndexInPage(myTuple))), t);
+		deleteFromOctree(page.get((page.getIndexInPage(myTuple))), t,pagename);
 		if (page.size() == 0) {
 			deletingFiles(i, pageInfoVector, t);
 			removeFromAllPages(pageInfoVector, myTuple, i, t, htblColNameValue);
@@ -1611,608 +1613,608 @@ public class DBApp {
 
 	}
 
-	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
-		String indxName;
-		if (arrSQLTerms.length == 0)
-			throw new DBAppException("Insert a valid select");
-		if (!tableExits(arrSQLTerms[0]._strTableName))
-			throw new DBAppException("Table doesn't exist!!");
-		Vector<Tuple> result = new Vector<>();
-		Table t = deserializeTable(arrSQLTerms[0]._strTableName);
-		Hashtable<String, Object> htblColValue = new Hashtable<>();
-		Vector<String> indexName = new Vector<>();
-		for (int i = 0; i < arrSQLTerms.length; i++) {
-			htblColValue.put(arrSQLTerms[i]._strColumnName, arrSQLTerms[i]._objValue);
-		}
-		if (!isValid(t.getTableName(), htblColValue))
-			throw new DBAppException("Coloumn is invalid");
-		indexName = getindexname(t, htblColValue);
-		Queue<String> operators = new LinkedList<String>();
-		int colCounter = 0;
-		int operatorCounter = 0;
-
-		for (int indexCounter = 0; indexCounter < indexName.size(); indexCounter++) {
-			Hashtable<String, Object> myHtbl = new Hashtable<String, Object>();
-			myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
-			myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._strOperator);
-			colCounter++;
-			for (int j = indexCounter + 1; j < indexName.size(); j++) {
-				if (myHtbl.size() == 6) {
-					break;
-				}
-				if (!strarrOperators[operatorCounter].equals("AND")) {
-					break;
-				}
-				if (indexName.get(indexCounter).equals(indexName.get(j)) && !indexName.get(j).equals("null")) {
-					myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
-					myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName,
-							arrSQLTerms[colCounter]._strOperator);
-					indexName.remove(j);
-					j--;
-
-				} else {
-					break;
-				}
-				operatorCounter++;
-				colCounter++;
-			}
-//					boolean once = true;
-			if (myHtbl.size() == 6) {
-				myHtbl.put("indxName", indexName.get(indexCounter));
-				result.add(compute(myHtbl, operators, t, result));
-				for (int i = 0; i < 3; i++)
-					operators.add("A");
-
-			} else {
-				int outercounter = operators.size();
-				int tempCounter = 0;
-				Hashtable<String, Object> temp = new Hashtable<>();
-				for (String key : myHtbl.keySet()) {
-					temp.put(key, myHtbl.get(key));
-					if (tempCounter == 0) {
-						tempCounter++;
-						continue;
-					}
-					temp.put("indxName", indexName.get(indexCounter));
-
-					result.add(compute(temp, operators, t, result));
-					if (outercounter < strarrOperators.length) {
-						outercounter++;
-						// once = false;
-					}
-
-					tempCounter = 0;
-					temp = new Hashtable<>();
-				}
-				operatorCounter = outercounter;
-			}
-//					if (operatorCounter < strarrOperators.length && once) {
-//						operators.add(strarrOperators[operatorCounter]);
-//						operatorCounter++;
+//	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
+//		String indxName;
+//		if (arrSQLTerms.length == 0)
+//			throw new DBAppException("Insert a valid select");
+//		if (!tableExits(arrSQLTerms[0]._strTableName))
+//			throw new DBAppException("Table doesn't exist!!");
+//		Vector<Tuple> result = new Vector<>();
+//		Table t = deserializeTable(arrSQLTerms[0]._strTableName);
+//		Hashtable<String, Object> htblColValue = new Hashtable<>();
+//		Vector<String> indexName = new Vector<>();
+//		for (int i = 0; i < arrSQLTerms.length; i++) {
+//			htblColValue.put(arrSQLTerms[i]._strColumnName, arrSQLTerms[i]._objValue);
+//		}
+//		if (!isValid(t.getTableName(), htblColValue))
+//			throw new DBAppException("Coloumn is invalid");
+//		indexName = getindexname(t, htblColValue);
+//		Queue<String> operators = new LinkedList<String>();
+//		int colCounter = 0;
+//		int operatorCounter = 0;
+//
+//		for (int indexCounter = 0; indexCounter < indexName.size(); indexCounter++) {
+//			Hashtable<String, Object> myHtbl = new Hashtable<String, Object>();
+//			myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
+//			myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._strOperator);
+//			colCounter++;
+//			for (int j = indexCounter + 1; j < indexName.size(); j++) {
+//				if (myHtbl.size() == 6) {
+//					break;
+//				}
+//				if (!strarrOperators[operatorCounter].equals("AND")) {
+//					break;
+//				}
+//				if (indexName.get(indexCounter).equals(indexName.get(j)) && !indexName.get(j).equals("null")) {
+//					myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
+//					myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName,
+//							arrSQLTerms[colCounter]._strOperator);
+//					indexName.remove(j);
+//					j--;
+//
+//				} else {
+//					break;
+//				}
+//				operatorCounter++;
+//				colCounter++;
+//			}
+////					boolean once = true;
+//			if (myHtbl.size() == 6) {
+//				myHtbl.put("indxName", indexName.get(indexCounter));
+//				result.add(compute(myHtbl, operators, t, result));
+//				for (int i = 0; i < 3; i++)
+//					operators.add("A");
+//
+//			} else {
+//				int outercounter = operators.size();
+//				int tempCounter = 0;
+//				Hashtable<String, Object> temp = new Hashtable<>();
+//				for (String key : myHtbl.keySet()) {
+//					temp.put(key, myHtbl.get(key));
+//					if (tempCounter == 0) {
+//						tempCounter++;
+//						continue;
 //					}
-		}
-		return result.iterator();
-
-	}
+//					temp.put("indxName", indexName.get(indexCounter));
+//
+//					result.add(compute(temp, operators, t, result));
+//					if (outercounter < strarrOperators.length) {
+//						outercounter++;
+//						// once = false;
+//					}
+//
+//					tempCounter = 0;
+//					temp = new Hashtable<>();
+//				}
+//				operatorCounter = outercounter;
+//			}
+////					if (operatorCounter < strarrOperators.length && once) {
+////						operators.add(strarrOperators[operatorCounter]);
+////						operatorCounter++;
+////					}
+//		}
+//		return result.iterator();
+//
+//	}
 
 //es2l 3ala 7tt elcomplexity mohma wala la2?
-	public static void compute(Hashtable<String, Object> myHtbl, Queue<String> operators, Table t,
-			Vector<Tuple> result) {
-		if (operators.isEmpty()) {
-			if (myHtbl.size() == 7) {
-				String myIndexName = myHtbl.get("indxName").toString();
-				Octree myOct = deserializeOctree(myIndexName);
-				Vector<String> myPages = new Vector<>();
-				myPages = myOct.getAllPages(myHtbl);
-				Hashtable<String, Integer> Bitmask1 = new Hashtable<>();
-
-				for (int i = 0; i < myPages.size(); i++) {
-					Page page = deserializePage(myPages.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-
-					}
-				}
-			}
-		}
-		String value1, value2;
-		value1 = htbloperand1.get("indxName").toString();
-		value2 = htbloperand2.get("indxName").toString();
-		Octree myOct1 = null;
-		Octree myOct2 = null;
-		Vector<Tuple> result = new Vector<Tuple>();
-		Vector<String> pages1 = new Vector<String>();
-		if (value1 != null && htbloperand1.size() == 7) {
-			myOct1 = deserializeOctree(value1);
-			pages1 = myOct1.getPageName(htbloperand1);
-		}
-
-		Vector<String> pages2 = new Vector<String>();
-		if (value2 != null && htbloperand2.size() == 7) {
-			myOct2 = deserializeOctree(value2);
-			pages2 = myOct2.getPageName(htbloperand2);
-		}
-//		momken ne3melha asd a loop fel arrays beta3et kol operator
-		Hashtable<String, Integer> Bitmask1 = new Hashtable<>();
-		Hashtable<String, Integer> Bitmask2 = new Hashtable<>();
-		for (String key : htbloperand1.keySet()) {
-			if (key.substring(0, 8).equals("operator")) {
-				String newKey = key.substring(8);
-				Bitmask1.put(newKey, get6BitString(htbloperand1.get(key).toString()));
-			}
-		}
-		for (String key : htbloperand2.keySet()) {
-			if (key.substring(0, 8).equals("operator")) {
-				String newKey = key.substring(8);
-				Bitmask2.put(newKey, get6BitString(htbloperand2.get(key).toString()));
-			}
-		}
-
-		switch (strOperator) {
-		case "AND":
-			if (pages1.size() != 0 && pages2.size() != 0) {
-				pages1.retainAll(pages2);
-				for (int i = 0; i < pages1.size(); i++) {
-					Page page = deserializePage(pages1.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag)
-								break;
-						}
-						if (flag) {
-							for (String key : Bitmask2.keySet()) {
-								switch (Bitmask2.get(key)) {
-								case 1:
-									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 2:
-									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 4:
-									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 8:
-									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 16:
-									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 32:
-									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								}
-								if (!flag)
-									break;
-							}
-						}
-						if (flag) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, pages1.get(i));
-				}
-			}
-			if (pages1.size() == 0 && pages2.size() != 0) {
-				for (int i = 0; i < pages2.size(); i++) {
-					Page page = deserializePage(pages2.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag)
-								break;
-						}
-						if (flag) {
-							for (String key : Bitmask2.keySet()) {
-								switch (Bitmask2.get(key)) {
-								case 1:
-									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 2:
-									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 4:
-									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 8:
-									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 16:
-									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 32:
-									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								}
-								if (!flag)
-									break;
-							}
-						}
-						if (flag) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, pages2.get(i));
-				}
-			}
-			if (pages1.size() != 0 && pages2.size() == 0) {
-				for (int i = 0; i < pages1.size(); i++) {
-					Page page = deserializePage(pages1.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag)
-								break;
-						}
-						if (flag) {
-							for (String key : Bitmask2.keySet()) {
-								switch (Bitmask2.get(key)) {
-								case 1:
-									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 2:
-									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 4:
-									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 8:
-									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 16:
-									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 32:
-									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								}
-								if (!flag)
-									break;
-							}
-						}
-						if (flag) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, pages1.get(i));
-				}
-			}
-			if (pages1.size() == 0 && pages2.size() == 0) {
-				for (int i = 0; i < t.getPageInfo().size(); i++) {
-					Page page = deserializePage(t.getPageInfo().get(i).getPageName());
-					for (Tuple myTuple : page) {
-						boolean flag = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag)
-								break;
-						}
-						if (flag) {
-							for (String key : Bitmask2.keySet()) {
-								switch (Bitmask2.get(key)) {
-								case 1:
-									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 2:
-									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 4:
-									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 8:
-									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 16:
-									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 32:
-									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								}
-								if (!flag)
-									break;
-							}
-						}
-						if (flag) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, t.getPageInfo().get(i).getPageName());
-				}
-			}
-//			operand1.get(strOperator) ;
-			break;
-		case "OR":
-			if (pages1.size() != 0 && pages2.size() != 0) {
-				Vector<String> myPages = union(pages1, pages2);
-				for (int i = 0; i < myPages.size(); i++) {
-					Page page = deserializePage(myPages.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag1 = true;
-						boolean flag2 = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag1 = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag1 = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag1 = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag1 = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag1 = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag1 = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag1)
-								break;
-						}
-						for (String key : Bitmask2.keySet()) {
-							switch (Bitmask2.get(key)) {
-							case 1:
-								flag2 = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag2 = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag2 = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag2 = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag2 = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag2 = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag2)
-								break;
-						}
-						if (flag1 || flag2) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, myPages.get(i));
-				}
-			} else {
-				for (int i = 0; i < t.getPageInfo().size(); i++) {
-					Page page = deserializePage(t.getPageInfo().get(i).getPageName());
-					for (Tuple myTuple : page) {
-						boolean flag1 = true;
-						boolean flag2 = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag1 = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag1 = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag1 = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag1 = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag1 = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag1 = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag1)
-								break;
-						}
-						for (String key : Bitmask2.keySet()) {
-							switch (Bitmask2.get(key)) {
-							case 1:
-								flag2 = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag2 = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag2 = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag2 = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag2 = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag2 = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag2)
-								break;
-						}
-						if (flag1 || flag2) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, t.getPageInfo().get(i).getPageName());
-				}
-			}
-			break;
-		case "XOR":
-			if (pages1.size() != 0 && pages2.size() != 0) {
-				Vector<String> myPages = xor(pages1, pages2);
-				for (int i = 0; i < myPages.size(); i++) {
-					Page page = deserializePage(myPages.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag1 = true;
-						boolean flag2 = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag1 = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag1 = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag1 = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag1 = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag1 = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag1 = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag1)
-								break;
-						}
-						for (String key : Bitmask2.keySet()) {
-							switch (Bitmask2.get(key)) {
-							case 1:
-								flag2 = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag2 = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag2 = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag2 = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag2 = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag2 = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag2)
-								break;
-						}
-						if (flag1 ^ flag2) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, myPages.get(i));
-				}
-			}
-
-			break;
-		}
-	}
+//	public static void compute(Hashtable<String, Object> myHtbl, Queue<String> operators, Table t,
+//			Vector<Tuple> result) {
+//		if (operators.isEmpty()) {
+//			if (myHtbl.size() == 7) {
+//				String myIndexName = myHtbl.get("indxName").toString();
+//				Octree myOct = deserializeOctree(myIndexName);
+//				Vector<String> myPages = new Vector<>();
+//				myPages = myOct.getAllPages(myHtbl);
+//				Hashtable<String, Integer> Bitmask1 = new Hashtable<>();
+//
+//				for (int i = 0; i < myPages.size(); i++) {
+//					Page page = deserializePage(myPages.get(i));
+//					for (Tuple myTuple : page) {
+//						boolean flag = true;
+//						for (String key : Bitmask1.keySet()) {
+//							switch (Bitmask1.get(key)) {
+//							case 1:
+//								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 2:
+//								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 4:
+//								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 8:
+//								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 16:
+//								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 32:
+//								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							}
+//
+//					}
+//				}
+//			}
+//		}
+//		String value1, value2;
+//		value1 = htbloperand1.get("indxName").toString();
+//		value2 = htbloperand2.get("indxName").toString();
+//		Octree myOct1 = null;
+//		Octree myOct2 = null;
+//		Vector<Tuple> result = new Vector<Tuple>();
+//		Vector<String> pages1 = new Vector<String>();
+//		if (value1 != null && htbloperand1.size() == 7) {
+//			myOct1 = deserializeOctree(value1);
+//			pages1 = myOct1.getPageName(htbloperand1);
+//		}
+//
+//		Vector<String> pages2 = new Vector<String>();
+//		if (value2 != null && htbloperand2.size() == 7) {
+//			myOct2 = deserializeOctree(value2);
+//			pages2 = myOct2.getPageName(htbloperand2);
+//		}
+////		momken ne3melha asd a loop fel arrays beta3et kol operator
+//		Hashtable<String, Integer> Bitmask1 = new Hashtable<>();
+//		Hashtable<String, Integer> Bitmask2 = new Hashtable<>();
+//		for (String key : htbloperand1.keySet()) {
+//			if (key.substring(0, 8).equals("operator")) {
+//				String newKey = key.substring(8);
+//				Bitmask1.put(newKey, get6BitString(htbloperand1.get(key).toString()));
+//			}
+//		}
+//		for (String key : htbloperand2.keySet()) {
+//			if (key.substring(0, 8).equals("operator")) {
+//				String newKey = key.substring(8);
+//				Bitmask2.put(newKey, get6BitString(htbloperand2.get(key).toString()));
+//			}
+//		}
+//
+//		switch (strOperator) {
+//		case "AND":
+//			if (pages1.size() != 0 && pages2.size() != 0) {
+//				pages1.retainAll(pages2);
+//				for (int i = 0; i < pages1.size(); i++) {
+//					Page page = deserializePage(pages1.get(i));
+//					for (Tuple myTuple : page) {
+//						boolean flag = true;
+//						for (String key : Bitmask1.keySet()) {
+//							switch (Bitmask1.get(key)) {
+//							case 1:
+//								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 2:
+//								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 4:
+//								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 8:
+//								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 16:
+//								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 32:
+//								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							}
+//							if (!flag)
+//								break;
+//						}
+//						if (flag) {
+//							for (String key : Bitmask2.keySet()) {
+//								switch (Bitmask2.get(key)) {
+//								case 1:
+//									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 2:
+//									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 4:
+//									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 8:
+//									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 16:
+//									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 32:
+//									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								}
+//								if (!flag)
+//									break;
+//							}
+//						}
+//						if (flag) {
+//							result.add(myTuple);
+//						}
+//					}
+//					serializePage(t, page, pages1.get(i));
+//				}
+//			}
+//			if (pages1.size() == 0 && pages2.size() != 0) {
+//				for (int i = 0; i < pages2.size(); i++) {
+//					Page page = deserializePage(pages2.get(i));
+//					for (Tuple myTuple : page) {
+//						boolean flag = true;
+//						for (String key : Bitmask1.keySet()) {
+//							switch (Bitmask1.get(key)) {
+//							case 1:
+//								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 2:
+//								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 4:
+//								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 8:
+//								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 16:
+//								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 32:
+//								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							}
+//							if (!flag)
+//								break;
+//						}
+//						if (flag) {
+//							for (String key : Bitmask2.keySet()) {
+//								switch (Bitmask2.get(key)) {
+//								case 1:
+//									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 2:
+//									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 4:
+//									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 8:
+//									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 16:
+//									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 32:
+//									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								}
+//								if (!flag)
+//									break;
+//							}
+//						}
+//						if (flag) {
+//							result.add(myTuple);
+//						}
+//					}
+//					serializePage(t, page, pages2.get(i));
+//				}
+//			}
+//			if (pages1.size() != 0 && pages2.size() == 0) {
+//				for (int i = 0; i < pages1.size(); i++) {
+//					Page page = deserializePage(pages1.get(i));
+//					for (Tuple myTuple : page) {
+//						boolean flag = true;
+//						for (String key : Bitmask1.keySet()) {
+//							switch (Bitmask1.get(key)) {
+//							case 1:
+//								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 2:
+//								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 4:
+//								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 8:
+//								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 16:
+//								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 32:
+//								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							}
+//							if (!flag)
+//								break;
+//						}
+//						if (flag) {
+//							for (String key : Bitmask2.keySet()) {
+//								switch (Bitmask2.get(key)) {
+//								case 1:
+//									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 2:
+//									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 4:
+//									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 8:
+//									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 16:
+//									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 32:
+//									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								}
+//								if (!flag)
+//									break;
+//							}
+//						}
+//						if (flag) {
+//							result.add(myTuple);
+//						}
+//					}
+//					serializePage(t, page, pages1.get(i));
+//				}
+//			}
+//			if (pages1.size() == 0 && pages2.size() == 0) {
+//				for (int i = 0; i < t.getPageInfo().size(); i++) {
+//					Page page = deserializePage(t.getPageInfo().get(i).getPageName());
+//					for (Tuple myTuple : page) {
+//						boolean flag = true;
+//						for (String key : Bitmask1.keySet()) {
+//							switch (Bitmask1.get(key)) {
+//							case 1:
+//								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 2:
+//								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 4:
+//								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 8:
+//								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 16:
+//								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 32:
+//								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							}
+//							if (!flag)
+//								break;
+//						}
+//						if (flag) {
+//							for (String key : Bitmask2.keySet()) {
+//								switch (Bitmask2.get(key)) {
+//								case 1:
+//									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 2:
+//									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 4:
+//									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 8:
+//									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 16:
+//									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								case 32:
+//									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
+//									break;
+//								}
+//								if (!flag)
+//									break;
+//							}
+//						}
+//						if (flag) {
+//							result.add(myTuple);
+//						}
+//					}
+//					serializePage(t, page, t.getPageInfo().get(i).getPageName());
+//				}
+//			}
+////			operand1.get(strOperator) ;
+//			break;
+//		case "OR":
+//			if (pages1.size() != 0 && pages2.size() != 0) {
+//				Vector<String> myPages = union(pages1, pages2);
+//				for (int i = 0; i < myPages.size(); i++) {
+//					Page page = deserializePage(myPages.get(i));
+//					for (Tuple myTuple : page) {
+//						boolean flag1 = true;
+//						boolean flag2 = true;
+//						for (String key : Bitmask1.keySet()) {
+//							switch (Bitmask1.get(key)) {
+//							case 1:
+//								flag1 = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 2:
+//								flag1 = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 4:
+//								flag1 = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 8:
+//								flag1 = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 16:
+//								flag1 = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 32:
+//								flag1 = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							}
+//							if (!flag1)
+//								break;
+//						}
+//						for (String key : Bitmask2.keySet()) {
+//							switch (Bitmask2.get(key)) {
+//							case 1:
+//								flag2 = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 2:
+//								flag2 = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 4:
+//								flag2 = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 8:
+//								flag2 = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 16:
+//								flag2 = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 32:
+//								flag2 = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							}
+//							if (!flag2)
+//								break;
+//						}
+//						if (flag1 || flag2) {
+//							result.add(myTuple);
+//						}
+//					}
+//					serializePage(t, page, myPages.get(i));
+//				}
+//			} else {
+//				for (int i = 0; i < t.getPageInfo().size(); i++) {
+//					Page page = deserializePage(t.getPageInfo().get(i).getPageName());
+//					for (Tuple myTuple : page) {
+//						boolean flag1 = true;
+//						boolean flag2 = true;
+//						for (String key : Bitmask1.keySet()) {
+//							switch (Bitmask1.get(key)) {
+//							case 1:
+//								flag1 = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 2:
+//								flag1 = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 4:
+//								flag1 = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 8:
+//								flag1 = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 16:
+//								flag1 = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 32:
+//								flag1 = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							}
+//							if (!flag1)
+//								break;
+//						}
+//						for (String key : Bitmask2.keySet()) {
+//							switch (Bitmask2.get(key)) {
+//							case 1:
+//								flag2 = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 2:
+//								flag2 = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 4:
+//								flag2 = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 8:
+//								flag2 = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 16:
+//								flag2 = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 32:
+//								flag2 = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							}
+//							if (!flag2)
+//								break;
+//						}
+//						if (flag1 || flag2) {
+//							result.add(myTuple);
+//						}
+//					}
+//					serializePage(t, page, t.getPageInfo().get(i).getPageName());
+//				}
+//			}
+//			break;
+//		case "XOR":
+//			if (pages1.size() != 0 && pages2.size() != 0) {
+//				Vector<String> myPages = xor(pages1, pages2);
+//				for (int i = 0; i < myPages.size(); i++) {
+//					Page page = deserializePage(myPages.get(i));
+//					for (Tuple myTuple : page) {
+//						boolean flag1 = true;
+//						boolean flag2 = true;
+//						for (String key : Bitmask1.keySet()) {
+//							switch (Bitmask1.get(key)) {
+//							case 1:
+//								flag1 = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 2:
+//								flag1 = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 4:
+//								flag1 = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 8:
+//								flag1 = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 16:
+//								flag1 = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 32:
+//								flag1 = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
+//								break;
+//							}
+//							if (!flag1)
+//								break;
+//						}
+//						for (String key : Bitmask2.keySet()) {
+//							switch (Bitmask2.get(key)) {
+//							case 1:
+//								flag2 = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 2:
+//								flag2 = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 4:
+//								flag2 = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 8:
+//								flag2 = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 16:
+//								flag2 = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							case 32:
+//								flag2 = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
+//								break;
+//							}
+//							if (!flag2)
+//								break;
+//						}
+//						if (flag1 ^ flag2) {
+//							result.add(myTuple);
+//						}
+//					}
+//					serializePage(t, page, myPages.get(i));
+//				}
+//			}
+//
+//			break;
+//		}
+//	}
 
 	public static Vector<String> xor(Vector<String> v1, Vector<String> v2) {
 		Vector<String> result = new Vector<String>();

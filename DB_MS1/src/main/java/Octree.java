@@ -359,13 +359,30 @@ public class Octree implements Serializable {
 		for (int i = 0; i < res.size(); i++) {
 			System.out.println("was here");
 			res.get(i).removeFromBucket(key);
+			boolean flag=false;
 			if (res.get(i).getSize() < MaxRowsinNode) {
 				Vector<Hashtable<String, Object>> overflow = res.get(i).getOverflow();
 				for (int j = 0; j < overflow.size(); j++) {
-					res.get(i).getBucket().add(overflow.get(j));
-					overflow.remove(j);
-					j--;
+					int n = 0;
+					
+					for (String col : overflow.get(j).keySet()) {
+
+						if (key.get(col).equals(overflow.get(j).get(col))) {
+							n++;
+						}
+					}
+						if (n == 4) {
+							flag=true;
+							res.get(i).getBucket().add(overflow.get(j));
+							overflow.remove(j);
+							break;
+						
+					}
 				}
+				if(!flag) {
+					res.get(i).setSize(res.get(i).getSize()-1);
+				}
+				
 			}
 		}
 	}
