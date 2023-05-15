@@ -569,7 +569,7 @@ public class DBApp {
 								// get all the columns that have indices
 								Tuple currTuple = page.get(k);
 								if (currTuple.equals(myTuple)) {
-									deleteFromOctree(currTuple, t,pageName.get(i));
+									deleteFromOctree(currTuple, t, pageName.get(i));
 									page.remove(k);
 									k--;
 								}
@@ -627,7 +627,7 @@ public class DBApp {
 //							System.out.println("after contains");
 							// System.out.println("was here111111");
 							int currTupleIndex = page.getIndexInPageUsingClusteringKey(myClusterType);
-							deleteFromOctree(page.get(currTupleIndex), t,pagename);
+							deleteFromOctree(page.get(currTupleIndex), t, pagename);
 							page.removeBinary(myTuple);
 							if (page.size() == 0) {
 								deletingFiles(pageind, pageInfoVector, t);
@@ -656,7 +656,7 @@ public class DBApp {
 							// get all the columns that have indices
 							Tuple currTuple = page.get(k);
 							if (currTuple.equals(myTuple)) {
-								deleteFromOctree(currTuple, t,pagename);
+								deleteFromOctree(currTuple, t, pagename);
 								page.remove(k);
 								k--;
 							}
@@ -689,7 +689,7 @@ public class DBApp {
 		}
 	}
 
-	private void deleteFromOctree(Tuple myTuple, Table t , String page) {
+	private void deleteFromOctree(Tuple myTuple, Table t, String page) {
 		for (int tableIndex = 0; tableIndex < t.getIndexOnCol().size(); tableIndex++) {
 			String currIndex = t.getIndexOnCol().get(tableIndex).get("Name of Index").toString();
 			String col1 = "";
@@ -759,7 +759,7 @@ public class DBApp {
 		String pagename = ((PageInfo) (pageInfoVector.get(i))).getPageName();
 		Page page = deserializePage(pagename);
 		page.removeNonBinary(myTuple);
-		deleteFromOctree(page.get((page.getIndexInPage(myTuple))), t,pagename);
+		deleteFromOctree(page.get((page.getIndexInPage(myTuple))), t, pagename);
 		if (page.size() == 0) {
 			deletingFiles(i, pageInfoVector, t);
 			removeFromAllPages(pageInfoVector, myTuple, i, t, htblColNameValue);
@@ -1514,7 +1514,7 @@ public class DBApp {
 			for (int i = 0; i < indices.size(); i++) {
 				String TreeName = strTableName + indices.get(i);
 				Octree Octree = deserializeOctree(TreeName);
-				if(! (updated.get(Octree.getX())== null && updated.get(Octree.getY()) == null
+				if (!(updated.get(Octree.getX()) == null && updated.get(Octree.getY()) == null
 						&& updated.get(Octree.getZ()) == null)) {
 					Object val1 = oldRecord.get(Octree.getX());
 					Object val2 = oldRecord.get(Octree.getY());
@@ -1661,7 +1661,7 @@ public class DBApp {
 //					boolean once = true;
 			if (myHtbl.size() == 6) {
 				myHtbl.put("indxName", indexName.get(indexCounter));
-				result.add(compute(myHtbl, operators, t, result));
+				result = compute(myHtbl, operators, t, result);
 				for (int i = 0; i < 3; i++)
 					operators.add("A");
 
@@ -1677,7 +1677,7 @@ public class DBApp {
 					}
 					temp.put("indxName", indexName.get(indexCounter));
 
-					result.add(compute(temp, operators, t, result));
+					result = compute(temp, operators, t, result);
 					if (outercounter < strarrOperators.length) {
 						outercounter++;
 						// once = false;
@@ -1688,17 +1688,307 @@ public class DBApp {
 				}
 				operatorCounter = outercounter;
 			}
-//					if (operatorCounter < strarrOperators.length && once) {
-//						operators.add(strarrOperators[operatorCounter]);
-//						operatorCounter++;
-//					}
 		}
 		return result.iterator();
 
 	}
 
-//es2l 3ala 7tt elcomplexity mohma wala la2?
-	public static void compute(Hashtable<String, Object> myHtbl, Queue<String> operators, Table t,
+	private static void ifThereisClusteringKeyIndex(Hashtable<String, Object> myHtbl, Page page, Table t,
+			Vector<Tuple> result) {
+		String operatorCol1 = "";
+		String operatorCol2 = "";
+		String col1 = "";
+		String col2 = "";
+		int counter = 0;
+		Object clusterValue = myHtbl.get(t.getClusteringKey());
+		int indexValue = page.getIndexInPageUsingClusteringKey(clusterValue);
+		String clusterOperator = myHtbl.get("operator" + (t.getClusteringKey().toString())).toString();
+		myHtbl.remove(clusterValue);
+		myHtbl.remove("operator" + (t.getClusteringKey().toString()));
+		for (String key : myHtbl.keySet()) {
+			if (key.substring(0, 8).equals("operator") && counter == 0) {
+				operatorCol1 = myHtbl.get(key).toString();
+				col1 = key.substring(8);
+				counter++;
+			}
+			if (key.substring(0, 8).equals("operator") && counter == 1) {
+				operatorCol2 = myHtbl.get(key).toString();
+				col2 = key.substring(8);
+				counter++;
+			}
+		}
+		boolean flag1 = false;
+		boolean flag2 = false;
+		myHtbl.put(t.getClusteringKey().toString(), clusterValue);
+		myHtbl.put("operator" + (t.getClusteringKey().toString()), clusterOperator);
+		switch (clusterOperator) {
+
+		case "=":
+			flag1 = checkOtherColumns(myHtbl.get(col1), operatorCol1, page.get(indexValue).getRecord().get(col1));
+			flag2 = checkOtherColumns(myHtbl.get(col2), operatorCol2, page.get(indexValue).getRecord().get(col2));
+			if (flag1 && flag2)
+				result.add(page.get(indexValue));
+			break;
+		case "!=":
+
+			for (Tuple myTuple : page) {
+				if (myTuple.getClusteringkey().equals(clusterValue.toString()))
+					continue;
+				flag1 = checkOtherColumns(myHtbl.get(col1), operatorCol1, page.get(indexValue).getRecord().get(col1));
+				flag2 = checkOtherColumns(myHtbl.get(col2), operatorCol2, page.get(indexValue).getRecord().get(col2));
+				if (flag1 && flag2)
+					result.add(myTuple);
+			}
+			break;
+		case ">":
+			for (int j = indexValue + 1; j < page.size(); j++) {
+				flag1 = checkOtherColumns(myHtbl.get(col1), operatorCol1, page.get(indexValue).getRecord().get(col1));
+				flag2 = checkOtherColumns(myHtbl.get(col2), operatorCol2, page.get(indexValue).getRecord().get(col2));
+				if (flag1 && flag2)
+					result.add(page.get(j));
+			}
+			break;
+		case ">=":
+			for (int j = indexValue; j < page.size(); j++) {
+				flag1 = checkOtherColumns(myHtbl.get(col1), operatorCol1, page.get(indexValue).getRecord().get(col1));
+				flag2 = checkOtherColumns(myHtbl.get(col2), operatorCol2, page.get(indexValue).getRecord().get(col2));
+				if (flag1 && flag2)
+					result.add(page.get(j));
+			}
+			break;
+		case "<":
+			for (int j = 0; j < indexValue || j < page.size(); j++) {
+				flag1 = checkOtherColumns(myHtbl.get(col1), operatorCol1, page.get(indexValue).getRecord().get(col1));
+				flag2 = checkOtherColumns(myHtbl.get(col2), operatorCol2, page.get(indexValue).getRecord().get(col2));
+				if (flag1 && flag2)
+					result.add(page.get(j));
+			}
+			break;
+		case "<=":
+			for (int j = 0; j <= indexValue || j < page.size(); j++) {
+				flag1 = checkOtherColumns(myHtbl.get(col1), operatorCol1, page.get(indexValue).getRecord().get(col1));
+				flag2 = checkOtherColumns(myHtbl.get(col2), operatorCol2, page.get(indexValue).getRecord().get(col2));
+				if (flag1 && flag2)
+					result.add(page.get(j));
+			}
+			break;
+		}
+	}
+
+	private static boolean checkOtherColumns(Object object, String operatorCol1, Object object2) {
+		switch (operatorCol1) {
+		case "=":
+			if (compareTo1(object, object2) == 0)
+				return true;
+			break;
+		case "!=":
+			if (compareTo1(object, object2) != 0)
+				return true;
+			break;
+		case ">":
+			if (compareTo1(object, object2) > 0)
+				return true;
+			break;
+		case ">=":
+			if (compareTo1(object, object2) >= 0)
+				return true;
+			break;
+		case "<":
+			if (compareTo1(object, object2) < 0)
+				return true;
+			break;
+		case "<=":
+			if (compareTo1(object, object2) <= 0)
+				return true;
+			break;
+		}
+		return false;
+	}
+
+	private static void ifThereIsNoClusteringKey(Hashtable<String, Object> myHtbl, Page page, Vector<Tuple> result) {
+
+		String operatorCol1 = "";
+		String operatorCol2 = "";
+		String operatorCol3 = "";
+		String col1 = "";
+		String col2 = "";
+		String col3 = "";
+		int counter = 0;
+		for (String key : myHtbl.keySet()) {
+			if (key.substring(0, 8).equals("operator") && counter == 0) {
+				operatorCol1 = myHtbl.get(key).toString();
+				col1 = key.substring(8);
+				counter++;
+			}
+			if (key.substring(0, 8).equals("operator") && counter == 1) {
+				operatorCol2 = myHtbl.get(key).toString();
+				col2 = key.substring(8);
+				counter++;
+			}
+			if (key.substring(0, 8).equals("operator") && counter == 2) {
+				operatorCol3 = myHtbl.get(key).toString();
+				col3 = key.substring(8);
+				counter++;
+			}
+		}
+		for (Tuple myTuple : page) {
+			Hashtable<String, Object> record = myTuple.getRecord();
+			boolean flag = true;
+			switch (operatorCol1) {
+			case "=":
+				flag = record.get(col1).equals(myHtbl.get(col1));
+				break;
+			case ">":
+				if (compareTo1(record.get(col1), (myHtbl.get(col1))) > 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case ">=":
+				if (compareTo1(record.get(col1), (myHtbl.get(col1))) >= 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case "<":
+				if (compareTo1(record.get(col1), (myHtbl.get(col1))) < 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case "<=":
+				if (compareTo1(record.get(col1), (myHtbl.get(col1))) <= 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case "!=":
+				flag = !record.get(col1).equals(myHtbl.get(col1));
+				break;
+			}
+			switch (operatorCol3) {
+			case "=":
+				flag = record.get(col3).equals(myHtbl.get(col3));
+				break;
+			case ">":
+				if (compareTo1(record.get(col3), (myHtbl.get(col3))) > 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case ">=":
+				if (compareTo1(record.get(col3), (myHtbl.get(col3))) >= 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case "<":
+				if (compareTo1(record.get(col3), (myHtbl.get(col3))) < 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case "<=":
+				if (compareTo1(record.get(col3), (myHtbl.get(col3))) <= 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case "!=":
+				flag = !record.get(col3).equals(myHtbl.get(col3));
+				break;
+			}
+			switch (operatorCol2) {
+			case "=":
+				flag = record.get(col2).equals(myHtbl.get(col2));
+				break;
+			case ">":
+				if (compareTo1(record.get(col2), (myHtbl.get(col2))) > 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case ">=":
+				if (compareTo1(record.get(col2), (myHtbl.get(col2))) >= 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case "<":
+				if (compareTo1(record.get(col2), (myHtbl.get(col2))) < 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case "<=":
+				if (compareTo1(record.get(col2), (myHtbl.get(col2))) <= 0)
+					flag = true;
+				else
+					flag = false;
+				break;
+			case "!=":
+				flag = !record.get(col2).equals(myHtbl.get(col2));
+				break;
+			}
+			if (flag)
+				result.add(myTuple);
+		}
+	}
+
+	private static void notAnIndex(Hashtable<String, Object> myHtbl, Table t, Vector<Tuple> result) {
+
+		String operatorCol1 = "";
+		String col1 = "";
+		for (String key : myHtbl.keySet()) {
+			if (key.length()>8 && key.substring(0, 8).equals("operator")) {
+				operatorCol1 = myHtbl.get(key).toString();
+				col1 = key.substring(8);
+			}
+		}
+		for (int i = 0; i < t.getPageInfo().size(); i++) {
+			Page page = deserializePage(t.getPageInfo().get(i).getPageName());
+			for (Tuple myTuple : page) {
+				Hashtable<String, Object> record = myTuple.getRecord();
+				boolean flag = true;
+				switch (operatorCol1) {
+				case "=":
+					flag = record.get(col1).equals(myHtbl.get(col1));
+					break;
+				case ">":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) > 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case ">=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) >= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) < 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "<=":
+					if (compareTo1(record.get(col1), (myHtbl.get(col1))) <= 0)
+						flag = true;
+					else
+						flag = false;
+					break;
+				case "!=":
+					flag = !record.get(col1).equals(myHtbl.get(col1));
+					break;
+				}
+				if (flag)
+					result.add(myTuple);
+			}
+		}
+	}
+
+	public static Vector<Tuple> compute(Hashtable<String, Object> myHtbl, Queue<String> operators, Table t,
 			Vector<Tuple> result) {
 		if (operators.isEmpty()) {
 			if (myHtbl.size() == 7) {
@@ -1706,514 +1996,156 @@ public class DBApp {
 				Octree myOct = deserializeOctree(myIndexName);
 				Vector<String> myPages = new Vector<>();
 				myPages = myOct.getAllPages(myHtbl);
-				Hashtable<String, Integer> Bitmask1 = new Hashtable<>();
 
 				for (int i = 0; i < myPages.size(); i++) {
 					Page page = deserializePage(myPages.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
+					if (myHtbl.containsKey(t.getClusteringKey()))
+						ifThereisClusteringKeyIndex(myHtbl, page, t, result);
+					else
+						ifThereIsNoClusteringKey(myHtbl, page, result);
+				}
+			} else
+				notAnIndex(myHtbl, t, result);
+		} else {
+			int counterDummy = 0;
+			while (operators.peek().equals("A")) {
+				counterDummy++;
+				operators.poll();
+			}
+			Vector<Tuple> currResult = new Vector<>();
+			boolean flag = false;
+			if (myHtbl.size() == 7) {
+				flag = true;
+				String myIndexName = myHtbl.get("indxName").toString();
+				Octree myOct = deserializeOctree(myIndexName);
+				Vector<String> myPages = new Vector<>();
+				myPages = myOct.getAllPages(myHtbl);
 
-					}
-				}
-			}
-		}
-		String value1, value2;
-		value1 = htbloperand1.get("indxName").toString();
-		value2 = htbloperand2.get("indxName").toString();
-		Octree myOct1 = null;
-		Octree myOct2 = null;
-		Vector<Tuple> result = new Vector<Tuple>();
-		Vector<String> pages1 = new Vector<String>();
-		if (value1 != null && htbloperand1.size() == 7) {
-			myOct1 = deserializeOctree(value1);
-			pages1 = myOct1.getPageName(htbloperand1);
-		}
-
-		Vector<String> pages2 = new Vector<String>();
-		if (value2 != null && htbloperand2.size() == 7) {
-			myOct2 = deserializeOctree(value2);
-			pages2 = myOct2.getPageName(htbloperand2);
-		}
-//		momken ne3melha asd a loop fel arrays beta3et kol operator
-		Hashtable<String, Integer> Bitmask1 = new Hashtable<>();
-		Hashtable<String, Integer> Bitmask2 = new Hashtable<>();
-		for (String key : htbloperand1.keySet()) {
-			if (key.substring(0, 8).equals("operator")) {
-				String newKey = key.substring(8);
-				Bitmask1.put(newKey, get6BitString(htbloperand1.get(key).toString()));
-			}
-		}
-		for (String key : htbloperand2.keySet()) {
-			if (key.substring(0, 8).equals("operator")) {
-				String newKey = key.substring(8);
-				Bitmask2.put(newKey, get6BitString(htbloperand2.get(key).toString()));
-			}
-		}
-
-		switch (strOperator) {
-		case "AND":
-			if (pages1.size() != 0 && pages2.size() != 0) {
-				pages1.retainAll(pages2);
-				for (int i = 0; i < pages1.size(); i++) {
-					Page page = deserializePage(pages1.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag)
-								break;
-						}
-						if (flag) {
-							for (String key : Bitmask2.keySet()) {
-								switch (Bitmask2.get(key)) {
-								case 1:
-									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 2:
-									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 4:
-									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 8:
-									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 16:
-									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 32:
-									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								}
-								if (!flag)
-									break;
-							}
-						}
-						if (flag) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, pages1.get(i));
-				}
-			}
-			if (pages1.size() == 0 && pages2.size() != 0) {
-				for (int i = 0; i < pages2.size(); i++) {
-					Page page = deserializePage(pages2.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag)
-								break;
-						}
-						if (flag) {
-							for (String key : Bitmask2.keySet()) {
-								switch (Bitmask2.get(key)) {
-								case 1:
-									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 2:
-									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 4:
-									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 8:
-									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 16:
-									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 32:
-									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								}
-								if (!flag)
-									break;
-							}
-						}
-						if (flag) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, pages2.get(i));
-				}
-			}
-			if (pages1.size() != 0 && pages2.size() == 0) {
-				for (int i = 0; i < pages1.size(); i++) {
-					Page page = deserializePage(pages1.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag)
-								break;
-						}
-						if (flag) {
-							for (String key : Bitmask2.keySet()) {
-								switch (Bitmask2.get(key)) {
-								case 1:
-									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 2:
-									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 4:
-									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 8:
-									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 16:
-									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 32:
-									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								}
-								if (!flag)
-									break;
-							}
-						}
-						if (flag) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, pages1.get(i));
-				}
-			}
-			if (pages1.size() == 0 && pages2.size() == 0) {
-				for (int i = 0; i < t.getPageInfo().size(); i++) {
-					Page page = deserializePage(t.getPageInfo().get(i).getPageName());
-					for (Tuple myTuple : page) {
-						boolean flag = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag)
-								break;
-						}
-						if (flag) {
-							for (String key : Bitmask2.keySet()) {
-								switch (Bitmask2.get(key)) {
-								case 1:
-									flag = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 2:
-									flag = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 4:
-									flag = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 8:
-									flag = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 16:
-									flag = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								case 32:
-									flag = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-									break;
-								}
-								if (!flag)
-									break;
-							}
-						}
-						if (flag) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, t.getPageInfo().get(i).getPageName());
-				}
-			}
-//			operand1.get(strOperator) ;
-			break;
-		case "OR":
-			if (pages1.size() != 0 && pages2.size() != 0) {
-				Vector<String> myPages = union(pages1, pages2);
 				for (int i = 0; i < myPages.size(); i++) {
 					Page page = deserializePage(myPages.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag1 = true;
-						boolean flag2 = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag1 = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag1 = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag1 = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag1 = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag1 = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag1 = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag1)
-								break;
-						}
-						for (String key : Bitmask2.keySet()) {
-							switch (Bitmask2.get(key)) {
-							case 1:
-								flag2 = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag2 = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag2 = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag2 = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag2 = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag2 = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag2)
-								break;
-						}
-						if (flag1 || flag2) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, myPages.get(i));
-				}
-			} else {
-				for (int i = 0; i < t.getPageInfo().size(); i++) {
-					Page page = deserializePage(t.getPageInfo().get(i).getPageName());
-					for (Tuple myTuple : page) {
-						boolean flag1 = true;
-						boolean flag2 = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag1 = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag1 = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag1 = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag1 = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag1 = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag1 = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag1)
-								break;
-						}
-						for (String key : Bitmask2.keySet()) {
-							switch (Bitmask2.get(key)) {
-							case 1:
-								flag2 = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag2 = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag2 = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag2 = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag2 = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag2 = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							}
-							if (!flag2)
-								break;
-						}
-						if (flag1 || flag2) {
-							result.add(myTuple);
-						}
-					}
-					serializePage(t, page, t.getPageInfo().get(i).getPageName());
+					if (myHtbl.containsKey(t.getClusteringKey()))
+						ifThereisClusteringKeyIndex(myHtbl, page, t, currResult);
+					else
+						ifThereIsNoClusteringKey(myHtbl, page, currResult);
 				}
 			}
-			break;
-		case "XOR":
-			if (pages1.size() != 0 && pages2.size() != 0) {
-				Vector<String> myPages = xor(pages1, pages2);
-				for (int i = 0; i < myPages.size(); i++) {
-					Page page = deserializePage(myPages.get(i));
-					for (Tuple myTuple : page) {
-						boolean flag1 = true;
-						boolean flag2 = true;
-						for (String key : Bitmask1.keySet()) {
-							switch (Bitmask1.get(key)) {
-							case 1:
-								flag1 = smallerThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag1 = smallerThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag1 = greaterThanOrEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag1 = greaterThan(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag1 = NotEqual(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag1 = Equal(htbloperand1.get(key), myTuple.getRecord().get(key));
-								break;
+			while (!operators.isEmpty()) {
+				String myOpertator = operators.poll();
+				switch (myOpertator) {
+				case "AND":
+					if (flag) {
+						for (int i = 0; i < result.size(); i++) {
+							if (!currResult.contains(result.get(i))) {
+								result.remove(i);
+								i--;
 							}
-							if (!flag1)
-								break;
 						}
-						for (String key : Bitmask2.keySet()) {
-							switch (Bitmask2.get(key)) {
-							case 1:
-								flag2 = smallerThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 2:
-								flag2 = smallerThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 4:
-								flag2 = greaterThanOrEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 8:
-								flag2 = greaterThan(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 16:
-								flag2 = NotEqual(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
-							case 32:
-								flag2 = Equal(htbloperand2.get(key), myTuple.getRecord().get(key));
-								break;
+					} else {
+						for (int i = 0; i < t.getPageInfo().size(); i++) {
+							Page page = deserializePage(t.getPageInfo().get(i).getPageName());
+							for (Tuple myTuple : page) {
+								if (!result.contains(myTuple))
+									result.remove(i);
 							}
-							if (!flag2)
-								break;
-						}
-						if (flag1 ^ flag2) {
-							result.add(myTuple);
 						}
 					}
-					serializePage(t, page, myPages.get(i));
-				}
-			}
+					break;
 
-			break;
+				case "OR":
+					if (flag) {
+						for (int i = 0; i < result.size(); i++) {
+							if (!currResult.contains(result.get(i))) {
+								result.add(result.get(i));
+							}
+						}
+					} else {
+						for (int i = 0; i < t.getPageInfo().size(); i++) {
+							Page page = deserializePage(t.getPageInfo().get(i).getPageName());
+							for (Tuple myTuple : page) {
+								if (!result.contains(myTuple))
+									result.add(result.get(i));
+							}
+						}
+					}
+					break;
+				case "XOR":
+					if (flag) {
+						for (int i = 0; i < result.size(); i++) {
+							if (!currResult.contains(result.get(i)))
+								result.add(result.get(i));
+							else {
+								result.remove(i);
+								i--;
+							}
+						}
+					} else {
+						for (int i = 0; i < t.getPageInfo().size(); i++) {
+							Page page = deserializePage(t.getPageInfo().get(i).getPageName());
+							for (Tuple myTuple : page) {
+								if (!currResult.contains(myTuple))
+									result.add(result.get(i));
+								else {
+									result.remove(i);
+									i--;
+								}
+							}
+						}
+					}
+					break;
+				}
+			}
+			if(counterDummy!=0) {
+				for(int i=0;i<counterDummy;i++) {
+					operators.add("A");
+				}
+			}
 		}
+		return result;
+	}
+
+	private static int compareTo1(Object x, Object y) {
+		int result = 0;
+		if (x instanceof Integer && y instanceof Integer) {
+			if (Integer.parseInt(x.toString()) > Integer.parseInt(y.toString()))
+				result = 1;
+			if (Integer.parseInt(x.toString()) == Integer.parseInt(y.toString()))
+				result = 0;
+			if (Integer.parseInt(x.toString()) < Integer.parseInt(y.toString()))
+				result = -1;
+		}
+		if (x instanceof String && y instanceof String) {
+			if (x.toString().compareTo(y.toString()) > 0)
+				result = 1;
+			if (x.toString().compareTo(y.toString()) == 0)
+				result = 0;
+			if (x.toString().compareTo(y.toString()) < 0)
+				result = -1;
+		}
+		if (x instanceof Double && y instanceof Double) {
+			if (Double.parseDouble(x.toString()) > Double.parseDouble(y.toString()))
+				result = 1;
+			if (x.toString().compareTo(y.toString()) == 0)
+				result = 0;
+			if (x.toString().compareTo(y.toString()) < 0)
+				result = -1;
+		}
+		if (x instanceof java.util.Date && y instanceof java.util.Date) {
+			try {
+				Date date = new SimpleDateFormat("yyyy-MM-dd").parse(x.toString());
+				Date date1 = new SimpleDateFormat("yyyy-MM-dd").parse(y.toString());
+				if (date.after(date1))
+					result = 1;
+				if (date.compareTo(date1) == 0)
+					result = 0;
+				if (date.before(date1))
+					result = -1;
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
+
 	}
 
 	public static Vector<String> xor(Vector<String> v1, Vector<String> v2) {
@@ -2238,113 +2170,6 @@ public class DBApp {
 			if (!result.contains(item)) {
 				result.add(item);
 			}
-		}
-		return result;
-	}
-
-	private static boolean Equal(Object recordValue, Object operand) {
-		if (operand instanceof Integer && recordValue instanceof Integer) {
-			return ((Integer) recordValue).equals((Integer) operand);
-		} else if (operand instanceof Double && recordValue instanceof Double) {
-			return ((Double) recordValue).equals((Double) operand);
-		} else if (operand instanceof Date && recordValue instanceof Date) {
-			return ((Date) recordValue).equals((Date) operand);
-		} else if (operand instanceof String && recordValue instanceof String) {
-			return ((String) recordValue).equals((String) operand);
-		}
-		return false;
-	}
-
-	private static boolean NotEqual(Object recordValue, Object operand) {
-		if (operand instanceof Integer && recordValue instanceof Integer) {
-			return !((Integer) recordValue).equals((Integer) operand);
-		} else if (operand instanceof Double && recordValue instanceof Double) {
-			return !((Double) recordValue).equals((Double) operand);
-		} else if (operand instanceof Date && recordValue instanceof Date) {
-			return !((Date) recordValue).equals((Date) operand);
-		} else if (operand instanceof String && recordValue instanceof String) {
-			return !((String) recordValue).equals((String) operand);
-		}
-		return false;
-	}
-
-	private static boolean greaterThan(Object recordValue, Object operand) {
-		if (operand instanceof Integer && recordValue instanceof Integer) {
-			return (Integer) recordValue > (Integer) operand;
-		} else if (operand instanceof Double && recordValue instanceof Double) {
-			return (Double) recordValue > (Double) operand;
-		} else if (operand instanceof Date && recordValue instanceof Date) {
-			return ((Date) recordValue).after((Date) operand);
-		} else if (operand instanceof String && recordValue instanceof String) {
-			return ((String) recordValue).compareTo((String) operand) > 0;
-		}
-		return false;
-	}
-
-	private static boolean greaterThanOrEqual(Object recordValue, Object operand) {
-		if (operand instanceof Integer && recordValue instanceof Integer) {
-			return (Integer) recordValue >= (Integer) operand;
-		} else if (operand instanceof Double && recordValue instanceof Double) {
-			return (Double) recordValue >= (Double) operand;
-		} else if (operand instanceof Date && recordValue instanceof Date) {
-			return ((Date) recordValue).after((Date) operand) || ((Date) recordValue).equals((Date) operand);
-		} else if (operand instanceof String && recordValue instanceof String) {
-			return ((String) recordValue).compareTo((String) operand) >= 0;
-		}
-		return false;
-	}
-
-	private static boolean smallerThan(Object recordValue, Object operand) {
-		if (operand instanceof Integer && recordValue instanceof Integer) {
-			return (Integer) recordValue < (Integer) operand;
-		} else if (operand instanceof Double && recordValue instanceof Double) {
-			return (Double) recordValue < (Double) operand;
-		} else if (operand instanceof Date && recordValue instanceof Date) {
-			return ((Date) recordValue).before((Date) operand);
-		} else if (operand instanceof String && recordValue instanceof String) {
-			return ((String) recordValue).compareTo((String) operand) < 0;
-		}
-		return false;
-	}
-
-	private static boolean smallerThanOrEqual(Object recordValue, Object operand) {
-		if (operand instanceof Integer && recordValue instanceof Integer) {
-			return (Integer) recordValue <= (Integer) operand;
-		} else if (operand instanceof Double && recordValue instanceof Double) {
-			return (Double) recordValue <= (Double) operand;
-		} else if (operand instanceof Date && recordValue instanceof Date) {
-			return ((Date) recordValue).before((Date) operand) || ((Date) recordValue).equals((Date) operand);
-		} else if (operand instanceof String && recordValue instanceof String) {
-			return ((String) recordValue).compareTo((String) operand) <= 0;
-		}
-		return false;
-	}
-
-//	size el hash 2 -> 1 String  
-
-// Equal-NotEqual-GreaterThan-GreaterThanOrEqual,SmallerThan,SmallerThanOrEqual
-//	0-0-0-0-0-0
-	public static int get6BitString(String value) {
-		int result = 0;
-		switch (value) {
-		case ">":
-			result |= 0b1000;
-			break;
-		case ">=":
-			result |= 0b100;
-			break;
-		case "<":
-			result |= 0b10;
-			break;
-		case "<=":
-			result |= 0b1;
-			break;
-		case "=":
-			result |= 0b100000;
-			break;
-		case "!=":
-			result |= 0b10000;
-			break;
 		}
 		return result;
 	}

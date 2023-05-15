@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 public class Values {
 
@@ -30,15 +31,31 @@ public class Values {
 	
 	//	dbApp.displayTree(strTableName);
 //		Hashtable rec = new Hashtable();
-//		rec.put("gpa", new Double(1.29));
+//		rec.put("gpa", new Double(0.95));
+//		rec.put("id", 6);
 //		rec.put("name", "Nameee3");
-		deleting(strTableName,dbApp);
+//		rec.put("Date of Birth", new Date(2015 - 1900, 9 - 1, 17));
+//		dbApp.insertIntoTable(strTableName, rec);
+//		deleting(strTableName,dbApp);
 //		updating(strTableName, dbApp);
 //		dbApp.getPages("Student");
 //		dbApp.getPages(strTableName);
-		dbApp.displayTree(strTableName);
-
-
+//		dbApp.displayTree(strTableName);
+		SQLTerm[] arrSQLTerms;
+		arrSQLTerms = new SQLTerm[2];
+		arrSQLTerms[0] = new SQLTerm("Student", "name", "=", "malak");
+		arrSQLTerms[1] = new SQLTerm("Student", "id", "=", 2);
+//		arrSQLTerms[1]._strTableName = "Student";
+//		arrSQLTerms[1]._strColumnName= "gpa";
+//		arrSQLTerms[1]._strOperator = "=";
+//		arrSQLTerms[1]._objValue = new Double( 1.5 );
+		String[]strarrOperators = new String[1];
+		strarrOperators[0] = "AND";
+		Iterator resultSet = dbApp.selectFromTable(arrSQLTerms , strarrOperators);
+		while(resultSet.hasNext()) {
+			System.out.println(resultSet.next());
+		}
+		System.out.println("done");
 	}
 
 	private static void deleting(String strTableName, DBApp dbApp) throws DBAppException {

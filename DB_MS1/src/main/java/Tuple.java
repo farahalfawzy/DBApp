@@ -86,27 +86,4 @@ public class Tuple implements Comparable, Serializable {
 			return false;
 		}
 	}
-	
-//	public boolean greaterThan (Object obj) {
-//		if (obj == null)
-//			return false;
-//		if (this == obj)
-//			return true;
-//		if (getClass() != obj.getClass())
-//			return false;
-//		Tuple other = (Tuple) obj;
-//		for (String key : other.getRecord().keySet()) {
-//			Object otherValue = other.getRecord().get(key);
-//			Object thisValue = this.getRecord().get(key);
-//			if (otherValue instanceof java.lang.String && thisValue instanceof java.lang.String) {
-//				if (!(((String) otherValue).toLowerCase().compareTo(((String) thisValue).toLowerCase())>0))
-//					return false;
-//			} else {
-//				if (otherValue<(thisValue))
-//					return false;
-//			}
-//		}
-//		return true;
-//	}
-
 }

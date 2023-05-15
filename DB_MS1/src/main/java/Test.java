@@ -127,6 +127,19 @@ public class Test {
 		}
 		System.out.println(packedhash);
 		
+		
+		Hashtable<String,Object> myHtbl = new Hashtable<>();
+		compute(myHtbl);
+		System.out.println("hereee"+myHtbl);
+		String ff="operator1";
+		if(ff.length()>8)
+			System.out.println("ahlan");
+	}
+
+	private static void compute(Hashtable<String, Object> myHtbl) {
+
+		myHtbl.put("Seif", 2);
+		
 	}
 }
 
