@@ -23,6 +23,7 @@ import java.util.Stack;
 import java.util.Vector;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 
 public class DBApp {
 
@@ -30,6 +31,7 @@ public class DBApp {
 	static int maxnoOfRows = getMaxRows();
 	boolean isDeletingMethod = false;
 	boolean isUpdatingMethod = false;
+	boolean isSelectingMethod = false;
 
 	private static int getMaxRows() {
 		Properties prop = new Properties();
@@ -567,11 +569,17 @@ public class DBApp {
 							Page page = deserializePage(pageName.get(i));
 							for (int k = 0; k < page.size(); k++) {
 								// get all the columns that have indices
-								Tuple currTuple = page.get(k);
-								if (currTuple.equals(myTuple)) {
-									deleteFromOctree(currTuple, t, pageName.get(i));
-									page.remove(k);
-									k--;
+								if (myTuple.getRecord().containsKey(t.getClusteringKey())) {
+									int index = page.getIndexInPageUsingClusteringKey(myTuple.getClusteringkey());
+									deleteFromOctree(myTuple, t, pageName.get(i));
+									page.remove(index);
+								} else {
+									Tuple currTuple = page.get(k);
+									if (currTuple.equals(myTuple)) {
+										deleteFromOctree(currTuple, t, pageName.get(i));
+										page.remove(k);
+										k--;
+									}
 								}
 							}
 							String res = "";
@@ -824,8 +832,10 @@ public class DBApp {
 					break;
 				}
 			}
-			if (!ClustKeyfound && !isDeletingMethod && !isUpdatingMethod) { // ana 3mlt deh 3lshan fel delete lw ana msh
-																			// m3aya elcluster key
+			if (!ClustKeyfound && !isDeletingMethod && !isUpdatingMethod && !isSelectingMethod) { // ana 3mlt deh 3lshan
+																									// fel delete lw ana
+																									// msh
+				// m3aya elcluster key
 				// e3ml delete 3ady bardo
 				throw new DBAppException("You have to insert Clustering Key");
 			}
@@ -834,6 +844,7 @@ public class DBApp {
 			for (String key : htblColNameValue.keySet()) {
 				// System.out.println(key);
 				if (!tableInfo.containsKey(key)) {
+					System.out.println(key);
 					throw new DBAppException("Invalid Column");
 				}
 				String ogNameType = tableInfo.get(key)[0];
@@ -912,7 +923,7 @@ public class DBApp {
 
 							if (currDate.after(minDate) && currDate.before(maxDate)) {
 								flag = true;
-
+								System.out.println("date");
 								continue;
 
 							} else {
@@ -1619,6 +1630,7 @@ public class DBApp {
 			throw new DBAppException("Insert a valid select");
 		if (!tableExits(arrSQLTerms[0]._strTableName))
 			throw new DBAppException("Table doesn't exist!!");
+
 		Vector<Tuple> result = new Vector<>();
 		Table t = deserializeTable(arrSQLTerms[0]._strTableName);
 		Hashtable<String, Object> htblColValue = new Hashtable<>();
@@ -1626,6 +1638,7 @@ public class DBApp {
 		for (int i = 0; i < arrSQLTerms.length; i++) {
 			htblColValue.put(arrSQLTerms[i]._strColumnName, arrSQLTerms[i]._objValue);
 		}
+		this.isSelectingMethod = true;
 		if (!isValid(t.getTableName(), htblColValue))
 			throw new DBAppException("Coloumn is invalid");
 		indexName = getindexname(t, htblColValue);
@@ -1645,6 +1658,8 @@ public class DBApp {
 				if (!strarrOperators[operatorCounter].equals("AND")) {
 					break;
 				}
+				if (arrSQLTerms[colCounter - 1]._strColumnName.equals(arrSQLTerms[colCounter]._strColumnName))
+					break;
 				if (indexName.get(indexCounter).equals(indexName.get(j)) && !indexName.get(j).equals("null")) {
 					myHtbl.put(arrSQLTerms[colCounter]._strColumnName, arrSQLTerms[colCounter]._objValue);
 					myHtbl.put("operator" + arrSQLTerms[colCounter]._strColumnName,
@@ -1669,26 +1684,43 @@ public class DBApp {
 				int outercounter = operators.size();
 				int tempCounter = 0;
 				Hashtable<String, Object> temp = new Hashtable<>();
+				System.out.println("HASHHHHH   " + myHtbl);
+				String tmp = "";
+				int mySize = myHtbl.size();
 				for (String key : myHtbl.keySet()) {
-					temp.put(key, myHtbl.get(key));
-					if (tempCounter == 0) {
-						tempCounter++;
-						continue;
+					if (key.length() > 7 && key.substring(0, 8).equals("operator")) {
+						temp.put(key, myHtbl.get(key));
+						tmp = key.substring(8);
+						myHtbl.remove(key);
+						break;
 					}
-					temp.put("indxName", indexName.get(indexCounter));
-
-					result = compute(temp, operators, t, result);
-					if (outercounter < strarrOperators.length) {
-						outercounter++;
-						// once = false;
-					}
-
-					tempCounter = 0;
-					temp = new Hashtable<>();
 				}
+				System.out.println("MY HASHTEMO" + myHtbl);
+				temp.put(tmp, myHtbl.get(tmp));
+				myHtbl.remove(tmp);
+				System.out.println("tempppp" + temp + " " + operators);
+
+				result = compute(temp, operators, t, result);
+				System.out.println("HER IS MY RESULT" + result);
+				if (mySize == 4) {
+					operators.add("AND");
+					System.out.println("FY SELECT" + myHtbl);
+					result = compute(myHtbl, operators, t, result);
+				}
+
+				if (outercounter < strarrOperators.length) {
+					operators.add(strarrOperators[outercounter]);
+					outercounter++;
+					// once = false;
+				}
+
+				tempCounter = 0;
+				temp = new Hashtable<>();
+
 				operatorCounter = outercounter;
 			}
 		}
+		this.isSelectingMethod = false;
 		return result.iterator();
 
 	}
@@ -1706,12 +1738,12 @@ public class DBApp {
 		myHtbl.remove(clusterValue);
 		myHtbl.remove("operator" + (t.getClusteringKey().toString()));
 		for (String key : myHtbl.keySet()) {
-			if (key.substring(0, 8).equals("operator") && counter == 0) {
+			if (key.length()>7 && key.substring(0, 8).equals("operator") && counter == 0) {
 				operatorCol1 = myHtbl.get(key).toString();
 				col1 = key.substring(8);
 				counter++;
 			}
-			if (key.substring(0, 8).equals("operator") && counter == 1) {
+			if (key.length()>7 && key.substring(0, 8).equals("operator") && counter == 1) {
 				operatorCol2 = myHtbl.get(key).toString();
 				col2 = key.substring(8);
 				counter++;
@@ -1815,17 +1847,17 @@ public class DBApp {
 		String col3 = "";
 		int counter = 0;
 		for (String key : myHtbl.keySet()) {
-			if (key.substring(0, 8).equals("operator") && counter == 0) {
+			if (key.length() > 7 && key.substring(0, 8).equals("operator") && counter == 0) {
 				operatorCol1 = myHtbl.get(key).toString();
 				col1 = key.substring(8);
 				counter++;
 			}
-			if (key.substring(0, 8).equals("operator") && counter == 1) {
+			if (key.length() > 7 && key.substring(0, 8).equals("operator") && counter == 1) {
 				operatorCol2 = myHtbl.get(key).toString();
 				col2 = key.substring(8);
 				counter++;
 			}
-			if (key.substring(0, 8).equals("operator") && counter == 2) {
+			if (key.length() > 7 && key.substring(0, 8).equals("operator") && counter == 2) {
 				operatorCol3 = myHtbl.get(key).toString();
 				col3 = key.substring(8);
 				counter++;
@@ -1939,8 +1971,9 @@ public class DBApp {
 
 		String operatorCol1 = "";
 		String col1 = "";
+		System.out.println(myHtbl);
 		for (String key : myHtbl.keySet()) {
-			if (key.length()>8 && key.substring(0, 8).equals("operator")) {
+			if (key.length() > 8 && key.substring(0, 8).equals("operator")) {
 				operatorCol1 = myHtbl.get(key).toString();
 				col1 = key.substring(8);
 			}
@@ -1949,7 +1982,7 @@ public class DBApp {
 			Page page = deserializePage(t.getPageInfo().get(i).getPageName());
 			for (Tuple myTuple : page) {
 				Hashtable<String, Object> record = myTuple.getRecord();
-				boolean flag = true;
+				boolean flag = false;
 				switch (operatorCol1) {
 				case "=":
 					flag = record.get(col1).equals(myHtbl.get(col1));
@@ -1982,8 +2015,10 @@ public class DBApp {
 					flag = !record.get(col1).equals(myHtbl.get(col1));
 					break;
 				}
-				if (flag)
+				if (flag) {
+					System.out.println("this tuple : " + myTuple.toString());
 					result.add(myTuple);
+				}
 			}
 		}
 	}
@@ -1992,7 +2027,7 @@ public class DBApp {
 			Vector<Tuple> result) {
 		if (operators.isEmpty()) {
 			if (myHtbl.size() == 7) {
-				String myIndexName = myHtbl.get("indxName").toString();
+				String myIndexName = t.getTableName() + "" + myHtbl.get("indxName").toString();
 				Octree myOct = deserializeOctree(myIndexName);
 				Vector<String> myPages = new Vector<>();
 				myPages = myOct.getAllPages(myHtbl);
@@ -2004,8 +2039,10 @@ public class DBApp {
 					else
 						ifThereIsNoClusteringKey(myHtbl, page, result);
 				}
-			} else
+			} else {
 				notAnIndex(myHtbl, t, result);
+				System.out.println("1:" + result);
+			}
 		} else {
 			int counterDummy = 0;
 			while (operators.peek().equals("A")) {
@@ -2029,23 +2066,68 @@ public class DBApp {
 						ifThereIsNoClusteringKey(myHtbl, page, currResult);
 				}
 			}
+
 			while (!operators.isEmpty()) {
 				String myOpertator = operators.poll();
+				Vector<Tuple> intersection = new Vector<>();
+				System.out.println(myOpertator);
 				switch (myOpertator) {
 				case "AND":
 					if (flag) {
-						for (int i = 0; i < result.size(); i++) {
-							if (!currResult.contains(result.get(i))) {
-								result.remove(i);
-								i--;
-							}
-						}
+						result.retainAll(currResult);
 					} else {
-						for (int i = 0; i < t.getPageInfo().size(); i++) {
-							Page page = deserializePage(t.getPageInfo().get(i).getPageName());
-							for (Tuple myTuple : page) {
-								if (!result.contains(myTuple))
+						System.out.println("not here");
+						for (int i = 0; i < result.size(); i++) {
+							String operatorKey = "";
+							for (String key : myHtbl.keySet()) {
+								if (key.length() > 7 && key.substring(0, 8).equals("operator")) {
+									operatorKey = key;
+									break;
+								}
+							}
+							String operandKey = operatorKey.substring(8);
+							System.out.println(operandKey);
+							switch (myHtbl.get(operatorKey).toString()) {
+							case "=":
+								if (!result.get(i).getRecord().get(operandKey).equals(myHtbl.get(operandKey))) {
 									result.remove(i);
+									i--;
+								}
+								break;
+							case ">":
+								if (compareTo1(result.get(i).getRecord().get(operandKey),
+										(myHtbl.get(operandKey))) <= 0) {
+									result.remove(i);
+									i--;
+								}
+								break;
+							case ">=":
+								if (compareTo1(result.get(i).getRecord().get(operandKey),
+										(myHtbl.get(operandKey))) < 0) {
+									result.remove(i);
+									i--;
+								}
+								break;
+							case "<":
+								if (compareTo1(result.get(i).getRecord().get(operandKey),
+										(myHtbl.get(operandKey))) >= 0) {
+									result.remove(i);
+									i--;
+								}
+								break;
+							case "<=":
+								if (compareTo1(result.get(i).getRecord().get(operandKey),
+										(myHtbl.get(operandKey))) > 0) {
+									result.remove(i);
+									i--;
+								}
+								break;
+							case "!=":
+								if (compareTo1(result.get(i).getRecord().get(operandKey),
+										(myHtbl.get(operandKey))) == 0) {
+									result.remove(i);
+									i--;
+								}
 							}
 						}
 					}
@@ -2059,11 +2141,55 @@ public class DBApp {
 							}
 						}
 					} else {
-						for (int i = 0; i < t.getPageInfo().size(); i++) {
-							Page page = deserializePage(t.getPageInfo().get(i).getPageName());
+						for (int j = 0; j < t.getPageInfo().size(); j++) {
+							Page page = deserializePage(t.getPageInfo().get(j).getPageName());
 							for (Tuple myTuple : page) {
-								if (!result.contains(myTuple))
-									result.add(result.get(i));
+								String operatorKey = "";
+								for (String key : myHtbl.keySet()) {
+									if (key.length() > 7 && key.substring(0, 8).equals("operator")) {
+										operatorKey = key;
+										break;
+									}
+								}
+								String operandKey = operatorKey.substring(8);
+								System.out.println(operandKey);
+								switch (myHtbl.get(operatorKey).toString()) {
+								case "=":
+									if (myTuple.getRecord().get(operandKey).equals(myHtbl.get(operandKey))
+											&& !result.contains(myTuple)) {
+										result.add(myTuple);
+									}
+									break;
+								case ">":
+									if (compareTo1(myTuple.getRecord().get(operandKey), (myHtbl.get(operandKey))) > 0
+											&& !result.contains(myTuple)) {
+										result.add(myTuple);
+									}
+									break;
+								case ">=":
+									if (compareTo1(myTuple.getRecord().get(operandKey), (myHtbl.get(operandKey))) >= 0
+											&& !result.contains(myTuple)) {
+										result.add(myTuple);
+									}
+									break;
+								case "<":
+									if (compareTo1(myTuple.getRecord().get(operandKey), (myHtbl.get(operandKey))) < 0
+											&& !result.contains(myTuple)) {
+										result.add(myTuple);
+									}
+									break;
+								case "<=":
+									if (compareTo1(myTuple.getRecord().get(operandKey), (myHtbl.get(operandKey))) <= 0
+											&& !result.contains(myTuple)) {
+										result.add(myTuple);
+									}
+									break;
+								case "!=":
+									if (compareTo1(myTuple.getRecord().get(operandKey), (myHtbl.get(operandKey))) != 0
+											&& !result.contains(myTuple)) {
+										result.add(myTuple);
+									}
+								}
 							}
 						}
 					}
@@ -2079,28 +2205,99 @@ public class DBApp {
 							}
 						}
 					} else {
-						for (int i = 0; i < t.getPageInfo().size(); i++) {
-							Page page = deserializePage(t.getPageInfo().get(i).getPageName());
+						for (int j = 0; j < t.getPageInfo().size(); j++) {
+							Page page = deserializePage(t.getPageInfo().get(j).getPageName());
 							for (Tuple myTuple : page) {
-								if (!currResult.contains(myTuple))
-									result.add(result.get(i));
-								else {
-									result.remove(i);
-									i--;
+								String operatorKey = "";
+								for (String key : myHtbl.keySet()) {
+									if (key.length() > 7 && key.substring(0, 8).equals("operator")) {
+										operatorKey = key;
+										break;
+									}
+								}
+								String operandKey = operatorKey.substring(8);
+								System.out.println(operandKey);
+								boolean contains = true;
+								if (result.contains(myTuple))
+									contains = true;
+								else
+									contains = false;
+								switch (myHtbl.get(operatorKey).toString()) {
+								case "=":
+									if (contains)
+										result.remove(myTuple);
+									else {
+										if (myTuple.getRecord().get(operandKey).equals(myHtbl.get(operandKey))) {
+											result.add(myTuple);
+										}
+									}
+									break;
+								case ">":
+									if (contains)
+										result.remove(myTuple);
+									else {
+										if (compareTo1(myTuple.getRecord().get(operandKey),
+												(myHtbl.get(operandKey))) > 0 && !result.contains(myTuple)) {
+											result.add(myTuple);
+										}
+									}
+									break;
+								case ">=":
+									if (contains)
+										result.remove(myTuple);
+									else {
+										if (compareTo1(myTuple.getRecord().get(operandKey),
+												(myHtbl.get(operandKey))) >= 0 && !result.contains(myTuple)) {
+											result.add(myTuple);
+										}
+									}
+									break;
+								case "<":
+									if (contains)
+										result.remove(myTuple);
+									else {
+										if (compareTo1(myTuple.getRecord().get(operandKey),
+												(myHtbl.get(operandKey))) < 0 && !result.contains(myTuple)) {
+											result.add(myTuple);
+										}
+									}
+									break;
+								case "<=":
+									if (contains)
+										result.remove(myTuple);
+									else {
+										if (compareTo1(myTuple.getRecord().get(operandKey),
+												(myHtbl.get(operandKey))) <= 0 && !result.contains(myTuple)) {
+											result.add(myTuple);
+										}
+									}
+									break;
+								case "!=":
+									if (contains)
+										result.remove(myTuple);
+									else {
+										if (compareTo1(myTuple.getRecord().get(operandKey),
+												(myHtbl.get(operandKey))) != 0 && !result.contains(myTuple)) {
+											result.add(myTuple);
+										}
+									}
 								}
 							}
 						}
 					}
 					break;
 				}
+				if (intersection.size() != 0)
+					result = intersection;
 			}
-			if(counterDummy!=0) {
-				for(int i=0;i<counterDummy;i++) {
+			if (counterDummy != 0) {
+				for (int i = 0; i < counterDummy; i++) {
 					operators.add("A");
 				}
 			}
 		}
 		return result;
+
 	}
 
 	private static int compareTo1(Object x, Object y) {

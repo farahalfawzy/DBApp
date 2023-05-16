@@ -84,19 +84,19 @@ public class Test {
 //			}
 //		}
 		String pageName = "Student111190";
-		String res="";
-		for(int i = pageName.length()-1; i>(-1);i--) {
-			if((pageName.charAt(i)) >='0' && pageName.charAt(i) <='9') {
-				res=pageName.charAt(i)+res;
+		String res = "";
+		for (int i = pageName.length() - 1; i > (-1); i--) {
+			if ((pageName.charAt(i)) >= '0' && pageName.charAt(i) <= '9') {
+				res = pageName.charAt(i) + res;
 			}
 		}
 		int pageind = Integer.parseInt(res);
 		System.out.println(pageind);
-		String x= "operatorSeifra2asa";
-		System.out.println(x.substring(0,8));
-		Hashtable<String,Object> packedhash= new Hashtable<String,Object>();
-		
-		Vector<Hashtable<String,Object>> temp = new Vector<>();
+		String x = "operatorSeifra2asa";
+		System.out.println(x.substring(0, 8));
+		Hashtable<String, Object> packedhash = new Hashtable<String, Object>();
+
+		Vector<Hashtable<String, Object>> temp = new Vector<>();
 
 		// create a new Hashtable and add some key-value pairs
 		Hashtable<String, Object> hashtable1 = new Hashtable<>();
@@ -122,24 +122,37 @@ public class Test {
 		// add the third Hashtable to the Vector
 		temp.add(hashtable3);
 
-		for(int i=0 ; i< temp.size();i++) {
+		for (int i = 0; i < temp.size(); i++) {
 			packedhash.putAll(temp.get(i));
 		}
 		System.out.println(packedhash);
-		
-		
-		Hashtable<String,Object> myHtbl = new Hashtable<>();
+
+		Hashtable<String, Object> myHtbl = new Hashtable<>();
 		compute(myHtbl);
-		System.out.println("hereee"+myHtbl);
-		String ff="operator1";
-		if(ff.length()>8)
+		System.out.println("hereee" + myHtbl);
+		String ff = "operator1";
+		if (ff.length() > 8)
 			System.out.println("ahlan");
+
+		Hashtable<String, Object> hm = new Hashtable<>();
+		hm.put("operatorname", "=");
+		hm.put("name", "seif");
+		String operatorCol1 = "";
+		String col1 = "";
+		for (String key : hm.keySet()) {
+			if (key.length() > 8 && key.substring(0, 8).equals("operator")) {
+				operatorCol1 = hm.get(key).toString();
+				col1 = key.substring(8);
+			}
+		}
+		System.out.println(operatorCol1);
+		System.out.println(col1);
 	}
 
 	private static void compute(Hashtable<String, Object> myHtbl) {
 
 		myHtbl.put("Seif", 2);
-		
+
 	}
 }
 

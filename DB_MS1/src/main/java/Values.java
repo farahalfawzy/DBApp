@@ -15,7 +15,7 @@ public class Values {
 		DBApp dbApp = new DBApp();
 //		dbApp.init();
 //		creating(strTableName, dbApp);
-//		dbApp.createIndex(strTableName, new String[] { "Date of Birth", "gpa", "name" });
+//		dbApp.createIndex(strTableName, new String[] { "id", "gpa", "name" });
 //
 //		inserting(dbApp);
 //		dbApp.displayTree(strTableName);
@@ -27,9 +27,9 @@ public class Values {
 //
 //		dbApp.insertIntoTable("Student", rec);
 
-		//dbApp.getPages(strTableName);
-	
-	//	dbApp.displayTree(strTableName);
+		// dbApp.getPages(strTableName);
+
+		// dbApp.displayTree(strTableName);
 //		Hashtable rec = new Hashtable();
 //		rec.put("gpa", new Double(0.95));
 //		rec.put("id", 6);
@@ -42,17 +42,16 @@ public class Values {
 //		dbApp.getPages(strTableName);
 //		dbApp.displayTree(strTableName);
 		SQLTerm[] arrSQLTerms;
-		arrSQLTerms = new SQLTerm[2];
+		arrSQLTerms = new SQLTerm[3];
 		arrSQLTerms[0] = new SQLTerm("Student", "name", "=", "malak");
-		arrSQLTerms[1] = new SQLTerm("Student", "id", "=", 2);
-//		arrSQLTerms[1]._strTableName = "Student";
-//		arrSQLTerms[1]._strColumnName= "gpa";
-//		arrSQLTerms[1]._strOperator = "=";
-//		arrSQLTerms[1]._objValue = new Double( 1.5 );
-		String[]strarrOperators = new String[1];
+		arrSQLTerms[1] = new SQLTerm("Student", "gpa", "=", 3.9);
+		arrSQLTerms[2] = new SQLTerm("Student", "id" ,"=", 64);
+		
+		String[] strarrOperators = new String[2];
 		strarrOperators[0] = "AND";
-		Iterator resultSet = dbApp.selectFromTable(arrSQLTerms , strarrOperators);
-		while(resultSet.hasNext()) {
+		strarrOperators[1] = "AND";
+		Iterator resultSet = dbApp.selectFromTable(arrSQLTerms, strarrOperators);
+		while (resultSet.hasNext()) {
 			System.out.println(resultSet.next());
 		}
 		System.out.println("done");
@@ -61,7 +60,7 @@ public class Values {
 	private static void deleting(String strTableName, DBApp dbApp) throws DBAppException {
 		// TODO Auto-generated method stub
 
-		Hashtable<String,Object> rec = new Hashtable<>();
+		Hashtable<String, Object> rec = new Hashtable<>();
 //		rec.put("name", new String("Nameee3"));
 //		rec.put("gpa", 1.29);
 //		rec.put("id", new Integer(8));
@@ -73,7 +72,7 @@ public class Values {
 
 	private static void inserting(DBApp dbApp) throws DBAppException {
 		// TODO Auto-generated method stub
-		String strTableName="Student";
+		String strTableName = "Student";
 		Hashtable rec = new Hashtable();
 		rec.put("id", new Integer(10));
 		rec.put("name", new String("Kkk"));// 0

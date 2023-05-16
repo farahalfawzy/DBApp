@@ -481,7 +481,7 @@ public class Octree implements Serializable {
 		}
 		if (minX instanceof Double && maxX instanceof Double) {
 			Double midX = ((Double.parseDouble(minX.toString())) + ((Double.parseDouble(maxX.toString())))) / 2;
-			if (((Double) key.get(getX())) > midX) {
+			if (Double.parseDouble(maxX.toString()) > midX) {
 				return true;
 			} else {
 				return false;
@@ -490,7 +490,7 @@ public class Octree implements Serializable {
 		if (minX instanceof String && maxX instanceof String) {
 			String midX = printMiddleString(((String) minX).toLowerCase(), ((String) maxX).toLowerCase(),
 					((String) minX).length());
-			if (((String) key.get(getX())).toLowerCase().compareTo(midX) > 0)
+			if ((key.get(getX()).toString()).toLowerCase().compareTo(midX) > 0)
 				return true;
 			else
 				return false;
@@ -1526,23 +1526,25 @@ public class Octree implements Serializable {
 		String col2 = "";
 		String col3 = "";
 		Vector<String> res = new Vector<String>();
+		System.out.println(temp);
 		for (String key : temp.keySet()) {
+			System.out.println("in loop");
 			if (key.equals("operator" + this.X)) {
 				operatorCol1 = temp.get(key).toString();
-				temp.remove(key);
 				col1 = X;
 			}
 			if (key.equals("operator" + this.Y)) {
 				operatorCol2 = temp.get(key).toString();
-				temp.remove(key);
 				col2 = Y;
 			}
 			if (key.equals("operator" + this.Z)) {
 				operatorCol3 = temp.get(key).toString();
-				temp.remove(key);
 				col3 = Z;
 			}
 		}
+		temp.remove(operatorCol1);
+		temp.remove(operatorCol2);
+		temp.remove(operatorCol3);
 		getAllPagesHelper(res, root, temp, operatorCol1, col1, operatorCol2, col2, operatorCol3, col3);
 		return res;
 	}
@@ -1764,7 +1766,7 @@ public class Octree implements Serializable {
 			NonLeaf NonleafCur = (NonLeaf) current;
 			if (col1.toLowerCase().equals(getX())) {
 				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
-				tmp.put(getX(), col1);
+				tmp.put(getX(),myHtbl.get(col1));
 				boolean higherX = getHigherX(current.getMinX(), current.getMaxX(), tmp);
 				if (!higherX) {
 					if (compareTo1(myHtbl.get(col1), NonleafCur.left0.getMinX()) >= 0
@@ -1796,9 +1798,9 @@ public class Octree implements Serializable {
 			}
 			if (col2.toLowerCase().equals(getY())) {
 				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
-				tmp.put(getY(), col2);
-				boolean higherX = getHigherX(current.getMinY(), current.getMaxY(), tmp);
-				if (!higherX) {
+				tmp.put(getY(), myHtbl.get(col2));
+				boolean higherY = getHigherY(current.getMinY(), current.getMaxY(), tmp);
+				if (!higherY) {
 					if (compareTo1(myHtbl.get(col2), NonleafCur.left0.getMinY()) >= 0
 							&& compareTo1(NonleafCur.left0.getMaxY(), myHtbl.get(col2)) >= 0)
 						nextNodes.add("000");
@@ -1829,7 +1831,8 @@ public class Octree implements Serializable {
 
 			if (col3.toLowerCase().equals(getZ())) {
 				Hashtable<String, Object> tmp = new Hashtable<String, Object>();
-				tmp.put(getZ(), col3);
+				tmp.put(getZ(), myHtbl.get(col3));
+				System.out.println(tmp);
 				boolean higherZ = getHigherZ(current.getMinZ(), current.getMaxZ(), tmp);
 				if (!higherZ) {
 					if (compareTo1(myHtbl.get(col3), NonleafCur.left0.getMinZ()) >= 0

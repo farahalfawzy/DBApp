@@ -69,7 +69,6 @@ public class Tuple implements Comparable, Serializable {
 			return false;
 		Tuple other = (Tuple) obj;
 		if (other.getRecord().size() <= this.getRecord().size()) {
-			System.out.println("deleting was herezzz other.getRecord().size() < this.getRecord().size()");
 			for (String key : other.getRecord().keySet()) {
 				Object otherValue = other.getRecord().get(key);
 				Object thisValue = this.getRecord().get(key);
