@@ -1,5 +1,0 @@
-Table Name, Column Name, Column Type, ClusteringKey, IndexName,IndexType, min, max
-Student,gpa,java.lang.Double,False,gpanameidIndex,Octree,0.0,4.0
-Student,name,java.lang.String,False,gpanameidIndex,Octree,A,zzzzzzzzz
-Student,date of birth,java.util.Date,False,null,null,1990-01-01,2022-12-31
-Student,id,java.lang.Integer,True,gpanameidIndex,Octree,0,100
